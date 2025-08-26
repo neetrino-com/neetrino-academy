@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/db"
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: lessonId } = await params
+
+    // Получаем урок с информацией о модуле и курсе
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonId },
+      include: {
+        module: {
+          include: {
+            course: {
+              select: {
+                id: true,
+                title: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!lesson) {
+      return NextResponse.json(
+        { error: "Урок не найден" },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ lesson })
+  } catch (error) {
+    console.error("Error fetching lesson:", error)
+    return NextResponse.json(
+      { error: "Внутренняя ошибка сервера" },
+      { status: 500 }
+    )
+  }
+}

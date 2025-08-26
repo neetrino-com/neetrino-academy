@@ -45,12 +45,13 @@ export async function GET(
     })
 
     return NextResponse.json({ 
-      lessons,
       module: {
         id: module.id,
         title: module.title,
         description: module.description,
-        course: module.course
+        order: module.order,
+        course: module.course,
+        lessons: lessons
       }
     })
   } catch (error) {
