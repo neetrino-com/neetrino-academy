@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Пользователи
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  password      String?
+  role          UserRole @default(STUDENT)
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Связи
+  enrollments     Enrollment[]
+  assignments     Assignment[]
+  submissions     Submission[]
+  messages        Message[]
+  achievements    Achievement[]
+  lessonProgress  LessonProgress[]
+}
+
+// Курсы
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  slug        String   @unique
+  direction   Direction
+  level       Level
+  price       Decimal?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  modules     Module[]
+  enrollments Enrollment[]
+  messages    Message[]
+}
+
+// Модули
+model Module {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  order       Int
+  courseId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  course      Course     @relation(fields: [courseId], references: [id])
+  lessons     Lesson[]
+  assignments Assignment[]
+}
+
+// Уроки
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  videoUrl    String?
+  duration    Int?     // в минутах
+  order       Int
+  moduleId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  module      Module @relation(fields: [moduleId], references: [id])
+  progress    LessonProgress[]
+}
+
+// Задания
+model Assignment {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  moduleId    String
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  module      Module      @relation(fields: [moduleId], references: [id])
+  creator     User        @relation(fields: [createdBy], references: [id])
+  submissions Submission[]
+}
+
+// Прогресс уроков
+model LessonProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  completed Boolean  @default(false)
+  progress  Float    @default(0) // 0-100%
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Связи
+  user      User   @relation(fields: [userId], references: [id])
+  lesson    Lesson @relation(fields: [lessonId], references: [id])
+  
+  @@unique([userId, lessonId])
+}
+
+// Записи на курсы
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  status    EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime @default(now())
+  
+  // Связи
+  user      User   @relation(fields: [userId], references: [id])
+  course    Course @relation(fields: [courseId], references: [id])
+  
+  @@unique([userId, courseId])
+}
+
+// Сдачи заданий
+model Submission {
+  id           String   @id @default(cuid())
+  userId       String
+  assignmentId String
+  content      String?
+  fileUrl      String?
+  score        Float?
+  feedback     String?
+  submittedAt  DateTime @default(now())
+  gradedAt     DateTime?
+  
+  // Связи
+  user         User       @relation(fields: [userId], references: [id])
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+}
+
+// Сообщения
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  courseId  String?
+  createdAt DateTime @default(now())
+  
+  // Связи
+  user      User   @relation(fields: [userId], references: [id])
+  course    Course? @relation(fields: [courseId], references: [id])
+}
+
+// Достижения
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  type        AchievementType
+  title       String
+  description String?
+  earnedAt    DateTime @default(now())
+  
+  // Связи
+  user        User @relation(fields: [userId], references: [id])
+}
+
+// Enums
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum Direction {
+  WORDPRESS
+  VIBE_CODING
+  SHOPIFY
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AchievementType {
+  COURSE_COMPLETED
+  ASSIGNMENT_SUBMITTED
+  PERFECT_SCORE
+  STREAK_7_DAYS
+  STREAK_30_DAYS
+}
