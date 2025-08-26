@@ -43,6 +43,8 @@ export function RegisterForm() {
     }
 
     try {
+      console.log('Отправка данных регистрации:', { name: formData.name, email: formData.email })
+      
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -55,17 +57,23 @@ export function RegisterForm() {
         }),
       })
 
+      console.log('Ответ сервера:', response.status, response.statusText)
+      
       const data = await response.json()
+      console.log('Данные ответа:', data)
 
       if (!response.ok) {
-        setError(data.error || 'Ошибка при регистрации')
+        const errorMessage = data.error || data.details?.[0]?.message || 'Ошибка при регистрации'
+        setError(errorMessage)
+        console.error('Registration error:', data)
       } else {
-        setSuccess('Регистрация успешна! Перенаправление на страницу входа...')
+        setSuccess('Регистрация успешна! Перенаправление на дашборд...')
         setTimeout(() => {
-          router.push('/login')
+          router.push('/dashboard')
         }, 2000)
       }
     } catch (error) {
+      console.error('Network error:', error)
       setError('Произошла ошибка при регистрации')
     } finally {
       setIsLoading(false)
@@ -173,13 +181,24 @@ export function RegisterForm() {
             </div>
           </div>
 
-          <div>
+          <div className="flex space-x-3">
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormData({ name: '', email: '', password: '', confirmPassword: '' })
+                setError('')
+                setSuccess('')
+              }}
+              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Очистить
             </button>
           </div>
         </form>

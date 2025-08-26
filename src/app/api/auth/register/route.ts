@@ -58,6 +58,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.error("Registration error:", error)
+    
+    // Более подробная обработка ошибок
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || "Внутренняя ошибка сервера" },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: "Внутренняя ошибка сервера" },
       { status: 500 }
