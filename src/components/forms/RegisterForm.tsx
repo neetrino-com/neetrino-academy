@@ -67,10 +67,37 @@ export function RegisterForm() {
         setError(errorMessage)
         console.error('Registration error:', data)
       } else {
-        setSuccess('Регистрация успешна! Перенаправление на дашборд...')
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 2000)
+        setSuccess('Регистрация успешна! Автоматический вход...')
+        // Автоматически входим в систему после регистрации
+        try {
+          const signInResponse = await fetch('/api/auth/signin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+            }),
+          })
+          
+          if (signInResponse.ok) {
+            setSuccess('Вход выполнен! Перенаправление на дашборд...')
+            setTimeout(() => {
+              router.push('/dashboard')
+            }, 1000)
+          } else {
+            setSuccess('Регистрация успешна! Перейдите на страницу входа.')
+            setTimeout(() => {
+              router.push('/login')
+            }, 2000)
+          }
+        } catch (error) {
+          setSuccess('Регистрация успешна! Перейдите на страницу входа.')
+          setTimeout(() => {
+            router.push('/login')
+          }, 2000)
+        }
       }
     } catch (error) {
       console.error('Network error:', error)

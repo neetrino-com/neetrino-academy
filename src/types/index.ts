@@ -1,4 +1,96 @@
-import { User, Course, Module, Lesson, Assignment, Submission, Enrollment, Message, Achievement } from '@prisma/client'
+// Базовые типы для приложения
+export interface User {
+  id: string
+  email: string
+  name?: string | null
+  role: string
+  avatar?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Course {
+  id: string
+  title: string
+  description?: string | null
+  slug: string
+  direction: string
+  level: string
+  price?: number | null
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Module {
+  id: string
+  title: string
+  description?: string | null
+  order: number
+  courseId: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Lesson {
+  id: string
+  title: string
+  content?: string | null
+  videoUrl?: string | null
+  duration?: number | null
+  order: number
+  moduleId: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Assignment {
+  id: string
+  title: string
+  description?: string | null
+  dueDate?: Date | null
+  moduleId: string
+  createdBy: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Submission {
+  id: string
+  userId: string
+  assignmentId: string
+  content?: string | null
+  fileUrl?: string | null
+  score?: number | null
+  feedback?: string | null
+  submittedAt: Date
+  gradedAt?: Date | null
+}
+
+export interface Enrollment {
+  id: string
+  userId: string
+  courseId: string
+  status: string
+  enrolledAt: Date
+}
+
+export interface Message {
+  id: string
+  content: string
+  userId: string
+  courseId?: string | null
+  createdAt: Date
+}
+
+export interface Achievement {
+  id: string
+  userId: string
+  type: string
+  title: string
+  description?: string | null
+  earnedAt: Date
+}
 
 // Расширенные типы с включенными связями
 export type UserWithEnrollments = User & {

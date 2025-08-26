@@ -55,6 +55,14 @@ export function Header() {
                 >
                   Дашборд
                 </Link>
+                {session.user.role === 'ADMIN' && (
+                  <Link 
+                    href="/admin" 
+                    className="text-red-600 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Админ
+                  </Link>
+                )}
                 <div className="relative">
                   <button 
                     onClick={() => signOut()}
