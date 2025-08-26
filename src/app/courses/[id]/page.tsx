@@ -10,6 +10,7 @@ interface Module {
   title: string
   description?: string | null
   order: number
+  lessons: any[]
   _count: {
     lessons: number
     assignments: number
@@ -31,6 +32,7 @@ interface Course {
 
 interface CourseResponse {
   course: Course
+  error?: string
 }
 
 export default function CourseDetailPage() {
@@ -299,6 +301,7 @@ export default function CourseDetailPage() {
             Программа курса
           </h2>
 
+          {course.modules.length > 0 ? (
             <ModuleList 
               modules={course.modules} 
               courseId={courseId} 

@@ -3,10 +3,10 @@ import { prisma } from "@/lib/db"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const moduleId = params.id
+    const { id: moduleId } = await params
 
     // Проверяем, существует ли модуль
     const module = await prisma.module.findUnique({
@@ -34,15 +34,14 @@ export async function GET(
       orderBy: {
         order: 'asc'
       },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        duration: true,
-        order: true,
-        videoUrl: true,
-        resources: true
-      }
+             select: {
+         id: true,
+         title: true,
+         content: true,
+         duration: true,
+         order: true,
+         videoUrl: true
+       }
     })
 
     return NextResponse.json({ 

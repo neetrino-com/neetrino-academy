@@ -26,6 +26,7 @@ interface CoursesResponse {
     hasNext: boolean
     hasPrev: boolean
   }
+  error?: string
 }
 
 export default function CoursesPage() {

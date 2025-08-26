@@ -60,7 +60,7 @@ export function ModuleList({ modules, courseId, isEnrolled }: ModuleListProps) {
               )}
 
               {/* Список уроков */}
-              {module.lessons.length > 0 && (
+              {module.lessons && module.lessons.length > 0 && (
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
                     Уроки в модуле:

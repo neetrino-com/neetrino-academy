@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     )
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Неверные данные", details: error.errors },
-        { status: 400 }
-      )
-    }
+         } catch (error) {
+         if (error instanceof z.ZodError) {
+           return NextResponse.json(
+             { error: "Неверные данные", details: (error as any).errors },
+             { status: 400 }
+           )
+         }
 
     console.error("Registration error:", error)
     

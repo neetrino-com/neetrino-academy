@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -16,7 +16,7 @@ export async function POST(
       )
     }
 
-    const lessonId = params.id
+    const { id: lessonId } = await params
     const userId = session.user.id
 
     // Проверяем, существует ли урок
@@ -56,24 +56,22 @@ export async function POST(
     }
 
     // Создаем или обновляем прогресс урока
-    const progress = await prisma.lessonProgress.upsert({
-      where: {
-        userId_lessonId: {
-          userId,
-          lessonId
-        }
-      },
-      update: {
-        completed: true,
-        completedAt: new Date()
-      },
-      create: {
-        userId,
-        lessonId,
-        completed: true,
-        completedAt: new Date()
-      }
-    })
+         const progress = await prisma.lessonProgress.upsert({
+       where: {
+         userId_lessonId: {
+           userId,
+           lessonId
+         }
+       },
+       update: {
+         completed: true
+       },
+       create: {
+         userId,
+         lessonId,
+         completed: true
+       }
+     })
 
     return NextResponse.json({
       message: "Урок отмечен как завершенный",

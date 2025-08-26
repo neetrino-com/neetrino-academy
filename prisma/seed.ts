@@ -73,11 +73,11 @@ async function main() {
   ]
 
   for (const courseData of courses) {
-    const course = await prisma.course.upsert({
-      where: { slug: courseData.slug },
-      update: {},
-      create: courseData
-    })
+             const course = await prisma.course.upsert({
+           where: { slug: courseData.slug },
+           update: {},
+           create: courseData as any
+         })
 
     console.log(`✅ Курс создан: ${course.title}`)
 

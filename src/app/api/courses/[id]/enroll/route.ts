@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -16,7 +16,7 @@ export async function POST(
       )
     }
 
-    const courseId = params.id
+    const { id: courseId } = await params
     const userId = session.user.id
 
     // Проверяем, существует ли курс
