@@ -59,6 +59,15 @@ interface Assignment {
   }
 }
 
+interface Module {
+  id: string
+  title: string
+  course: {
+    id: string
+    title: string
+  }
+}
+
 type TabType = 'courses' | 'assignments' | 'analytics'
 
 export default function AdminDashboard() {
@@ -68,6 +77,8 @@ export default function AdminDashboard() {
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+
 
   useEffect(() => {
     fetchData()
@@ -90,12 +101,16 @@ export default function AdminDashboard() {
         const assignmentsData = await assignmentsResponse.json()
         setAssignments(assignmentsData)
       }
+
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
       setLoading(false)
     }
   }
+
+
 
   const getDirectionLabel = (direction: string) => {
     switch (direction) {
@@ -469,7 +484,7 @@ export default function AdminDashboard() {
                 <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-lg font-medium text-gray-900">Список заданий</h2>
                   <button
-                    onClick={() => router.push('/assignments')}
+                    onClick={() => router.push('/admin/assignments/create')}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-md text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
                     <Plus className="w-4 h-4" />
@@ -487,7 +502,7 @@ export default function AdminDashboard() {
                       Создайте первое задание для студентов
                     </p>
                     <button
-                      onClick={() => router.push('/assignments')}
+                      onClick={() => router.push('/admin/assignments/create')}
                       className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
                     >
                       Создать задание
@@ -615,6 +630,8 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
+
+
         </div>
       </div>
     </div>

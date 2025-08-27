@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Plus, Filter, Search } from 'lucide-react';
+import { Filter, Search } from 'lucide-react';
 import AssignmentCard from '@/components/assignments/AssignmentCard';
-import AssignmentForm from '@/components/assignments/AssignmentForm';
 
 interface Assignment {
   id: string;
@@ -50,7 +49,6 @@ export default function AssignmentsPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
   const [userRole, setUserRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN'>('STUDENT');
@@ -100,27 +98,6 @@ export default function AssignmentsPage() {
     }
   };
 
-  // Создание задания
-  const handleCreateAssignment = async (data: any) => {
-    try {
-      const response = await fetch('/api/assignments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Ошибка создания задания');
-      }
-
-      await fetchAssignments();
-      setShowCreateForm(false);
-    } catch (err) {
-      throw err;
-    }
-  };
-
   useEffect(() => {
     fetchAssignments();
     fetchModules();
@@ -158,22 +135,11 @@ export default function AssignmentsPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Заголовок */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Задания</h1>
-            <p className="text-gray-600 mt-2">
-              Все доступные задания по курсам
-            </p>
-          </div>
-          {(userRole === 'TEACHER' || userRole === 'ADMIN') && (
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Создать задание
-            </button>
-          )}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Задания</h1>
+          <p className="text-gray-600 mt-2">
+            Все доступные задания по курсам
+          </p>
         </div>
 
         {/* Фильтры и поиск */}
@@ -215,17 +181,6 @@ export default function AssignmentsPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
             <p className="text-red-600">{error}</p>
-          </div>
-        )}
-
-        {/* Форма создания */}
-        {showCreateForm && (
-          <div className="mb-6">
-            <AssignmentForm
-              modules={modules}
-              onSubmit={handleCreateAssignment}
-              onCancel={() => setShowCreateForm(false)}
-            />
           </div>
         )}
 
