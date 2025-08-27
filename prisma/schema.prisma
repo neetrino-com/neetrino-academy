@@ -28,6 +28,7 @@ model User {
   messages        Message[]
   achievements    Achievement[]
   lessonProgress  LessonProgress[]
+  quizAttempts    QuizAttempt[]
 }
 
 // Курсы
@@ -80,6 +81,73 @@ model Lesson {
   // Связи
   module      Module @relation(fields: [moduleId], references: [id])
   progress    LessonProgress[]
+  quiz        Quiz?
+}
+
+// Тесты
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  lessonId    String   @unique
+  timeLimit   Int?     // в минутах
+  passingScore Int     @default(70) // процент для прохождения
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  lesson      Lesson @relation(fields: [lessonId], references: [id])
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+}
+
+// Вопросы теста
+model QuizQuestion {
+  id          String   @id @default(cuid())
+  question    String
+  type        QuestionType
+  order       Int
+  points      Int      @default(1)
+  quizId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  quiz        Quiz @relation(fields: [quizId], references: [id])
+  options     QuizOption[]
+}
+
+// Варианты ответов
+model QuizOption {
+  id          String   @id @default(cuid())
+  text        String
+  isCorrect   Boolean  @default(false)
+  order       Int
+  questionId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Связи
+  question    QuizQuestion @relation(fields: [questionId], references: [id])
+}
+
+// Попытки прохождения теста
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Float?
+  maxScore    Int
+  passed      Boolean  @default(false)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  
+  // Связи
+  user        User @relation(fields: [userId], references: [id])
+  quiz        Quiz @relation(fields: [quizId], references: [id])
+  
+  @@unique([userId, quizId])
 }
 
 // Задания
@@ -205,4 +273,10 @@ enum AchievementType {
   PERFECT_SCORE
   STREAK_7_DAYS
   STREAK_30_DAYS
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  TRUE_FALSE
 }

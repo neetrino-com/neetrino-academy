@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import VideoPlayer from '@/components/ui/VideoPlayer'
 
 interface Lesson {
   id: string
@@ -34,6 +35,7 @@ export default function LessonStudyPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isCompleted, setIsCompleted] = useState(false)
+  const [videoProgress, setVideoProgress] = useState(0)
 
   const courseId = params.id as string
   const lessonId = params.lessonId as string
@@ -87,6 +89,21 @@ export default function LessonStudyPage() {
     } catch (error) {
       console.error('Ошибка при завершении урока:', error)
       alert('Ошибка при завершении урока')
+    }
+  }
+
+  const handleVideoProgress = (progress: number) => {
+    setVideoProgress(progress)
+    
+    // Автоматически завершаем урок, если видео просмотрено на 90% или больше
+    if (progress >= 90 && !isCompleted) {
+      handleCompleteLesson()
+    }
+  }
+
+  const handleVideoEnded = () => {
+    if (!isCompleted) {
+      handleCompleteLesson()
     }
   }
 
@@ -228,15 +245,13 @@ export default function LessonStudyPage() {
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   Видео урока
                 </h2>
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-gray-600">Видеоплеер будет добавлен</p>
-                    <p className="text-sm text-gray-500 mt-2">URL: {lesson.videoUrl}</p>
-                  </div>
-                </div>
+                <VideoPlayer
+                  videoUrl={lesson.videoUrl}
+                  title={lesson.title}
+                  onProgress={handleVideoProgress}
+                  onEnded={handleVideoEnded}
+                  className="w-full"
+                />
               </div>
             )}
 
@@ -283,6 +298,15 @@ export default function LessonStudyPage() {
                     {isCompleted ? 'Завершен' : 'В процессе'}
                   </span>
                 </div>
+
+                {lesson.videoUrl && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Прогресс видео:</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {Math.round(videoProgress)}%
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Длительность:</span>
