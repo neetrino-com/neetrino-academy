@@ -36,7 +36,8 @@ export default function CoursesPage() {
   const [pagination, setPagination] = useState<any>(null)
   const [filters, setFilters] = useState({
     direction: '',
-    level: ''
+    level: '',
+    search: ''
   })
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null)
 
@@ -53,6 +54,9 @@ export default function CoursesPage() {
       }
       if (filters.level) {
         params.append('level', filters.level)
+      }
+      if (filters.search) {
+        params.append('search', filters.search)
       }
 
       const response = await fetch(`/api/courses?${params}`)
@@ -140,6 +144,20 @@ export default function CoursesPage() {
         {/* Фильтры */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="flex flex-wrap gap-4">
+            {/* Поиск */}
+            <div className="flex-1 min-w-64">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Поиск по названию
+              </label>
+              <input
+                type="text"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                placeholder="Введите название курса..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            
             <div className="flex-1 min-w-48">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Направление

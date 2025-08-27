@@ -105,7 +105,9 @@ export default function AssignmentCard({
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
-                <span>{assignment.module.course.title} - {assignment.module.title}</span>
+                <span className="font-medium text-blue-600">{assignment.module.course.title}</span>
+                <span className="text-gray-400">→</span>
+                <span>{assignment.module.title}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
@@ -160,16 +162,25 @@ export default function AssignmentCard({
 
         {/* Действия */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <Link
-            href={`/assignments/${assignment.id}`}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            {userRole === 'STUDENT' ? 'Открыть задание' : 'Просмотреть'}
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href={`/assignments/${assignment.id}`}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              {userRole === 'STUDENT' ? 'Открыть задание' : 'Просмотреть'}
+            </Link>
+            
+            <Link
+              href={`/courses/${assignment.module.course.slug}`}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Открыть курс
+            </Link>
+          </div>
           
           {userRole === 'STUDENT' && !isSubmitted && !isOverdue && (
             <Link
-              href={`/assignments/${assignment.id}/submit`}
+              href={`/assignments/${assignment.id}`}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Отправить решение
@@ -178,7 +189,7 @@ export default function AssignmentCard({
 
           {userRole === 'TEACHER' && (
             <Link
-              href={`/assignments/${assignment.id}/submissions`}
+              href={`/assignments/${assignment.id}`}
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Просмотреть сдачи ({assignment._count.submissions})

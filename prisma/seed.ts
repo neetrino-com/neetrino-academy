@@ -177,6 +177,85 @@ async function main() {
         })
 
         console.log(`    📖 Урок создан: ${lesson.title}`)
+
+        // Создаем тест для каждого третьего урока
+        if (lessonData.order % 3 === 0) {
+          const quiz = await prisma.quiz.create({
+            data: {
+              title: `Тест по уроку: ${lessonData.title}`,
+              description: `Проверьте свои знания по материалу урока "${lessonData.title}"`,
+              lessonId: lesson.id,
+              timeLimit: 15, // 15 минут
+              passingScore: 70
+            }
+          })
+
+          console.log(`    🧪 Тест создан для урока: ${lessonData.title}`)
+
+          // Создаем вопросы для теста
+          const questions = [
+            {
+              question: 'Какой основной принцип изучается в этом уроке?',
+              type: 'SINGLE_CHOICE',
+              order: 1,
+              points: 1,
+              options: [
+                { text: 'Правильный ответ', isCorrect: true, order: 1 },
+                { text: 'Неправильный ответ 1', isCorrect: false, order: 2 },
+                { text: 'Неправильный ответ 2', isCorrect: false, order: 3 },
+                { text: 'Неправильный ответ 3', isCorrect: false, order: 4 }
+              ]
+            },
+            {
+              question: 'Какие инструменты используются в этом уроке?',
+              type: 'MULTIPLE_CHOICE',
+              order: 2,
+              points: 2,
+              options: [
+                { text: 'Правильный инструмент 1', isCorrect: true, order: 1 },
+                { text: 'Правильный инструмент 2', isCorrect: true, order: 2 },
+                { text: 'Неправильный инструмент', isCorrect: false, order: 3 },
+                { text: 'Еще один правильный', isCorrect: true, order: 4 }
+              ]
+            },
+            {
+              question: 'Верно ли утверждение о том, что изученный материал важен для дальнейшего обучения?',
+              type: 'TRUE_FALSE',
+              order: 3,
+              points: 1,
+              options: [
+                { text: 'Да', isCorrect: true, order: 1 },
+                { text: 'Нет', isCorrect: false, order: 2 }
+              ]
+            }
+          ]
+
+          for (const questionData of questions) {
+            const question = await prisma.quizQuestion.create({
+              data: {
+                question: questionData.question,
+                type: questionData.type,
+                order: questionData.order,
+                points: questionData.points,
+                quizId: quiz.id
+              }
+            })
+
+            // Создаем варианты ответов
+            for (const optionData of questionData.options) {
+              await prisma.quizOption.create({
+                data: {
+                  text: optionData.text,
+                  isCorrect: optionData.isCorrect,
+                  order: optionData.order,
+                  questionId: question.id
+                }
+              })
+            }
+          }
+
+          console.log(`    📝 Вопросы созданы для теста`)
+        }
       }
     }
   }

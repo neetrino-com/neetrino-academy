@@ -20,11 +20,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
+    // Получаем пользователя
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+    }
+
     const { searchParams } = new URL(request.url);
     const moduleId = searchParams.get('moduleId');
     const courseId = searchParams.get('courseId');
 
-    let whereClause: any = {};
+    const whereClause: Record<string, any> = {};
 
     // Фильтрация по модулю
     if (moduleId) {
@@ -35,6 +44,24 @@ export async function GET(request: NextRequest) {
     if (courseId) {
       whereClause.module = {
         courseId: courseId
+      };
+    }
+
+    // Если пользователь студент, показываем только задания для курсов, на которые он подписан
+    if (user.role === 'STUDENT') {
+      // Получаем курсы, на которые подписан пользователь
+      const enrollments = await prisma.enrollment.findMany({
+        where: { userId: user.id },
+        select: { courseId: true }
+      });
+
+      const enrolledCourseIds = enrollments.map(e => e.courseId);
+
+      whereClause.module = {
+        ...whereClause.module,
+        courseId: {
+          in: enrolledCourseIds
+        }
       };
     }
 
@@ -110,11 +137,11 @@ export async function POST(request: NextRequest) {
     const validatedData = createAssignmentSchema.parse(body);
 
     // Проверяем существование модуля
-    const module = await prisma.module.findUnique({
+    const moduleData = await prisma.module.findUnique({
       where: { id: validatedData.moduleId }
     });
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { error: 'Модуль не найден' },
         { status: 404 }

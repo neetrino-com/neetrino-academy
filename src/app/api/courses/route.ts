@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const direction = searchParams.get('direction')
     const level = searchParams.get('level')
+    const search = searchParams.get('search')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
@@ -21,6 +22,13 @@ export async function GET(request: NextRequest) {
 
     if (level) {
       where.level = level
+    }
+
+    if (search) {
+      where.title = {
+        contains: search,
+        mode: 'insensitive'
+      }
     }
 
     // Получаем курсы с пагинацией

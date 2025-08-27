@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import VideoPlayer from '@/components/ui/VideoPlayer'
+import Quiz from '@/components/ui/Quiz'
 
 interface Lesson {
   id: string
@@ -36,6 +37,9 @@ export default function LessonStudyPage() {
   const [error, setError] = useState('')
   const [isCompleted, setIsCompleted] = useState(false)
   const [videoProgress, setVideoProgress] = useState(0)
+  const [quiz, setQuiz] = useState<any>(null)
+  const [userAttempt, setUserAttempt] = useState<any>(null)
+  const [showQuiz, setShowQuiz] = useState(false)
 
   const courseId = params.id as string
   const lessonId = params.lessonId as string
@@ -43,6 +47,7 @@ export default function LessonStudyPage() {
   useEffect(() => {
     fetchLesson()
     checkCompletionStatus()
+    fetchQuiz()
   }, [lessonId])
 
   const fetchLesson = async () => {
@@ -104,6 +109,28 @@ export default function LessonStudyPage() {
   const handleVideoEnded = () => {
     if (!isCompleted) {
       handleCompleteLesson()
+    }
+  }
+
+  const fetchQuiz = async () => {
+    try {
+      const response = await fetch(`/api/lessons/${lessonId}/quiz`)
+      if (response.ok) {
+        const data = await response.json()
+        setQuiz(data.quiz)
+        setUserAttempt(data.userAttempt)
+      }
+    } catch (error) {
+      console.error('Ошибка при получении теста:', error)
+    }
+  }
+
+  const handleQuizComplete = async (result: any) => {
+    setUserAttempt(result.attempt)
+    if (result.passed) {
+      alert(`Поздравляем! Вы прошли тест с результатом ${result.score.toFixed(1)}%`)
+    } else {
+      alert(`Тест не пройден. Ваш результат: ${result.score.toFixed(1)}%. Необходимо набрать ${result.passingScore}%`)
     }
   }
 
@@ -256,7 +283,7 @@ export default function LessonStudyPage() {
             )}
 
             {/* Контент урока */}
-            <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Содержание урока
               </h2>
@@ -282,6 +309,93 @@ export default function LessonStudyPage() {
                 )}
               </div>
             </div>
+
+            {/* Тест урока */}
+            {quiz && (
+              <div className="bg-white rounded-lg shadow-sm p-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Тест по уроку
+                </h2>
+                
+                {userAttempt ? (
+                  <div className="text-center py-8">
+                    <div className={`mb-4 ${userAttempt.passed ? 'text-green-600' : 'text-red-600'}`}>
+                      <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {userAttempt.passed ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        )}
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {userAttempt.passed ? 'Тест пройден!' : 'Тест не пройден'}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Ваш результат: {userAttempt.score?.toFixed(1)}% из 100%
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {userAttempt.passed 
+                        ? 'Отличная работа! Вы успешно усвоили материал урока.'
+                        : 'Попробуйте еще раз изучить материал и пройти тест заново.'
+                      }
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-6">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        {quiz.title}
+                      </h3>
+                      {quiz.description && (
+                        <p className="text-gray-600 mb-4">{quiz.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span>Вопросов: {quiz.questions?.length || 0}</span>
+                        <span>Время: {quiz.timeLimit || 'Не ограничено'} мин</span>
+                        <span>Проходной балл: {quiz.passingScore}%</span>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => setShowQuiz(true)}
+                      className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Начать тест
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Модальное окно с тестом */}
+            {showQuiz && quiz && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {quiz.title}
+                      </h2>
+                      <button
+                        onClick={() => setShowQuiz(false)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <Quiz
+                      quiz={quiz}
+                      onComplete={handleQuizComplete}
+                      onClose={() => setShowQuiz(false)}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Боковая панель */}

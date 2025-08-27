@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { z } from 'zod';
-
-// Схема валидации для обновления задания
-const updateAssignmentSchema = z.object({
-  title: z.string().min(1, 'Название обязательно').optional(),
-  description: z.string().optional(),
-  dueDate: z.string().datetime().optional(),
-});
 
 // GET /api/assignments/[id] - получение конкретного задания
 export async function GET(
@@ -76,7 +68,7 @@ export async function GET(
   }
 }
 
-// PUT /api/assignments/[id] - обновление задания
+// PUT /api/assignments/[id] - редактирование задания
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -100,6 +92,9 @@ export async function PUT(
       );
     }
 
+    const body = await request.json();
+    const { title, description, dueDate, moduleId } = body;
+
     // Проверяем существование задания
     const existingAssignment = await prisma.assignment.findUnique({
       where: { id: params.id }
@@ -120,16 +115,14 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
-    const validatedData = updateAssignmentSchema.parse(body);
-
     // Обновляем задание
-    const assignment = await prisma.assignment.update({
+    const updatedAssignment = await prisma.assignment.update({
       where: { id: params.id },
       data: {
-        title: validatedData.title,
-        description: validatedData.description,
-        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+        title: title || existingAssignment.title,
+        description: description !== undefined ? description : existingAssignment.description,
+        dueDate: dueDate ? new Date(dueDate) : existingAssignment.dueDate,
+        moduleId: moduleId || existingAssignment.moduleId,
       },
       include: {
         module: {
@@ -147,15 +140,8 @@ export async function PUT(
       }
     });
 
-    return NextResponse.json(assignment);
+    return NextResponse.json(updatedAssignment);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Ошибка валидации', details: error.errors },
-        { status: 400 }
-      );
-    }
-
     console.error('Ошибка при обновлении задания:', error);
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
@@ -208,7 +194,7 @@ export async function DELETE(
       );
     }
 
-    // Удаляем задание (каскадно удалятся и сдачи)
+    // Удаляем задание (каскадно удалятся и все сдачи)
     await prisma.assignment.delete({
       where: { id: params.id }
     });
