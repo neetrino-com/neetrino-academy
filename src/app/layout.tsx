@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="ru">
       <body className={inter.className}>
         <SessionProvider>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-blue-50">
             <Header />
             <main className="flex-1">
               {children}

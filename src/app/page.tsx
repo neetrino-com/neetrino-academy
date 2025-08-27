@@ -33,13 +33,13 @@ export default function HomePage() {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 bg-gray-50">
+              <div className="py-16 bg-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-blue-900 mb-4">
               Направления обучения
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-blue-600 max-w-2xl mx-auto">
               Выберите направление, которое подходит именно вам
             </p>
           </div>
@@ -50,14 +50,14 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-blue-600 font-bold text-xl">W</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-blue-900 mb-2">
                 WordPress Разработка
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-blue-600 mb-4">
                 Изучите создание сайтов на WordPress, разработку тем и плагинов, 
                 кастомизацию и оптимизацию.
               </p>
-              <ul className="text-sm text-gray-600 space-y-1 mb-6">
+              <ul className="text-sm text-blue-600 space-y-1 mb-6">
                 <li>• Создание тем и плагинов</li>
                 <li>• Кастомизация WordPress</li>
                 <li>• SEO оптимизация</li>
@@ -76,19 +76,19 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-green-600 font-bold text-xl">V</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Vibe Coding
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Современная веб-разработка с использованием AI-инструментов. 
-                Быстрое создание качественных веб-приложений.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1 mb-6">
-                <li>• AI-ассистированная разработка</li>
-                <li>• Современные фреймворки</li>
-                <li>• Быстрая разработка MVP</li>
-                <li>• Интеграция AI-сервисов</li>
-              </ul>
+                             <h3 className="text-xl font-semibold text-green-900 mb-2">
+                 Vibe Coding
+               </h3>
+               <p className="text-green-600 mb-4">
+                 Современная веб-разработка с использованием AI-инструментов. 
+                 Быстрое создание качественных веб-приложений.
+               </p>
+               <ul className="text-sm text-green-600 space-y-1 mb-6">
+                 <li>• AI-ассистированная разработка</li>
+                 <li>• Современные фреймворки</li>
+                 <li>• Быстрая разработка MVP</li>
+                 <li>• Интеграция AI-сервисов</li>
+               </ul>
               <Link 
                 href="/courses/vibe-coding" 
                 className="text-green-600 font-medium hover:text-green-700"
@@ -102,19 +102,19 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-purple-600 font-bold text-xl">S</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Shopify Разработка
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Создание интернет-магазинов на Shopify. Разработка тем, 
-                приложений и интеграций для e-commerce.
-              </p>
-              <ul className="text-sm text-gray-600 space-y-1 mb-6">
-                <li>• Создание тем магазинов</li>
-                <li>• Разработка приложений</li>
-                <li>• E-commerce интеграции</li>
-                <li>• Оптимизация продаж</li>
-              </ul>
+                             <h3 className="text-xl font-semibold text-purple-900 mb-2">
+                 Shopify Разработка
+               </h3>
+               <p className="text-purple-600 mb-4">
+                 Создание интернет-магазинов на Shopify. Разработка тем, 
+                 приложений и интеграций для e-commerce.
+               </p>
+               <ul className="text-sm text-purple-600 space-y-1 mb-6">
+                 <li>• Создание тем магазинов</li>
+                 <li>• Разработка приложений</li>
+                 <li>• E-commerce интеграции</li>
+                 <li>• Оптимизация продаж</li>
+               </ul>
               <Link 
                 href="/courses/shopify" 
                 className="text-purple-600 font-medium hover:text-purple-700"

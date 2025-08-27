@@ -34,11 +34,16 @@ model Course {
   level       Level
   price       Decimal?
   isActive    Boolean      @default(true)
+  isDraft     Boolean      @default(true)
+  thumbnail   String?
+  duration    Int?         // в неделях
+  createdBy   String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   enrollments Enrollment[]
   messages    Message[]
   modules     Module[]
+  templates   CourseTemplate[]
 }
 
 model Module {
@@ -233,4 +238,16 @@ enum QuestionType {
   MULTIPLE_CHOICE
   SINGLE_CHOICE
   TRUE_FALSE
+}
+
+// Модель для шаблонов курсов
+model CourseTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  structure   Json     // JSON структура модулей и уроков
+  category    String
+  courseId    String?
+  createdAt   DateTime @default(now())
+  course      Course?  @relation(fields: [courseId], references: [id])
 }

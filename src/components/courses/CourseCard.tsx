@@ -32,26 +32,26 @@ export function CourseCard({
   const getDirectionColor = (direction: string) => {
     switch (direction) {
       case 'WORDPRESS':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-indigo-100 text-indigo-700'
       case 'VIBE_CODING':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-violet-100 text-violet-700'
       case 'SHOPIFY':
-        return 'bg-green-100 text-green-800'
+        return 'bg-emerald-100 text-emerald-700'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-slate-100 text-slate-700'
     }
   }
 
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'BEGINNER':
-        return 'bg-green-100 text-green-800'
+        return 'bg-emerald-100 text-emerald-700'
       case 'INTERMEDIATE':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-amber-100 text-amber-700'
       case 'ADVANCED':
-        return 'bg-red-100 text-red-800'
+        return 'bg-rose-100 text-rose-700'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-slate-100 text-slate-700'
     }
   }
 
@@ -89,18 +89,18 @@ export function CourseCard({
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+      className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-indigo-300 hover:scale-105"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+            <h3 className="text-xl font-bold text-slate-800 mb-2 line-clamp-2">
               {course.title}
             </h3>
             {course.description && (
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+              <p className="text-slate-600 text-sm mb-4 line-clamp-3">
                 {course.description}
               </p>
             )}
@@ -108,23 +108,23 @@ export function CourseCard({
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDirectionColor(course.direction)}`}>
+          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getDirectionColor(course.direction)}`}>
             {getDirectionLabel(course.direction)}
           </span>
-          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(course.level)}`}>
+          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getLevelColor(course.level)}`}>
             {getLevelLabel(course.level)}
           </span>
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <span className="flex items-center">
+          <div className="flex items-center space-x-4 text-sm">
+            <span className="flex items-center text-indigo-600 font-medium">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               {course._count.modules} модулей
             </span>
-            <span className="flex items-center">
+            <span className="flex items-center text-emerald-600 font-medium">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
@@ -132,7 +132,7 @@ export function CourseCard({
             </span>
           </div>
           {course.price && (
-            <div className="text-lg font-semibold text-blue-600">
+            <div className="text-lg font-bold text-indigo-600">
               {course.price === 0 ? 'Бесплатно' : `${course.price} ₽`}
             </div>
           )}
@@ -141,7 +141,7 @@ export function CourseCard({
         <div className="flex space-x-3">
           <Link
             href={`/courses/${course.id}`}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors text-center"
+            className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 text-center hover:scale-105 shadow-lg"
           >
             Подробнее
           </Link>
@@ -150,7 +150,7 @@ export function CourseCard({
             <button
               onClick={handleEnroll}
               disabled={isEnrolling}
-              className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 shadow-lg"
             >
               {isEnrolling ? 'Запись...' : 'Записаться'}
             </button>

@@ -33,6 +33,20 @@ async function main() {
 
   console.log(`✅ Преподаватель создан: ${teacher.email}`)
 
+  // Создаем тестового администратора
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      name: 'Администратор',
+      password: '$2b$12$QhIQOiMRnMAy2T9UEzcaq.QrAuBxVg82.ihMbxgaO0InyJxmxbn2m', // password: test123
+      role: 'ADMIN'
+    }
+  })
+
+  console.log(`✅ Администратор создан: ${admin.email}`)
+
   // Создаем тестовые курсы
   const courses = [
     {

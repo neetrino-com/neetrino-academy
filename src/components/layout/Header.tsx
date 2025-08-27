@@ -17,7 +17,7 @@ export function Header() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">N</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Neetrino Academy</span>
+              <span className="text-xl font-bold text-blue-900">Neetrino Academy</span>
             </Link>
           </div>
 
@@ -25,19 +25,19 @@ export function Header() {
           <nav className="hidden md:flex space-x-8">
             <Link 
               href="/courses" 
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
             >
               Курсы
             </Link>
             <Link 
               href="/about" 
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
             >
               О нас
             </Link>
             <Link 
               href="/contact" 
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
             >
               Контакты
             </Link>
@@ -46,24 +46,24 @@ export function Header() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {status === 'loading' ? (
-              <div className="text-gray-500">Загрузка...</div>
+                             <div className="text-blue-500 font-medium">Загрузка...</div>
             ) : session?.user ? (
               <div className="flex items-center space-x-4">
                                 <Link
                   href="/dashboard"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Дашборд
                 </Link>
                 <Link
                   href="/courses"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Курсы
                 </Link>
                 <Link
                   href="/assignments"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Задания
                 </Link>
@@ -76,24 +76,24 @@ export function Header() {
                   </Link>
                 )}
                 <div className="relative">
-                  <button 
-                    onClick={() => signOut()}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-                  >
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium">
-                        {session.user.name?.charAt(0) || session.user.email?.charAt(0)}
-                      </span>
-                    </div>
-                    <span className="text-sm">{session.user.name || session.user.email}</span>
-                  </button>
+                                     <button 
+                     onClick={() => signOut()}
+                     className="flex items-center space-x-2 text-blue-600 hover:text-blue-900"
+                   >
+                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                       <span className="text-sm font-medium text-blue-700">
+                         {session.user.name?.charAt(0) || session.user.email?.charAt(0)}
+                       </span>
+                     </div>
+                     <span className="text-sm font-medium">{session.user.name || session.user.email}</span>
+                   </button>
                 </div>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/login" 
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Войти
                 </Link>

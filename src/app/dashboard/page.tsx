@@ -60,15 +60,15 @@ export default async function DashboardPage() {
   const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Приветствие */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-blue-900 mb-2">
               Добро пожаловать, {session.user?.name}! 👋
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-blue-600">
               Продолжайте обучение и достигайте новых высот
             </p>
           </div>
@@ -82,10 +82,10 @@ export default async function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Активных курсов</p>
-                  <p className="text-2xl font-semibold text-gray-900">{totalCourses}</p>
-                </div>
+                                 <div className="ml-4">
+                   <p className="text-sm font-medium text-blue-600">Активных курсов</p>
+                   <p className="text-2xl font-semibold text-blue-900">{totalCourses}</p>
+                 </div>
               </div>
             </div>
 
@@ -96,10 +96,10 @@ export default async function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Завершено уроков</p>
-                  <p className="text-2xl font-semibold text-gray-900">{completedLessons}</p>
-                </div>
+                                 <div className="ml-4">
+                   <p className="text-sm font-medium text-green-600">Завершено уроков</p>
+                   <p className="text-2xl font-semibold text-green-900">{completedLessons}</p>
+                 </div>
               </div>
             </div>
 
@@ -110,10 +110,10 @@ export default async function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Общий прогресс</p>
-                  <p className="text-2xl font-semibold text-gray-900">{overallProgress}%</p>
-                </div>
+                                 <div className="ml-4">
+                   <p className="text-sm font-medium text-yellow-600">Общий прогресс</p>
+                   <p className="text-2xl font-semibold text-yellow-900">{overallProgress}%</p>
+                 </div>
               </div>
             </div>
 
@@ -124,10 +124,10 @@ export default async function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                   </svg>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Достижений</p>
-                  <p className="text-2xl font-semibold text-gray-900">0</p>
-                </div>
+                                 <div className="ml-4">
+                   <p className="text-sm font-medium text-purple-600">Достижений</p>
+                   <p className="text-2xl font-semibold text-purple-900">0</p>
+                 </div>
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@ export default async function DashboardPage() {
           {/* Мои курсы */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Мои курсы</h2>
+              <h2 className="text-xl font-semibold text-blue-900">Мои курсы</h2>
               <Link
                 href="/courses"
                 className="text-blue-600 hover:text-blue-700 font-medium"
@@ -161,46 +161,46 @@ export default async function DashboardPage() {
                   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
                   return (
-                    <div key={enrollment.id} className="border border-gray-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">{course.title}</h3>
-                      <div className="mb-3">
-                        <div className="flex justify-between text-sm text-gray-600 mb-1">
-                          <span>Прогресс</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>{completedLessons} из {totalLessons} уроков</span>
-                        <Link
-                          href={`/courses/${course.id}`}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          Продолжить →
-                        </Link>
-                      </div>
-                    </div>
+                                         <div key={enrollment.id} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                       <h3 className="font-semibold text-blue-900 mb-2 text-lg">{course.title}</h3>
+                       <div className="mb-3">
+                         <div className="flex justify-between text-sm text-blue-600 mb-1 font-medium">
+                           <span>Прогресс</span>
+                           <span>{progress}%</span>
+                         </div>
+                         <div className="w-full bg-blue-200 rounded-full h-2">
+                           <div 
+                             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                             style={{ width: `${progress}%` }}
+                           ></div>
+                         </div>
+                       </div>
+                       <div className="flex justify-between text-sm text-blue-500 font-medium">
+                         <span>{completedLessons} из {totalLessons} уроков</span>
+                         <Link
+                           href={`/courses/${course.id}`}
+                           className="text-blue-700 hover:text-blue-900 font-semibold"
+                         >
+                           Продолжить →
+                         </Link>
+                       </div>
+                     </div>
                   )
                 })}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <div className="text-gray-400 mb-4">
-                  <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  У вас пока нет курсов
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Запишитесь на свой первый курс и начните обучение
-                </p>
+                             <div className="text-center py-8">
+                 <div className="text-blue-400 mb-4">
+                   <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                   </svg>
+                 </div>
+                 <h3 className="text-lg font-medium text-blue-900 mb-2">
+                   У вас пока нет курсов
+                 </h3>
+                 <p className="text-blue-600 mb-4">
+                   Запишитесь на свой первый курс и начните обучение
+                 </p>
                 <Link
                   href="/courses"
                   className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
