@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Upload, FileText, Send, AlertCircle } from 'lucide-react';
+import { Send, AlertCircle } from 'lucide-react';
+import FileUpload from '@/components/ui/FileUpload';
 
 // Схема валидации
 const submissionSchema = z.object({
@@ -81,13 +82,12 @@ export default function SimpleSubmissionForm({
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileUpload = (fileUrl: string) => {
+    setFileUrl(fileUrl);
+  };
 
-    // Здесь будет логика загрузки файла
-    // Пока что просто симулируем загрузку
-    setFileUrl('https://example.com/uploaded-file.pdf');
+  const handleFileError = (error: string) => {
+    setError(error);
   };
 
   return (
@@ -114,33 +114,12 @@ export default function SimpleSubmissionForm({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Прикрепить файл
         </label>
-        <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
-          <input
-            type="file"
-            onChange={handleFileUpload}
-            className="hidden"
-            id="file-upload"
-            accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png"
-          />
-          <label
-            htmlFor="file-upload"
-            className="cursor-pointer flex flex-col items-center"
-          >
-            <Upload className="w-8 h-8 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-600">
-              Нажмите для выбора файла или перетащите сюда
-            </span>
-            <span className="text-xs text-gray-500 mt-1">
-              PDF, DOC, ZIP, изображения (до 10MB)
-            </span>
-          </label>
-        </div>
-        {fileUrl && (
-          <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
-            <FileText className="w-4 h-4" />
-            <span>Файл загружен: {fileUrl.split('/').pop()}</span>
-          </div>
-        )}
+        <FileUpload
+          onFileUpload={handleFileUpload}
+          onError={handleFileError}
+          acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png"
+          maxSize={10}
+        />
       </div>
 
       {/* Ссылка на файл */}
