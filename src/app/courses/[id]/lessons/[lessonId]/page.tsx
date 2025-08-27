@@ -40,6 +40,7 @@ export default function LessonStudyPage() {
   const [quiz, setQuiz] = useState<any>(null)
   const [userAttempt, setUserAttempt] = useState<any>(null)
   const [showQuiz, setShowQuiz] = useState(false)
+  const [answers, setAnswers] = useState<Record<string, string[]>>({})
 
   const courseId = params.id as string
   const lessonId = params.lessonId as string
@@ -125,12 +126,44 @@ export default function LessonStudyPage() {
     }
   }
 
-  const handleQuizComplete = async (result: any) => {
-    setUserAttempt(result.attempt)
-    if (result.passed) {
-      alert(`Поздравляем! Вы прошли тест с результатом ${result.score.toFixed(1)}%`)
-    } else {
-      alert(`Тест не пройден. Ваш результат: ${result.score.toFixed(1)}%. Необходимо набрать ${result.passingScore}%`)
+  const handleQuizComplete = async (score: number, maxScore: number, passed: boolean) => {
+    const percentage = (score / maxScore) * 100
+    
+    try {
+      // Отправляем результаты на сервер
+      const response = await fetch(`/api/lessons/${lessonId}/quiz`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          answers: Object.entries(answers).map(([questionId, selectedOptions]) => ({
+            questionId,
+            selectedOptions
+          }))
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setUserAttempt(result.attempt);
+        
+        if (passed) {
+          alert(`Поздравляем! Вы прошли тест с результатом ${percentage.toFixed(1)}%`)
+        } else {
+          alert(`Тест не пройден. Ваш результат: ${percentage.toFixed(1)}%. Необходимо набрать минимум 70%`)
+        }
+      } else {
+        const error = await response.json();
+        if (error.error === 'Вы уже проходили этот тест') {
+          alert('Вы уже проходили этот тест ранее!')
+        } else {
+          alert('Ошибка при сохранении результатов теста')
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке результатов теста:', error);
+      alert('Ошибка при сохранении результатов теста')
     }
   }
 
@@ -310,63 +343,7 @@ export default function LessonStudyPage() {
               </div>
             </div>
 
-            {/* Тест урока */}
-            {quiz && (
-              <div className="bg-white rounded-lg shadow-sm p-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Тест по уроку
-                </h2>
-                
-                {userAttempt ? (
-                  <div className="text-center py-8">
-                    <div className={`mb-4 ${userAttempt.passed ? 'text-green-600' : 'text-red-600'}`}>
-                      <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {userAttempt.passed ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        )}
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {userAttempt.passed ? 'Тест пройден!' : 'Тест не пройден'}
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Ваш результат: {userAttempt.score?.toFixed(1)}% из 100%
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {userAttempt.passed 
-                        ? 'Отличная работа! Вы успешно усвоили материал урока.'
-                        : 'Попробуйте еще раз изучить материал и пройти тест заново.'
-                      }
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        {quiz.title}
-                      </h3>
-                      {quiz.description && (
-                        <p className="text-gray-600 mb-4">{quiz.description}</p>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>Вопросов: {quiz.questions?.length || 0}</span>
-                        <span>Время: {quiz.timeLimit || 'Не ограничено'} мин</span>
-                        <span>Проходной балл: {quiz.passingScore}%</span>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => setShowQuiz(true)}
-                      className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Начать тест
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+
 
             {/* Модальное окно с тестом */}
             {showQuiz && quiz && (
@@ -390,6 +367,7 @@ export default function LessonStudyPage() {
                     <Quiz
                       quiz={quiz}
                       onComplete={handleQuizComplete}
+                      onAnswersChange={setAnswers}
                       onClose={() => setShowQuiz(false)}
                     />
                   </div>
@@ -450,6 +428,61 @@ export default function LessonStudyPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Тест урока */}
+                {quiz && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">
+                      Тест по уроку
+                    </h4>
+                    
+                    {userAttempt ? (
+                      <div className="text-center py-4">
+                        <div className={`mb-3 ${userAttempt.passed ? 'text-green-600' : 'text-red-600'}`}>
+                          <svg className="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {userAttempt.passed ? (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            ) : (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            )}
+                          </svg>
+                        </div>
+                        <h5 className="text-sm font-medium text-gray-900 mb-1">
+                          {userAttempt.passed ? 'Тест пройден!' : 'Тест не пройден'}
+                        </h5>
+                        <p className="text-xs text-gray-600 mb-2">
+                          Результат: {userAttempt.score?.toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {userAttempt.passed 
+                            ? 'Отличная работа!'
+                            : 'Попробуйте еще раз.'
+                          }
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="mb-3">
+                          <h5 className="text-sm font-medium text-gray-900 mb-1">
+                            {quiz.title}
+                          </h5>
+                          <div className="text-xs text-gray-500 space-y-1">
+                            <div>Вопросов: {quiz.questions?.length || 0}</div>
+                            <div>Время: {quiz.timeLimit || 'Не ограничено'} мин</div>
+                            <div>Проходной балл: {quiz.passingScore}%</div>
+                          </div>
+                        </div>
+                        
+                        <button
+                          onClick={() => setShowQuiz(true)}
+                          className="w-full bg-blue-600 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          Начать тест
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="border-t pt-4">
                   <h4 className="text-sm font-medium text-gray-900 mb-3">

@@ -178,8 +178,8 @@ async function main() {
 
         console.log(`    📖 Урок создан: ${lesson.title}`)
 
-        // Создаем тест для каждого третьего урока
-        if (lessonData.order % 3 === 0) {
+        // Создаем тест для каждого урока
+        {
           const quiz = await prisma.quiz.create({
             data: {
               title: `Тест по уроку: ${lessonData.title}`,

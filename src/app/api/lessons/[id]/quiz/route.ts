@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 // GET /api/lessons/[id]/quiz - получение теста урока
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,8 +14,10 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const quiz = await prisma.quiz.findUnique({
-      where: { lessonId: params.id },
+      where: { lessonId: id },
       include: {
         questions: {
           include: {
@@ -65,7 +67,7 @@ export async function GET(
 // POST /api/lessons/[id]/quiz - отправка ответов на тест
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -74,12 +76,14 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
     const { answers } = body; // answers: { questionId: string, selectedOptions: string[] }[]
 
     // Получаем тест с вопросами и правильными ответами
     const quiz = await prisma.quiz.findUnique({
-      where: { lessonId: params.id },
+      where: { lessonId: id },
       include: {
         questions: {
           include: {

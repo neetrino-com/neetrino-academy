@@ -28,10 +28,12 @@ interface Quiz {
 interface QuizProps {
   quiz: Quiz
   onComplete: (score: number, maxScore: number, passed: boolean) => void
+  onAnswersChange?: (answers: Record<string, string[]>) => void
+  onClose?: () => void
   className?: string
 }
 
-export default function Quiz({ quiz, onComplete, className = '' }: QuizProps) {
+export default function Quiz({ quiz, onComplete, onAnswersChange, onClose, className = '' }: QuizProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [timeLeft, setTimeLeft] = useState(quiz.timeLimit ? quiz.timeLimit * 60 : null)
@@ -67,18 +69,27 @@ export default function Quiz({ quiz, onComplete, className = '' }: QuizProps) {
     setAnswers((prev) => {
       const currentAnswers = prev[questionId] || []
       
+      let newAnswers;
       if (isMultiple) {
         // Для множественного выбора
-        const newAnswers = currentAnswers.includes(optionId)
+        newAnswers = currentAnswers.includes(optionId)
           ? currentAnswers.filter(id => id !== optionId)
           : [...currentAnswers, optionId]
-        return { ...prev, [questionId]: newAnswers }
       } else {
         // Для одиночного выбора
-        return { ...prev, [questionId]: [optionId] }
+        newAnswers = [optionId]
       }
+      
+      return { ...prev, [questionId]: newAnswers }
     })
   }
+
+  // Уведомляем родительский компонент об изменении ответов через useEffect
+  useEffect(() => {
+    if (onAnswersChange) {
+      onAnswersChange(answers)
+    }
+  }, [answers, onAnswersChange])
 
   const handleNext = () => {
     if (currentQuestionIndex < quiz.questions.length - 1) {
@@ -184,6 +195,15 @@ export default function Quiz({ quiz, onComplete, className = '' }: QuizProps) {
             <p className="text-sm text-gray-500 mb-4">
               Для прохождения теста необходимо набрать минимум {quiz.passingScore}%
             </p>
+          )}
+          
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Закрыть
+            </button>
           )}
         </div>
       </div>
