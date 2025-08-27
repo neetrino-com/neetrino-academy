@@ -24,3 +24,43 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Глобальные стили для улучшения видимости текста в формах */
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important; /* Более темный серый для placeholder */
+  opacity: 1 !important;
+}
+
+input,
+textarea,
+select {
+  color: #1f2937 !important; /* Темный цвет для введенного текста */
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  color: #111827 !important; /* Еще более темный при фокусе */
+}
+
+/* Стили для выпадающих списков */
+select option {
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
+}
+
+/* Стили для disabled состояний */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  color: #6b7280 !important;
+  background-color: #f9fafb !important;
+}
+
+/* Стили для readonly состояний */
+input[readonly],
+textarea[readonly] {
+  color: #374151 !important;
+  background-color: #f9fafb !important;
+}

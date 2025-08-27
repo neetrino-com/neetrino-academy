@@ -68,7 +68,7 @@ interface Module {
   }
 }
 
-type TabType = 'courses' | 'assignments' | 'analytics'
+type TabType = 'courses' | 'assignments' | 'tests' | 'analytics'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -228,18 +228,42 @@ export default function AdminDashboard() {
               </button>
               
               <button
-                onClick={() => setActiveTab('analytics')}
+                onClick={() => setActiveTab('tests')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'analytics'
+                  activeTab === 'tests'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  Аналитика
+                  <Settings className="w-4 h-4" />
+                  Тесты
                 </div>
               </button>
+              
+                             <button
+                 onClick={() => setActiveTab('analytics')}
+                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                   activeTab === 'analytics'
+                     ? 'border-blue-500 text-blue-600'
+                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                 }`}
+               >
+                 <div className="flex items-center gap-2">
+                   <BarChart3 className="w-4 h-4" />
+                   Аналитика
+                 </div>
+               </button>
+               
+               <button
+                 onClick={() => router.push('/admin/test-course')}
+                 className="py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+               >
+                 <div className="flex items-center gap-2">
+                   <Settings className="w-4 h-4" />
+                   Тест курса
+                 </div>
+               </button>
             </nav>
           </div>
 
@@ -582,6 +606,46 @@ export default function AdminDashboard() {
                     </table>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'tests' && (
+            <div>
+              {/* Заголовок и кнопка создания */}
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Управление тестами</h2>
+                  <p className="text-gray-600 mt-1">
+                    Создавайте и управляйте тестами для уроков
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => router.push('/admin/tests/create')}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-md text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  <Plus className="w-4 h-4" />
+                  Создать тест
+                </button>
+              </div>
+              
+              <div className="bg-white shadow rounded-lg p-6">
+                <div className="text-center py-12">
+                  <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Система управления тестами
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Здесь вы сможете создавать тесты для уроков, добавлять вопросы и управлять результатами
+                  </p>
+                  <button
+                    onClick={() => router.push('/admin/tests/create')}
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Создать первый тест
+                  </button>
+                </div>
               </div>
             </div>
           )}

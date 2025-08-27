@@ -93,7 +93,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Создание курса - полученные данные:', body);
+    
     const validatedData = createCourseSchema.parse(body);
+    console.log('Создание курса - валидированные данные:', validatedData);
 
     // Генерируем slug из названия курса
     const slug = validatedData.title

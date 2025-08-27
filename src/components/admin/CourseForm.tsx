@@ -7,9 +7,10 @@ interface CourseFormProps {
   mode: 'create' | 'edit'
   initialData?: any
   courseId?: string
+  onCourseSubmit?: (data: any) => void
 }
 
-export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
+export function CourseForm({ mode, initialData, courseId, onCourseSubmit }: CourseFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -62,10 +63,28 @@ export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка сохранения курса')
+        // Обрабатываем различные типы ошибок
+        if (data.error) {
+          if (data.error.includes('уже существует')) {
+            throw new Error('Курс с таким названием уже существует. Пожалуйста, выберите другое название.')
+          } else if (data.error.includes('валидации')) {
+            const details = data.details?.map((err: any) => err.message).join(', ')
+            throw new Error(`Ошибка валидации: ${details || data.error}`)
+          } else {
+            throw new Error(data.error)
+          }
+        } else {
+          throw new Error(`Ошибка сохранения курса (${response.status})`)
+        }
       }
 
       setSuccess(mode === 'create' ? 'Курс успешно создан!' : 'Курс успешно обновлен!')
+      
+      // Если есть callback, вызываем его
+      if (onCourseSubmit) {
+        onCourseSubmit(formData)
+        return
+      }
       
       // Перенаправляем через 2 секунды
       setTimeout(() => {
@@ -137,7 +156,7 @@ export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
             onChange={handleChange}
             required
             minLength={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-600"
             placeholder="Введите название курса"
           />
         </div>
@@ -155,7 +174,7 @@ export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
             required
             minLength={10}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-600"
             placeholder="Опишите содержание и цели курса"
           />
         </div>
@@ -171,7 +190,7 @@ export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
               name="direction"
               value={formData.direction}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             >
               <option value="WORDPRESS">WordPress</option>
               <option value="VIBE_CODING">Vibe Coding</option>
@@ -188,7 +207,7 @@ export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
               name="level"
               value={formData.level}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             >
               <option value="BEGINNER">Начинающий</option>
               <option value="INTERMEDIATE">Средний</option>
@@ -211,7 +230,7 @@ export function CourseForm({ mode, initialData, courseId }: CourseFormProps) {
               onChange={handleChange}
               min="0"
               step="100"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-600"
               placeholder="0"
             />
           </div>
