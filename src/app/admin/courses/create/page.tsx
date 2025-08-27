@@ -203,7 +203,7 @@ export default function CreateCoursePage() {
             if (!lessonData.title) continue
 
             await fetch(`/api/admin/modules/${module.id}/lessons`, {
-              method: 'POST',
+        method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 title: lessonData.title,
@@ -245,33 +245,33 @@ export default function CreateCoursePage() {
     } finally {
       setLoading(false)
     }
-  }
+    }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         
         {/* Заголовок и навигация */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <button
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-4">
+              <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
               <ArrowLeft className="w-5 h-5" />
               Назад
-            </button>
-          </div>
-          
+              </button>
+            </div>
+            
           <div className="flex items-center justify-between">
-            <div>
+              <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Создание нового курса
-              </h1>
+                  Создание нового курса
+                </h1>
               <p className="mt-2 text-gray-600">
                 Создайте полноценный курс с модулями, уроками, заданиями и тестами
-              </p>
-            </div>
+                </p>
+              </div>
             
             {/* Прогресс */}
             <div className="flex items-center gap-2">
@@ -279,9 +279,9 @@ export default function CreateCoursePage() {
               <div className={`w-3 h-3 rounded-full ${step === 'modules' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
               <div className={`w-3 h-3 rounded-full ${step === 'content' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
               <div className={`w-3 h-3 rounded-full ${step === 'preview' ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Ошибка */}
         {error && (
@@ -316,7 +316,7 @@ export default function CreateCoursePage() {
             </div>
             
             <div className="p-6">
-              <CourseForm 
+              <CourseForm
                 mode="create" 
                 onCourseSubmit={handleCourseSubmit}
               />
@@ -394,8 +394,8 @@ export default function CreateCoursePage() {
                               rows={3}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-600"
                               placeholder="Опишите содержание модуля"
-                            />
-                          </div>
+              />
+            </div>
                         </div>
                       </div>
                     ))}
@@ -442,8 +442,8 @@ export default function CreateCoursePage() {
                 <p className="text-gray-600 mt-1">
                   Добавьте уроки, задания и тесты в каждый модуль
                 </p>
-              </div>
-              
+          </div>
+
               <div className="p-6">
                 {modules.length === 0 ? (
                   <div className="text-center py-12">
@@ -461,7 +461,7 @@ export default function CreateCoursePage() {
                       <div key={moduleIndex} className="border border-gray-200 rounded-lg p-6">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">
                           {module.title || `Модуль ${moduleIndex + 1}`}
-                        </h3>
+            </h3>
                         
                         {/* Уроки */}
                         <div className="mb-6">
@@ -567,10 +567,10 @@ export default function CreateCoursePage() {
                   >
                     Предварительный просмотр
                   </button>
-                </div>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
+    </div>
         )}
 
         {/* Шаг 4: Предварительный просмотр */}

@@ -12,8 +12,10 @@ import {
   Calendar,
   FileText,
   Settings,
-  BarChart3
+  BarChart3,
+  X
 } from 'lucide-react'
+import { CourseForm } from '@/components/admin/CourseForm'
 
 interface Course {
   id: string
@@ -77,6 +79,8 @@ export default function AdminDashboard() {
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
   
 
 
@@ -148,6 +152,35 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course)
+    setShowEditModal(true)
+  }
+
+  const handleUpdateCourse = async (updatedData: any) => {
+    if (!editingCourse) return
+
+    try {
+      const response = await fetch(`/api/admin/courses/${editingCourse.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+      })
+
+      if (response.ok) {
+        // Обновляем список курсов
+        await fetchData()
+        setShowEditModal(false)
+        setEditingCourse(null)
+      } else {
+        const errorData = await response.json()
+        alert(errorData.error || 'Ошибка обновления курса')
+      }
+    } catch (err) {
+      alert('Ошибка обновления курса')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -171,11 +204,38 @@ export default function AdminDashboard() {
             >
               Попробовать снова
             </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+                   </div>
+       </div>
+
+       {/* Модальное окно редактирования курса */}
+       {showEditModal && editingCourse && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+             <div className="flex justify-between items-center mb-4">
+               <h2 className="text-xl font-bold">Редактирование курса</h2>
+               <button
+                 onClick={() => {
+                   setShowEditModal(false)
+                   setEditingCourse(null)
+                 }}
+                 className="text-gray-500 hover:text-gray-700"
+               >
+                 <X className="w-5 h-5" />
+               </button>
+             </div>
+             
+             <CourseForm
+               mode="edit"
+               initialData={editingCourse}
+               courseId={editingCourse.id}
+               onCourseSubmit={handleUpdateCourse}
+             />
+           </div>
+         </div>
+       )}
+     </div>
+   )
+ }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -255,15 +315,7 @@ export default function AdminDashboard() {
                  </div>
                </button>
                
-               <button
-                 onClick={() => router.push('/admin/test-course')}
-                 className="py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-               >
-                 <div className="flex items-center gap-2">
-                   <Settings className="w-4 h-4" />
-                   Тест курса
-                 </div>
-               </button>
+               
             </nav>
           </div>
 
@@ -328,7 +380,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Список курсов */}
-              <div className="bg-white shadow rounded-lg">
+          <div className="bg-white shadow rounded-lg">
                 <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-lg font-medium text-gray-900">Список курсов</h2>
                   <button
@@ -357,11 +409,11 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Курс
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -369,19 +421,19 @@ export default function AdminDashboard() {
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Уровень
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Статистика
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Статус
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Действия
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
                         {courses.map((course) => (
                           <tr key={course.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -403,22 +455,22 @@ export default function AdminDashboard() {
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(course.level)}`}>
                                 {getLevelLabel(course.level)}
                               </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               <div className="space-y-1">
                                 <div>Модулей: {course.modules.length}</div>
                                 <div>Записей: {course._count.enrollments}</div>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                 course.isActive 
                                   ? 'bg-green-100 text-green-800' 
                                   : 'bg-red-100 text-red-800'
                               }`}>
                                 {course.isActive ? 'Активен' : 'Неактивен'}
-                              </span>
-                            </td>
+                          </span>
+                        </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <div className="flex items-center gap-2">
                                 <button
@@ -428,13 +480,13 @@ export default function AdminDashboard() {
                                 >
                                   <Eye className="w-4 h-4" />
                                 </button>
-                                <button
-                                  onClick={() => router.push(`/admin/courses/${course.id}/edit`)}
-                                  className="text-green-600 hover:text-green-900"
-                                  title="Редактировать"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </button>
+                                                                 <button
+                                   onClick={() => handleEditCourse(course)}
+                                   className="text-green-600 hover:text-green-900"
+                                   title="Редактировать"
+                                 >
+                                   <Edit className="w-4 h-4" />
+                                 </button>
                                 <button
                                   onClick={() => router.push(`/admin/courses/${course.id}/modules`)}
                                   className="text-purple-600 hover:text-purple-900"
@@ -579,7 +631,7 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {assignment.createdBy.name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {assignment._count.submissions} решений
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -599,56 +651,100 @@ export default function AdminDashboard() {
                                   <Edit className="w-4 h-4" />
                                 </button>
                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {activeTab === 'tests' && (
-            <div>
-              {/* Заголовок и кнопка создания */}
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Управление тестами</h2>
-                  <p className="text-gray-600 mt-1">
-                    Создавайте и управляйте тестами для уроков
-                  </p>
-                </div>
-                
-                <button
-                  onClick={() => router.push('/admin/tests/create')}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-md text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  <Plus className="w-4 h-4" />
-                  Создать тест
-                </button>
-              </div>
-              
-              <div className="bg-white shadow rounded-lg p-6">
-                <div className="text-center py-12">
-                  <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Система управления тестами
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    Здесь вы сможете создавать тесты для уроков, добавлять вопросы и управлять результатами
-                  </p>
-                  <button
-                    onClick={() => router.push('/admin/tests/create')}
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Создать первый тест
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+                     {activeTab === 'tests' && (
+             <div>
+               {/* Заголовок и кнопка создания */}
+               <div className="flex justify-between items-center mb-6">
+                 <div>
+                   <h2 className="text-2xl font-bold text-gray-900">Управление тестами</h2>
+                   <p className="text-gray-600 mt-1">
+                     Создавайте и управляйте тестами для уроков
+                   </p>
+                 </div>
+                 
+                 <button
+                   onClick={() => router.push('/admin/tests/create')}
+                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-md text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                 >
+                   <Plus className="w-4 h-4" />
+                   Создать тест
+                 </button>
+               </div>
+               
+               {/* Статистика тестов */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                 <div className="bg-white p-6 rounded-lg shadow">
+                   <div className="flex items-center">
+                     <div className="p-2 bg-green-100 rounded-lg">
+                       <Settings className="w-6 h-6 text-green-600" />
+                     </div>
+                     <div className="ml-4">
+                       <p className="text-sm font-medium text-gray-600">Всего тестов</p>
+                       <p className="text-2xl font-bold text-gray-900">0</p>
+                     </div>
+                   </div>
+                 </div>
+                 
+                 <div className="bg-white p-6 rounded-lg shadow">
+                   <div className="flex items-center">
+                     <div className="p-2 bg-blue-100 rounded-lg">
+                       <FileText className="w-6 h-6 text-blue-600" />
+                     </div>
+                     <div className="ml-4">
+                       <p className="text-sm font-medium text-gray-600">Всего вопросов</p>
+                       <p className="text-2xl font-bold text-gray-900">0</p>
+                     </div>
+                   </div>
+                 </div>
+                 
+                 <div className="bg-white p-6 rounded-lg shadow">
+                   <div className="flex items-center">
+                     <div className="p-2 bg-purple-100 rounded-lg">
+                       <Users className="w-6 h-6 text-purple-600" />
+                     </div>
+                     <div className="ml-4">
+                       <p className="text-sm font-medium text-gray-600">Попыток прохождения</p>
+                       <p className="text-2xl font-bold text-gray-900">0</p>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+               
+               {/* Список тестов */}
+               <div className="bg-white shadow rounded-lg">
+                 <div className="px-6 py-4 border-b border-gray-200">
+                   <h3 className="text-lg font-medium text-gray-900">Список тестов</h3>
+                 </div>
+                 
+                 <div className="p-8 text-center">
+                   <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                   <h3 className="text-lg font-medium text-gray-900 mb-2">
+                     Тесты не найдены
+                   </h3>
+                   <p className="text-gray-600 mb-6">
+                     Создайте первый тест для уроков
+                   </p>
+                   <button
+                     onClick={() => router.push('/admin/tests/create')}
+                     className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                   >
+                     Создать первый тест
+                   </button>
+                 </div>
+               </div>
+             </div>
+           )}
 
           {activeTab === 'analytics' && (
             <div className="bg-white shadow rounded-lg p-6">
@@ -681,17 +777,17 @@ export default function AdminDashboard() {
                       return today === createdDate
                     }).length}</p>
                   </div>
-                </div>
-                
+              </div>
+              
                 <div className="bg-yellow-50 p-4 rounded-lg">
                   <h3 className="text-sm font-medium text-yellow-800">Направления</h3>
                   <div className="mt-2 space-y-1">
                     <p className="text-sm text-yellow-600">WordPress: {courses.filter(c => c.direction === 'WORDPRESS').length}</p>
                     <p className="text-sm text-yellow-600">Vibe Coding: {courses.filter(c => c.direction === 'VIBE_CODING').length}</p>
                     <p className="text-sm text-yellow-600">Shopify: {courses.filter(c => c.direction === 'SHOPIFY').length}</p>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             </div>
           )}
 
