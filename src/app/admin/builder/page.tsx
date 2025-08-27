@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Loader2,
   Move,
-  BookOpen
+  BookOpen,
+  X
 } from 'lucide-react'
 import CourseTemplateSelector from '@/components/admin/CourseTemplateSelector'
 
@@ -76,6 +77,9 @@ export default function CourseBuilder() {
   const [draggedItem, setDraggedItem] = useState<{type: 'module' | 'lesson' | 'assignment', moduleId?: string, item: any} | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const [showFileModal, setShowFileModal] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   // Добавить новый модуль
   const addModule = () => {
@@ -326,10 +330,13 @@ export default function CourseBuilder() {
           <div className="flex justify-between items-center">
                          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Конструктор курса</h1>
             <div className="flex gap-3">
-                             <button className="px-4 py-2 border border-indigo-300 rounded-lg hover:bg-indigo-50 text-indigo-600 font-medium transition-all duration-200 hover:scale-105">
-                 <Eye className="w-4 h-4 inline mr-2" />
-                 Просмотр
-               </button>
+                                                           <button 
+                  onClick={() => setShowPreview(true)}
+                  className="px-4 py-2 border border-indigo-300 rounded-lg hover:bg-indigo-50 text-indigo-600 font-medium transition-all duration-200 hover:scale-105"
+                >
+                  <Eye className="w-4 h-4 inline mr-2" />
+                  Просмотр
+                </button>
                              <button 
                  onClick={saveCourse}
                  disabled={saving}
@@ -709,16 +716,372 @@ export default function CourseBuilder() {
                  {/* Таб: Контент */}
          {activeTab === 'content' && (
            <div className="bg-white rounded-lg p-6">
-             <h2 className="text-xl font-bold text-slate-800 mb-4">Редактирование контента</h2>
-             <p className="text-indigo-600 font-medium">Здесь будет редактор для наполнения уроков контентом</p>
+             <div className="flex justify-between items-center mb-6">
+               <h2 className="text-xl font-bold text-slate-800">Редактирование контента</h2>
+               <div className="flex gap-2">
+                 <button 
+                   onClick={() => setShowVideoModal(true)}
+                   className="px-4 py-2 border border-indigo-300 rounded-lg hover:bg-indigo-50 text-indigo-600 font-medium transition-all duration-200"
+                 >
+                   <Plus className="w-4 h-4 inline mr-2" />
+                   Добавить видео
+                 </button>
+                 <button 
+                   onClick={() => setShowFileModal(true)}
+                   className="px-4 py-2 border border-emerald-300 rounded-lg hover:bg-emerald-50 text-emerald-600 font-medium transition-all duration-200"
+                 >
+                   <Plus className="w-4 h-4 inline mr-2" />
+                   Добавить файл
+                 </button>
+               </div>
+             </div>
+
+             {modules.length === 0 ? (
+               <div className="text-center py-12 text-indigo-500">
+                 <p className="mb-4 font-medium">Сначала создайте модули и уроки в разделе "Структура"</p>
+                 <button
+                   onClick={() => setActiveTab('structure')}
+                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200"
+                 >
+                   Перейти к структуре
+                 </button>
+               </div>
+             ) : (
+               <div className="space-y-6">
+                 {modules.map((module) => (
+                   <div key={module.id} className="border border-slate-200 rounded-lg p-4">
+                     <h3 className="text-lg font-semibold text-slate-800 mb-4">{module.title}</h3>
+                     
+                     {module.lessons.length === 0 ? (
+                       <p className="text-slate-500 text-center py-4">В этом модуле пока нет уроков</p>
+                     ) : (
+                       <div className="space-y-4">
+                         {module.lessons.map((lesson) => (
+                           <div key={lesson.id} className="border border-slate-200 rounded-lg p-4">
+                             <div className="flex items-center justify-between mb-3">
+                               <h4 className="font-medium text-slate-800">{lesson.title}</h4>
+                               <div className="flex gap-2">
+                                 <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                   lesson.type === 'video' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
+                                 }`}>
+                                   {lesson.type === 'video' ? 'Видео' : 'Текст'}
+                                 </span>
+                                 {lesson.hasQuiz && (
+                                   <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                                     Тест
+                                   </span>
+                                 )}
+                               </div>
+                             </div>
+                             
+                             <div className="space-y-3">
+                               {/* Тип контента */}
+                               <div>
+                                 <label className="block text-sm font-medium text-slate-700 mb-1">Тип контента</label>
+                                 <select
+                                   value={lesson.type}
+                                   onChange={(e) => setModules(modules.map(m => {
+                                     if (m.id === module.id) {
+                                       return {
+                                         ...m,
+                                         lessons: m.lessons.map(l => 
+                                           l.id === lesson.id ? {...l, type: e.target.value as any} : l
+                                         )
+                                       }
+                                     }
+                                     return m
+                                   }))}
+                                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                 >
+                                   <option value="video">Видео</option>
+                                   <option value="text">Текст</option>
+                                   <option value="mixed">Смешанный</option>
+                                 </select>
+                               </div>
+
+                               {/* URL видео */}
+                               {lesson.type === 'video' && (
+                                 <div>
+                                   <label className="block text-sm font-medium text-slate-700 mb-1">URL видео</label>
+                                   <input
+                                     type="url"
+                                     value={lesson.videoUrl || ''}
+                                     onChange={(e) => setModules(modules.map(m => {
+                                       if (m.id === module.id) {
+                                         return {
+                                           ...m,
+                                           lessons: m.lessons.map(l => 
+                                             l.id === lesson.id ? {...l, videoUrl: e.target.value} : l
+                                           )
+                                         }
+                                       }
+                                       return m
+                                     }))}
+                                     placeholder="https://www.youtube.com/watch?v=..."
+                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                   />
+                                 </div>
+                               )}
+
+                               {/* Длительность */}
+                               <div>
+                                 <label className="block text-sm font-medium text-slate-700 mb-1">Длительность (минуты)</label>
+                                 <input
+                                   type="number"
+                                   value={lesson.duration || ''}
+                                   onChange={(e) => setModules(modules.map(m => {
+                                     if (m.id === module.id) {
+                                       return {
+                                         ...m,
+                                         lessons: m.lessons.map(l => 
+                                           l.id === lesson.id ? {...l, duration: parseInt(e.target.value) || 0} : l
+                                         )
+                                       }
+                                     }
+                                     return m
+                                   }))}
+                                   placeholder="15"
+                                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                 />
+                               </div>
+
+                               {/* Текстовый контент */}
+                               <div>
+                                 <label className="block text-sm font-medium text-slate-700 mb-1">Описание урока</label>
+                                 <textarea
+                                   value={lesson.content || ''}
+                                   onChange={(e) => setModules(modules.map(m => {
+                                     if (m.id === module.id) {
+                                       return {
+                                         ...m,
+                                         lessons: m.lessons.map(l => 
+                                           l.id === lesson.id ? {...l, content: e.target.value} : l
+                                         )
+                                       }
+                                     }
+                                     return m
+                                   }))}
+                                   placeholder="Описание урока, основные моменты, что студент узнает..."
+                                   rows={4}
+                                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                 />
+                               </div>
+
+                               {/* Тест */}
+                               <div className="flex items-center gap-2">
+                                 <input
+                                   type="checkbox"
+                                   id={`quiz-${lesson.id}`}
+                                   checked={lesson.hasQuiz}
+                                   onChange={(e) => setModules(modules.map(m => {
+                                     if (m.id === module.id) {
+                                       return {
+                                         ...m,
+                                         lessons: m.lessons.map(l => 
+                                           l.id === lesson.id ? {...l, hasQuiz: e.target.checked} : l
+                                         )
+                                       }
+                                     }
+                                     return m
+                                   }))}
+                                   className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                                 />
+                                 <label htmlFor={`quiz-${lesson.id}`} className="text-sm font-medium text-slate-700">
+                                   Добавить тест к уроку
+                                 </label>
+                               </div>
+                             </div>
+                           </div>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 ))}
+               </div>
+             )}
            </div>
          )}
 
          {/* Таб: Настройки */}
          {activeTab === 'settings' && (
            <div className="bg-white rounded-lg p-6">
-             <h2 className="text-xl font-bold text-slate-800 mb-4">Настройки курса</h2>
-             <p className="text-indigo-600 font-medium">Дополнительные настройки курса</p>
+             <h2 className="text-xl font-bold text-slate-800 mb-6">Настройки курса</h2>
+             
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               {/* Основные настройки */}
+               <div className="space-y-6">
+                 <div className="border border-slate-200 rounded-lg p-4">
+                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Основные настройки</h3>
+                   
+                   <div className="space-y-4">
+                     {/* Статус курса */}
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 mb-1">Статус курса</label>
+                       <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                         <option value="draft">Черновик</option>
+                         <option value="published">Опубликован</option>
+                         <option value="archived">Архив</option>
+                       </select>
+                     </div>
+
+                     {/* Видимость */}
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 mb-1">Видимость</label>
+                       <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                         <option value="public">Публичный</option>
+                         <option value="private">Приватный</option>
+                         <option value="unlisted">Не в списке</option>
+                       </select>
+                     </div>
+
+                     {/* Язык */}
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 mb-1">Язык курса</label>
+                       <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                         <option value="ru">Русский</option>
+                         <option value="en">English</option>
+                         <option value="kz">Қазақша</option>
+                       </select>
+                     </div>
+
+                     {/* Сертификат */}
+                     <div className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         id="certificate"
+                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                       />
+                       <label htmlFor="certificate" className="text-sm font-medium text-slate-700">
+                         Выдавать сертификат по завершении
+                       </label>
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Настройки обучения */}
+                 <div className="border border-slate-200 rounded-lg p-4">
+                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Настройки обучения</h3>
+                   
+                   <div className="space-y-4">
+                     {/* Прогресс */}
+                     <div className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         id="progress"
+                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                       />
+                       <label htmlFor="progress" className="text-sm font-medium text-slate-700">
+                         Отслеживать прогресс студентов
+                       </label>
+                     </div>
+
+                     {/* Повторное прохождение */}
+                     <div className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         id="retake"
+                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                       />
+                       <label htmlFor="retake" className="text-sm font-medium text-slate-700">
+                         Разрешить повторное прохождение
+                       </label>
+                     </div>
+
+                     {/* Обсуждения */}
+                     <div className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         id="discussions"
+                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                       />
+                       <label htmlFor="discussions" className="text-sm font-medium text-slate-700">
+                         Включить обсуждения
+                       </label>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Дополнительные настройки */}
+               <div className="space-y-6">
+                 {/* SEO настройки */}
+                 <div className="border border-slate-200 rounded-lg p-4">
+                   <h3 className="text-lg font-semibold text-slate-800 mb-4">SEO настройки</h3>
+                   
+                   <div className="space-y-4">
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
+                       <input
+                         type="text"
+                         placeholder="Название для поисковых систем"
+                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                       />
+                     </div>
+
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
+                       <textarea
+                         placeholder="Краткое описание для поисковых систем"
+                         rows={3}
+                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                       />
+                     </div>
+
+                     <div>
+                       <label className="block text-sm font-medium text-slate-700 mb-1">Ключевые слова</label>
+                       <input
+                         type="text"
+                         placeholder="wordpress, обучение, сайты"
+                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                       />
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Уведомления */}
+                 <div className="border border-slate-200 rounded-lg p-4">
+                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Уведомления</h3>
+                   
+                   <div className="space-y-4">
+                     <div className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         id="email-notifications"
+                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                       />
+                       <label htmlFor="email-notifications" className="text-sm font-medium text-slate-700">
+                         Email уведомления о новых студентах
+                       </label>
+                     </div>
+
+                     <div className="flex items-center gap-2">
+                       <input
+                         type="checkbox"
+                         id="completion-notifications"
+                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                       />
+                       <label htmlFor="completion-notifications" className="text-sm font-medium text-slate-700">
+                         Уведомления о завершении курса
+                       </label>
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Опасная зона */}
+                 <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                   <h3 className="text-lg font-semibold text-red-800 mb-4">Опасная зона</h3>
+                   
+                   <div className="space-y-4">
+                     <button className="w-full px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-100 transition-all duration-200">
+                       Дублировать курс
+                     </button>
+                     <button className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200">
+                       Удалить курс
+                     </button>
+                   </div>
+                 </div>
+               </div>
+             </div>
            </div>
          )}
 
@@ -729,7 +1092,216 @@ export default function CourseBuilder() {
             onClose={() => setShowTemplates(false)}
           />
         )}
-      </div>
-    </div>
-  )
-}
+
+        {/* Модальное окно добавления видео */}
+        {showVideoModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-slate-800">Добавить видео</h3>
+                <button
+                  onClick={() => setShowVideoModal(false)}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">URL видео</label>
+                  <input
+                    type="url"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Название</label>
+                  <input
+                    type="text"
+                    placeholder="Название видео"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Описание</label>
+                  <textarea
+                    placeholder="Краткое описание видео"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowVideoModal(false)}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50"
+                >
+                  Отмена
+                </button>
+                <button className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                  Добавить
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Модальное окно добавления файла */}
+        {showFileModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-slate-800">Добавить файл</h3>
+                <button
+                  onClick={() => setShowFileModal(false)}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Выберите файл</label>
+                  <input
+                    type="file"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Название</label>
+                  <input
+                    type="text"
+                    placeholder="Название файла"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Описание</label>
+                  <textarea
+                    placeholder="Описание файла"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowFileModal(false)}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50"
+                >
+                  Отмена
+                </button>
+                <button className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+                  Загрузить
+                </button>
+              </div>
+            </div>
+                     </div>
+         )}
+
+        {/* Модальное окно предварительного просмотра */}
+        {showPreview && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b p-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-slate-800">Предварительный просмотр курса</h3>
+                  <button
+                    onClick={() => setShowPreview(false)}
+                    className="text-slate-500 hover:text-slate-700"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                {/* Заголовок курса */}
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-slate-800 mb-2">{courseData.title || 'Название курса'}</h1>
+                  <p className="text-slate-600 mb-4">{courseData.description || 'Описание курса'}</p>
+                  <div className="flex gap-4 text-sm text-slate-500">
+                    <span>Направление: {courseData.direction}</span>
+                    <span>Уровень: {courseData.level}</span>
+                    <span>Длительность: {courseData.duration} недель</span>
+                    <span>Цена: {courseData.price} ₸</span>
+                  </div>
+                </div>
+
+                {/* Структура курса */}
+                <div className="space-y-6">
+                  {modules.map((module, moduleIndex) => (
+                    <div key={module.id} className="border border-slate-200 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                        Модуль {moduleIndex + 1}: {module.title}
+                      </h3>
+                      
+                      {module.description && (
+                        <p className="text-slate-600 mb-4">{module.description}</p>
+                      )}
+
+                      {/* Уроки */}
+                      {module.lessons.length > 0 && (
+                        <div className="space-y-2 mb-4">
+                          <h4 className="font-medium text-slate-700">Уроки:</h4>
+                          {module.lessons.map((lesson, lessonIndex) => (
+                            <div key={lesson.id} className="flex items-center gap-3 p-2 bg-slate-50 rounded">
+                              <span className="text-sm text-slate-500">Урок {lessonIndex + 1}</span>
+                              <span className="font-medium">{lesson.title}</span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                lesson.type === 'video' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
+                              }`}>
+                                {lesson.type === 'video' ? 'Видео' : 'Текст'}
+                              </span>
+                              {lesson.duration && (
+                                <span className="text-xs text-slate-500">{lesson.duration} мин</span>
+                              )}
+                              {lesson.hasQuiz && (
+                                <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-700">Тест</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Задания */}
+                      {module.assignments.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-slate-700">Задания:</h4>
+                          {module.assignments.map((assignment, assignmentIndex) => (
+                            <div key={assignment.id} className="flex items-center gap-3 p-2 bg-slate-50 rounded">
+                              <span className="text-sm text-slate-500">Задание {assignmentIndex + 1}</span>
+                              <span className="font-medium">{assignment.title}</span>
+                              {assignment.dueDate && (
+                                <span className="text-xs text-slate-500">Срок: {assignment.dueDate}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {modules.length === 0 && (
+                  <div className="text-center py-12 text-slate-500">
+                    <p>Курс пока не содержит модулей</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+       </div>
+     </div>
+   )
+ }
