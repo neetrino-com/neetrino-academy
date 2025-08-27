@@ -49,23 +49,11 @@ export function Header() {
                              <div className="text-blue-500 font-medium">Загрузка...</div>
             ) : session?.user ? (
               <div className="flex items-center space-x-4">
-                                <Link
+                <Link
                   href="/dashboard"
                   className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Дашборд
-                </Link>
-                <Link
-                  href="/courses"
-                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Курсы
-                </Link>
-                <Link
-                  href="/assignments"
-                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Задания
                 </Link>
                 {(session.user.role === 'ADMIN' || session.user.role === 'TEACHER') && (
                   <Link
