@@ -73,7 +73,7 @@ export default function CourseBuilder() {
   const [modules, setModules] = useState<BuilderModule[]>([])
   const [activeTab, setActiveTab] = useState<'overview' | 'structure' | 'content' | 'settings'>('overview')
   const [saving, setSaving] = useState(false)
-  const [draggedItem, setDraggedItem] = useState<{type: 'module' | 'lesson', moduleId?: string, item: any} | null>(null)
+  const [draggedItem, setDraggedItem] = useState<{type: 'module' | 'lesson' | 'assignment', moduleId?: string, item: any} | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
 
@@ -134,6 +134,32 @@ export default function CourseBuilder() {
     setModules(modules.filter(m => m.id !== moduleId))
   }
 
+  // Удалить урок
+  const deleteLesson = (moduleId: string, lessonId: string) => {
+    setModules(modules.map(m => {
+      if (m.id === moduleId) {
+        return {
+          ...m,
+          lessons: m.lessons.filter(l => l.id !== lessonId)
+        }
+      }
+      return m
+    }))
+  }
+
+  // Удалить задание
+  const deleteAssignment = (moduleId: string, assignmentId: string) => {
+    setModules(modules.map(m => {
+      if (m.id === moduleId) {
+        return {
+          ...m,
+          assignments: m.assignments.filter(a => a.id !== assignmentId)
+        }
+      }
+      return m
+    }))
+  }
+
   // Переключить развернутость модуля
   const toggleModule = (moduleId: string) => {
     setModules(modules.map(m => 
@@ -142,7 +168,7 @@ export default function CourseBuilder() {
   }
 
   // Улучшенные Drag & Drop функции
-  const handleDragStart = (e: React.DragEvent, type: 'module' | 'lesson', item: any, moduleId?: string) => {
+  const handleDragStart = (e: React.DragEvent, type: 'module' | 'lesson' | 'assignment', item: any, moduleId?: string) => {
     setDraggedItem({ type, item, moduleId })
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', JSON.stringify({ type, item, moduleId }))
@@ -160,7 +186,7 @@ export default function CourseBuilder() {
     setDragOverIndex(null)
   }
 
-  const handleDrop = (e: React.DragEvent, targetIndex?: number) => {
+  const handleDrop = (e: React.DragEvent, targetIndex?: number, targetModuleId?: string, targetType?: 'lesson' | 'assignment') => {
     e.preventDefault()
     setDragOverIndex(null)
     
@@ -179,6 +205,47 @@ export default function CourseBuilder() {
         // Обновляем порядок
         setModules(newModules.map((m, i) => ({...m, order: i})))
       }
+    } else if (draggedItem.type === 'lesson' && targetModuleId) {
+      // Перемещение уроков внутри модуля
+      setModules(modules.map(module => {
+        if (module.id === targetModuleId) {
+          const newLessons = [...module.lessons]
+          const draggedIndex = newLessons.findIndex(l => l.id === draggedItem.item.id)
+          const targetIdx = targetIndex ?? newLessons.length
+          
+          if (draggedIndex !== -1 && draggedIndex !== targetIdx) {
+            const [draggedLesson] = newLessons.splice(draggedIndex, 1)
+            newLessons.splice(targetIdx, 0, draggedLesson)
+            
+            // Обновляем порядок
+            return {
+              ...module,
+              lessons: newLessons.map((l, i) => ({...l, order: i}))
+            }
+          }
+        }
+        return module
+      }))
+    } else if (draggedItem.type === 'assignment' && targetModuleId) {
+      // Перемещение заданий внутри модуля
+      setModules(modules.map(module => {
+        if (module.id === targetModuleId) {
+          const newAssignments = [...module.assignments]
+          const draggedIndex = newAssignments.findIndex(a => a.id === draggedItem.item.id)
+          const targetIdx = targetIndex ?? newAssignments.length
+          
+          if (draggedIndex !== -1 && draggedIndex !== targetIdx) {
+            const [draggedAssignment] = newAssignments.splice(draggedIndex, 1)
+            newAssignments.splice(targetIdx, 0, draggedAssignment)
+            
+            return {
+              ...module,
+              assignments: newAssignments
+            }
+          }
+        }
+        return module
+      }))
     }
     
     setDraggedItem(null)
@@ -226,7 +293,7 @@ export default function CourseBuilder() {
 
     setSaving(true)
     try {
-      const response = await fetch('/api/test/create-course', {
+      const response = await fetch('/api/admin/builder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -481,46 +548,133 @@ export default function CourseBuilder() {
                       <div className="p-4 space-y-3">
                         {/* Уроки */}
                         <div className="space-y-2">
-                                                     {module.lessons.map((lesson, lessonIndex) => (
-                             <div key={lesson.id} className="flex items-center gap-3 p-2 bg-indigo-50 rounded">
-                               <GripVertical className="w-4 h-4 text-indigo-400" />
-                              {lesson.type === 'video' && <Video className="w-4 h-4 text-indigo-600" />}
-                              {lesson.type === 'text' && <FileText className="w-4 h-4 text-emerald-600" />}
-                              <input
-                                type="text"
-                                value={lesson.title}
-                                onChange={(e) => setModules(modules.map(m => {
-                                  if (m.id === module.id) {
-                                    return {
-                                      ...m,
-                                      lessons: m.lessons.map(l => 
-                                        l.id === lesson.id ? {...l, title: e.target.value} : l
-                                      )
+                          <h4 className="text-sm font-semibold text-slate-700 mb-2">Уроки:</h4>
+                          {module.lessons.map((lesson, lessonIndex) => (
+                            <div key={lesson.id}>
+                              {/* Drop zone перед уроком */}
+                              {dragOverIndex === lessonIndex && draggedItem?.type === 'lesson' && draggedItem?.moduleId === module.id && (
+                                <div className="h-1 bg-emerald-200 rounded my-1 border border-dashed border-emerald-400" />
+                              )}
+                              
+                              <div 
+                                className={`flex items-center gap-3 p-2 bg-indigo-50 rounded transition-all ${
+                                  draggedItem?.item?.id === lesson.id ? 'opacity-50' : ''
+                                }`}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, 'lesson', lesson, module.id)}
+                                onDragOver={(e) => handleDragOver(e, lessonIndex)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, lessonIndex, module.id, 'lesson')}
+                              >
+                                <GripVertical className="w-4 h-4 text-indigo-400 cursor-move" />
+                                {lesson.type === 'video' && <Video className="w-4 h-4 text-indigo-600" />}
+                                {lesson.type === 'text' && <FileText className="w-4 h-4 text-emerald-600" />}
+                                <input
+                                  type="text"
+                                  value={lesson.title}
+                                  onChange={(e) => setModules(modules.map(m => {
+                                    if (m.id === module.id) {
+                                      return {
+                                        ...m,
+                                        lessons: m.lessons.map(l => 
+                                          l.id === lesson.id ? {...l, title: e.target.value} : l
+                                        )
+                                      }
                                     }
-                                  }
-                                  return m
-                                }))}
-                                className="flex-1 px-2 py-1 bg-white border rounded"
-                                placeholder="Название урока"
-                              />
-                              {lesson.hasQuiz && <CheckSquare className="w-4 h-4 text-purple-600" />}
+                                    return m
+                                  }))}
+                                  className="flex-1 px-2 py-1 bg-white border rounded"
+                                  placeholder="Название урока"
+                                />
+                                {lesson.hasQuiz && <CheckSquare className="w-4 h-4 text-purple-600" />}
+                                                                 <button
+                                   onClick={() => deleteLesson(module.id, lesson.id)}
+                                   className="text-red-600 hover:text-red-700 p-1"
+                                   title="Удалить урок"
+                                 >
+                                   <Trash2 className="w-3 h-3" />
+                                 </button>
+                              </div>
                             </div>
                           ))}
+                          
+                          {/* Drop zone в конце уроков */}
+                          {dragOverIndex === module.lessons.length && draggedItem?.type === 'lesson' && draggedItem?.moduleId === module.id && (
+                            <div className="h-1 bg-emerald-200 rounded my-1 border border-dashed border-emerald-400" />
+                          )}
                         </div>
 
+                        {/* Задания */}
+                        {module.assignments.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-2">Задания:</h4>
+                            {module.assignments.map((assignment, assignmentIndex) => (
+                              <div key={assignment.id}>
+                                {/* Drop zone перед заданием */}
+                                {dragOverIndex === assignmentIndex && draggedItem?.type === 'assignment' && draggedItem?.moduleId === module.id && (
+                                  <div className="h-1 bg-violet-200 rounded my-1 border border-dashed border-violet-400" />
+                                )}
+                                
+                                <div 
+                                  className={`flex items-center gap-3 p-2 bg-emerald-50 rounded transition-all ${
+                                    draggedItem?.item?.id === assignment.id ? 'opacity-50' : ''
+                                  }`}
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(e, 'assignment', assignment, module.id)}
+                                  onDragOver={(e) => handleDragOver(e, assignmentIndex)}
+                                  onDragLeave={handleDragLeave}
+                                  onDrop={(e) => handleDrop(e, assignmentIndex, module.id, 'assignment')}
+                                >
+                                  <GripVertical className="w-4 h-4 text-emerald-400 cursor-move" />
+                                  <CheckSquare className="w-4 h-4 text-emerald-600" />
+                                  <input
+                                    type="text"
+                                    value={assignment.title}
+                                    onChange={(e) => setModules(modules.map(m => {
+                                      if (m.id === module.id) {
+                                        return {
+                                          ...m,
+                                          assignments: m.assignments.map(a => 
+                                            a.id === assignment.id ? {...a, title: e.target.value} : a
+                                          )
+                                        }
+                                      }
+                                      return m
+                                    }))}
+                                    className="flex-1 px-2 py-1 bg-white border rounded"
+                                    placeholder="Название задания"
+                                  />
+                                  <button
+                                    onClick={() => deleteAssignment(module.id, assignment.id)}
+                                    className="text-red-600 hover:text-red-700 p-1"
+                                    title="Удалить задание"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {/* Drop zone в конце заданий */}
+                            {dragOverIndex === module.assignments.length && draggedItem?.type === 'assignment' && draggedItem?.moduleId === module.id && (
+                              <div className="h-1 bg-violet-200 rounded my-1 border border-dashed border-violet-400" />
+                            )}
+                          </div>
+                        )}
+
                         {/* Кнопки добавления */}
-                        <div className="flex gap-2">
-                                                     <button
-                             onClick={() => addLesson(module.id)}
-                             className="px-3 py-1.5 text-sm border border-indigo-300 rounded hover:bg-indigo-50 text-indigo-600 flex items-center gap-1 transition-all duration-200 hover:scale-105"
-                           >
-                             <Plus className="w-3 h-3" />
-                             Урок
-                           </button>
-                           <button
-                             onClick={() => addAssignment(module.id)}
-                             className="px-3 py-1.5 text-sm border border-emerald-300 rounded hover:bg-emerald-50 text-emerald-600 flex items-center gap-1 transition-all duration-200 hover:scale-105"
-                           >
+                        <div className="flex gap-2 pt-2 border-t border-slate-200">
+                          <button
+                            onClick={() => addLesson(module.id)}
+                            className="px-3 py-1.5 text-sm border border-indigo-300 rounded hover:bg-indigo-50 text-indigo-600 flex items-center gap-1 transition-all duration-200 hover:scale-105"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Урок
+                          </button>
+                          <button
+                            onClick={() => addAssignment(module.id)}
+                            className="px-3 py-1.5 text-sm border border-emerald-300 rounded hover:bg-emerald-50 text-emerald-600 flex items-center gap-1 transition-all duration-200 hover:scale-105"
+                          >
                             <Plus className="w-3 h-3" />
                             Задание
                           </button>
