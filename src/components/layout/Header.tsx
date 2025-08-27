@@ -61,6 +61,12 @@ export function Header() {
                 >
                   Курсы
                 </Link>
+                <Link
+                  href="/assignments"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Задания
+                </Link>
                 {session.user.role === 'ADMIN' && (
                   <Link
                     href="/admin"
