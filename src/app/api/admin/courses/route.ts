@@ -98,24 +98,38 @@ export async function POST(request: NextRequest) {
     const validatedData = createCourseSchema.parse(body);
     console.log('Создание курса - валидированные данные:', validatedData);
 
-    // Генерируем slug из названия курса
-    const slug = validatedData.title
+    // Генерируем уникальный slug из названия курса
+    let slug = validatedData.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
 
-    // Проверяем уникальность slug
-    const existingCourse = await prisma.course.findUnique({
-      where: { slug }
-    });
+    // Проверяем уникальность slug и добавляем суффикс если нужно
+    let counter = 1;
+    let originalSlug = slug;
+    
+    while (true) {
+      const existingCourse = await prisma.course.findUnique({
+        where: { slug }
+      });
 
-    if (existingCourse) {
-      return NextResponse.json(
-        { error: 'Курс с таким названием уже существует' },
-        { status: 400 }
-      );
+      if (!existingCourse) {
+        break; // Slug уникален, можно использовать
+      }
+
+      // Добавляем суффикс к slug
+      slug = `${originalSlug}-${counter}`;
+      counter++;
+      
+      // Защита от бесконечного цикла
+      if (counter > 100) {
+        return NextResponse.json(
+          { error: 'Не удалось создать уникальный идентификатор для курса' },
+          { status: 500 }
+        );
+      }
     }
 
     // Создаем курс

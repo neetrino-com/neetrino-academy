@@ -41,6 +41,12 @@ export function CourseForm({ mode, initialData, courseId, onCourseSubmit }: Cour
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Защита от повторной отправки
+    if (isLoading) {
+      return
+    }
+    
     setIsLoading(true)
     setError('')
     setSuccess('')
@@ -78,15 +84,22 @@ export function CourseForm({ mode, initialData, courseId, onCourseSubmit }: Cour
         }
       }
 
+      // Проверяем, что курс действительно создан
+      if (response.status === 201 && data.id) {
+        console.log('Курс успешно создан:', data)
+      }
+
       setSuccess(mode === 'create' ? 'Курс успешно создан!' : 'Курс успешно обновлен!')
       
-      // Если есть callback, вызываем его
+      // Если есть callback, вызываем его и НЕ создаем курс
       if (onCourseSubmit) {
+        console.log('Передаем данные в callback:', formData)
         onCourseSubmit(formData)
-        return
+        return // Выходим, не создавая курс
       }
       
-      // Перенаправляем через 2 секунды
+      // Если нет callback, создаем курс и перенаправляем
+      console.log('Создаем курс без callback')
       setTimeout(() => {
         if (mode === 'create') {
           router.push('/admin/courses')
