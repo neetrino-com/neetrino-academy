@@ -29,7 +29,14 @@ export default function CalendarPage() {
     )
   }
 
-  const canCreateEvents = session.user.role === 'ADMIN' || session.user.role === 'TEACHER'
+  // Студенты могут видеть календарь, но не могут создавать события
+  // Админы и учителя используют календарь через админ-панель
+  if (session.user.role === 'ADMIN' || session.user.role === 'TEACHER') {
+    window.location.href = '/'
+    return null
+  }
+
+  const canCreateEvents = false // Студенты не могут создавать события
 
   const handleEventCreate = () => {
     setEditingEventId(undefined)

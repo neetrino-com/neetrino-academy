@@ -47,6 +47,8 @@ export default function NotificationsPage() {
       return
     }
 
+    // Все роли могут видеть уведомления, но с разными правами
+
     fetchNotifications()
   }, [session, status, router])
 

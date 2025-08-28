@@ -90,6 +90,12 @@ export default function StudentAssignments() {
       return
     }
 
+    // Только студенты могут видеть эту страницу
+    if (session.user.role !== 'STUDENT') {
+      router.push('/')
+      return
+    }
+
     fetchAssignments()
   }, [session, status, router])
 

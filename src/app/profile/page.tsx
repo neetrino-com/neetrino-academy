@@ -69,6 +69,8 @@ export default function ProfilePage() {
       return
     }
 
+    // Все пользователи могут редактировать свой профиль
+
     fetchProfile()
   }, [session, status, router])
 

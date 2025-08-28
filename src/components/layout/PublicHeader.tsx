@@ -3,11 +3,9 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useRef, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-import { ChevronDown, User, Settings, LogOut, Shield } from 'lucide-react'
-import NotificationDropdown from './NotificationDropdown'
+import { ChevronDown, User, Settings, LogOut } from 'lucide-react'
 
-export function Header() {
+export function PublicHeader() {
   const { data: session, status } = useSession()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -37,23 +35,23 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Navigation */}
+          {/* Public Navigation */}
           <nav className="hidden md:flex space-x-8">
             <Link 
               href="/courses" 
-              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Курсы
             </Link>
             <Link 
               href="/about" 
-              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               О нас
             </Link>
             <Link 
               href="/contact" 
-              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Контакты
             </Link>
@@ -62,36 +60,16 @@ export function Header() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {status === 'loading' ? (
-                             <div className="text-blue-500 font-medium">Загрузка...</div>
+              <div className="text-blue-500 font-medium">Загрузка...</div>
             ) : session?.user ? (
               <div className="flex items-center space-x-4">
+                {/* Кнопка входа в приложение */}
                 <Link
-                  href="/dashboard"
-                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
+                  href="/app"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
                 >
-                  Дашборд
+                  Войти в приложение
                 </Link>
-                <Link
-                  href="/assignments"
-                  className="text-indigo-600 hover:text-indigo-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Задания
-                </Link>
-                <Link
-                  href="/calendar"
-                  className="text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Календарь
-                </Link>
-                {(session.user.role === 'ADMIN' || session.user.role === 'TEACHER') && (
-                  <Link
-                    href="/admin"
-                    className="text-red-600 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Админ-панель
-                  </Link>
-                )}
-                <NotificationDropdown />
 
                 {/* Пользовательское меню */}
                 <div className="relative" ref={userMenuRef}>
@@ -103,10 +81,6 @@ export function Header() {
                       <span className="text-sm font-medium text-white">
                         {session.user.name?.charAt(0) || session.user.email?.charAt(0).toUpperCase()}
                       </span>
-                    </div>
-                    <div className="hidden sm:block text-left">
-                      <div className="text-sm font-medium">{session.user.name || 'Пользователь'}</div>
-                      <div className="text-xs text-gray-500">{session.user.email}</div>
                     </div>
                     <ChevronDown className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                   </button>
@@ -136,6 +110,17 @@ export function Header() {
                       {/* Пункты меню */}
                       <div className="py-2">
                         <Link
+                          href="/app"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors font-medium"
+                        >
+                          <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
+                            <span className="text-blue-600 text-xs">⚡</span>
+                          </div>
+                          <span>Войти в приложение</span>
+                        </Link>
+
+                        <Link
                           href="/profile"
                           onClick={() => setShowUserMenu(false)}
                           className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -152,17 +137,6 @@ export function Header() {
                           <Settings className="w-4 h-4" />
                           <span>Настройки</span>
                         </Link>
-
-                        {(session.user.role === 'ADMIN' || session.user.role === 'TEACHER') && (
-                          <Link
-                            href="/admin"
-                            onClick={() => setShowUserMenu(false)}
-                            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <Shield className="w-4 h-4" />
-                            <span>Панель управления</span>
-                          </Link>
-                        )}
 
                         <hr className="my-2" />
 
@@ -185,13 +159,13 @@ export function Header() {
               <div className="flex items-center space-x-4">
                 <Link 
                   href="/login" 
-                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Войти
                 </Link>
                 <Link 
                   href="/register" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                   Регистрация
                 </Link>

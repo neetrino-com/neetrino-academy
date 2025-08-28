@@ -17,9 +17,15 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 href="/courses" 
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
               >
-                Начать обучение
+                Посмотреть курсы
+              </Link>
+              <Link 
+                href="/register" 
+                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-lg"
+              >
+                Зарегистрироваться
               </Link>
               <Link 
                 href="/about" 
