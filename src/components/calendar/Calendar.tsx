@@ -291,9 +291,9 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
   }
 
   return (
-    <div className="bg-white rounded-lg border">
+    <div className="bg-white rounded-lg border h-full flex flex-col">
       {/* Заголовок календаря */}
-      <div className="p-4 border-b bg-gray-50 rounded-t-lg">
+      <div className="p-4 border-b bg-gray-50 rounded-t-lg flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -328,7 +328,7 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
       </div>
 
       {/* Сетка календаря */}
-      <div className="p-4">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Заголовки дней недели */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].map(day => (
@@ -339,11 +339,11 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
         </div>
 
         {/* Дни месяца */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1 flex-1">
           {getDaysInMonth().map((day, index) => (
             <div
               key={index}
-              className={`min-h-[120px] p-1 border border-gray-200 ${
+              className={`h-full min-h-[100px] p-1 border border-gray-200 flex flex-col ${
                 day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
               }`}
             >
@@ -354,7 +354,7 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
               </div>
               
               {/* События дня */}
-              <div className="mt-1 space-y-1">
+              <div className="mt-1 space-y-1 flex-1 overflow-hidden">
                 {day.events.slice(0, 3).map(event => (
                   <div
                     key={event.id}
