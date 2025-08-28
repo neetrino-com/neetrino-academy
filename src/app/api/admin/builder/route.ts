@@ -5,10 +5,13 @@ import { Decimal } from '@prisma/client/runtime/library'
 
 // Создание курса через конструктор
 export async function POST(request: NextRequest) {
+  console.log('=== POST /api/admin/builder вызван ===')
   try {
     const session = await auth()
+    console.log('Session:', session?.user?.email ? `Пользователь: ${session.user.email}` : 'Не авторизован')
     
     if (!session?.user?.email) {
+      console.error('Ошибка авторизации: нет сессии или email')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -19,8 +22,11 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email }
     })
+    
+    console.log('Пользователь найден:', user ? `ID: ${user.id}, Role: ${user.role}` : 'Не найден')
 
     if (!user || user.role !== 'ADMIN') {
+      console.error('Ошибка доступа: пользователь не администратор')
       return NextResponse.json(
         { error: 'Доступ запрещен. Требуются права администратора' },
         { status: 403 }
