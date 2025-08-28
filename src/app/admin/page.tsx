@@ -37,7 +37,7 @@ export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
-  const [showQuizBuilder, setShowQuizBuilder] = useState(false)
+
   const [showGroupManager, setShowGroupManager] = useState(false)
   const [stats, setStats] = useState({
     totalCourses: 0,
@@ -104,11 +104,11 @@ export default function AdminDashboard() {
                 Управление группами
               </button>
               <button
-                onClick={() => setShowQuizBuilder(true)}
+                onClick={() => router.push('/admin/tests')}
                 className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 flex items-center gap-2"
               >
                 <ClipboardList className="w-4 h-4" />
-                Создать тест
+                Управление тестами
               </button>
               <button
                 onClick={() => router.push('/admin/builder')}
@@ -236,17 +236,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Модальные окна */}
-      {showQuizBuilder && (
-        <QuizBuilder
-          lessonId=""
-          onSave={(quiz) => {
-            console.log('Тест сохранен:', quiz)
-            setShowQuizBuilder(false)
-          }}
-          onCancel={() => setShowQuizBuilder(false)}
-        />
-      )}
+      {/* Модальные окна - больше не нужны для тестов */}
 
       {showGroupManager && (
         <GroupManager onClose={() => setShowGroupManager(false)} />

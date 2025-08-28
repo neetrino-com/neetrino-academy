@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Plus, 
   Trash2, 
@@ -30,7 +30,7 @@ interface QuizOption {
 }
 
 interface QuizBuilderProps {
-  lessonId: string
+  lessonId?: string
   onSave: (quiz: any) => void
   onCancel: () => void
   initialQuiz?: any
@@ -43,11 +43,46 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
     timeLimit: initialQuiz?.timeLimit || 30,
     passingScore: initialQuiz?.passingScore || 70,
     isActive: initialQuiz?.isActive ?? true,
+    lessonId: lessonId || initialQuiz?.lessonId || '',
     questions: initialQuiz?.questions || []
   })
+  
+  const [lessons, setLessons] = useState<Array<{
+    id: string
+    title: string
+    module: {
+      title: string
+      course: {
+        title: string
+      }
+    }
+  }>>([])
+  const [loadingLessons, setLoadingLessons] = useState(false)
 
   const [draggedQuestion, setDraggedQuestion] = useState<string | null>(null)
   const [draggedOption, setDraggedOption] = useState<{questionId: string, optionId: string} | null>(null)
+
+  // Загрузка уроков для выбора (если не указан конкретный урок)
+  useEffect(() => {
+    if (!lessonId && !initialQuiz?.lessonId) {
+      fetchLessons()
+    }
+  }, [lessonId, initialQuiz])
+
+  const fetchLessons = async () => {
+    try {
+      setLoadingLessons(true)
+      const response = await fetch('/api/admin/lessons')
+      if (response.ok) {
+        const data = await response.json()
+        setLessons(data)
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки уроков:', error)
+    } finally {
+      setLoadingLessons(false)
+    }
+  }
 
   // Добавить вопрос
   const addQuestion = () => {
@@ -188,6 +223,11 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
       return
     }
 
+    if (!quiz.lessonId) {
+      alert('Выберите урок для теста')
+      return
+    }
+
     if (quiz.questions.length === 0) {
       alert('Добавьте хотя бы один вопрос')
       return
@@ -205,7 +245,7 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
     }
 
     onSave({
-      lessonId,
+      lessonId: quiz.lessonId,
       ...quiz
     })
   }
@@ -215,7 +255,9 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
       <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b p-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-slate-800">Создание теста</h2>
+            <h2 className="text-2xl font-bold text-slate-800">
+              {initialQuiz ? 'Редактирование теста' : 'Создание теста'}
+            </h2>
             <button
               onClick={onCancel}
               className="text-slate-500 hover:text-slate-700"
@@ -252,6 +294,29 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
                   placeholder="Краткое описание теста"
                 />
               </div>
+
+              {/* Выбор урока (только если не указан конкретный урок) */}
+              {!lessonId && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Урок</label>
+                  <select
+                    value={quiz.lessonId}
+                    onChange={(e) => setQuiz({...quiz, lessonId: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    disabled={loadingLessons}
+                  >
+                    <option value="">Выберите урок для теста</option>
+                    {lessons.map(lesson => (
+                      <option key={lesson.id} value={lesson.id}>
+                        {lesson.module.course.title} → {lesson.module.title} → {lesson.title}
+                      </option>
+                    ))}
+                  </select>
+                  {loadingLessons && (
+                    <p className="text-sm text-slate-500 mt-1">Загрузка уроков...</p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Время на прохождение (минуты)</label>
