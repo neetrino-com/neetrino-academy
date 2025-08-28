@@ -1456,6 +1456,29 @@ export default function CourseBuilderV2() {
   const saveCourse = async (isDraft: boolean) => {
     setSaving(true)
     try {
+      // Валидация обязательных полей
+      if (!courseData.title || !courseData.description || !courseData.direction || !courseData.level) {
+        throw new Error('Пожалуйста, заполните все обязательные поля курса')
+      }
+
+      if (modules.length === 0) {
+        throw new Error('Добавьте хотя бы один модуль к курсу')
+      }
+
+      for (const module of modules) {
+        if (!module.title) {
+          throw new Error(`Модуль ${module.order + 1}: заполните название`)
+        }
+        if (module.lessons.length === 0) {
+          throw new Error(`Модуль "${module.title}": добавьте хотя бы один урок`)
+        }
+        for (const lesson of module.lessons) {
+          if (!lesson.title) {
+            throw new Error(`Урок в модуле "${module.title}": заполните название`)
+          }
+        }
+      }
+
       const url = isEditing 
         ? `/api/admin/courses/${editCourseId}` 
         : '/api/admin/builder'
