@@ -109,7 +109,8 @@ export async function POST(request: NextRequest) {
       { 
         error: 'Failed to create course', 
         details: error instanceof Error ? error.message : 'Unknown error',
-        type: error instanceof Error ? error.name : 'Unknown'
+        type: error instanceof Error ? error.name : 'Unknown',
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     )
