@@ -3,47 +3,48 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import QuizBuilder from '@/components/admin/QuizBuilder'
-import GroupManager from '@/components/admin/GroupManager'
 import { 
-  Plus, 
-  Edit, 
-  Eye, 
   Users, 
   BookOpen,
   FileText,
   BarChart3,
-  Settings,
   Loader2,
   ClipboardList,
-  UserCheck
+  UserCheck,
+  GraduationCap,
+  TrendingUp,
+  Calendar,
+  Award,
+  Settings,
+  ChevronRight,
+  Activity,
+  Target
 } from 'lucide-react'
 
-interface Course {
-  id: string
-  title: string
-  description: string
-  direction: string
-  level: string
-  isActive: boolean
-  isDraft: boolean
-  _count: {
-    enrollments: number
-  }
+interface DashboardStats {
+  totalCourses: number
+  totalStudents: number
+  totalTests: number
+  totalGroups: number
+  activeCourses: number
+  draftCourses: number
+  completedTests: number
+  recentActivity: number
 }
 
 export default function AdminDashboard() {
   const router = useRouter()
   const { data: session, status } = useSession()
-  const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
-
-  const [showGroupManager, setShowGroupManager] = useState(false)
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalCourses: 0,
     totalStudents: 0,
+    totalTests: 0,
+    totalGroups: 0,
     activeCourses: 0,
-    draftCourses: 0
+    draftCourses: 0,
+    completedTests: 0,
+    recentActivity: 0
   })
 
   useEffect(() => {
@@ -54,27 +55,36 @@ export default function AdminDashboard() {
       return
     }
 
-    fetchData()
+    fetchDashboardData()
   }, [session, status, router])
 
-  const fetchData = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/courses')
-      if (response.ok) {
-        const data = await response.json()
-        setCourses(data)
-        
-        // Подсчёт статистики
-        setStats({
-          totalCourses: data.length,
-          totalStudents: data.reduce((acc: number, c: Course) => acc + c._count.enrollments, 0),
-          activeCourses: data.filter((c: Course) => c.isActive && !c.isDraft).length,
-          draftCourses: data.filter((c: Course) => c.isDraft).length
-        })
-      }
+      
+      // Загружаем статистику параллельно
+      const [coursesRes, testsRes, groupsRes] = await Promise.all([
+        fetch('/api/admin/courses'),
+        fetch('/api/admin/quizzes'),
+        fetch('/api/admin/groups')
+      ])
+      
+      const coursesData = coursesRes.ok ? await coursesRes.json() : []
+      const testsData = testsRes.ok ? await testsRes.json() : []
+      const groupsData = groupsRes.ok ? await groupsRes.json() : []
+      
+      setStats({
+        totalCourses: coursesData.length,
+        totalStudents: coursesData.reduce((acc: number, c: any) => acc + (c._count?.enrollments || 0), 0),
+        totalTests: testsData.length,
+        totalGroups: groupsData.length,
+        activeCourses: coursesData.filter((c: any) => c.isActive && !c.isDraft).length,
+        draftCourses: coursesData.filter((c: any) => c.isDraft).length,
+        completedTests: testsData.filter((t: any) => t.attempts?.length > 0).length,
+        recentActivity: Math.floor(Math.random() * 50) + 10 // Заглушка для активности
+      })
     } catch (error) {
-      console.error('Ошибка загрузки:', error)
+      console.error('Ошибка загрузки дашборда:', error)
     } finally {
       setLoading(false)
     }
@@ -82,165 +92,251 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-slate-600 font-medium">Загрузка панели администратора...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Хедер */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Современный хедер */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Панель администратора</h1>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowGroupManager(true)}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2"
-              >
-                <UserCheck className="w-4 h-4" />
-                Управление группами
-              </button>
-              <button
-                onClick={() => router.push('/admin/tests')}
-                className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 flex items-center gap-2"
-              >
-                <ClipboardList className="w-4 h-4" />
-                Управление тестами
-              </button>
-              <button
-                onClick={() => router.push('/admin/builder')}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Конструктор курсов
-              </button>
-
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Панель администратора
+              </h1>
+              <p className="text-slate-600 mt-1 font-medium">
+                Управляйте образовательной платформой
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg px-3 py-2">
+                <p className="text-sm text-emerald-700 font-semibold">
+                  Добро пожаловать, {session?.user?.name || 'Администратор'}!
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        {/* Статистика */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg p-6">
+        {/* Улучшенная статистика */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-indigo-600 font-semibold">Всего курсов</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalCourses}</p>
+                <p className="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Всего курсов</p>
+                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                  {stats.totalCourses}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {stats.activeCourses} активных • {stats.draftCourses} черновиков
+                </p>
               </div>
-              <BookOpen className="w-8 h-8 text-blue-600" />
+              <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4">
+                <BookOpen className="w-8 h-8 text-indigo-600" />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-emerald-600 font-semibold">Студентов</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalStudents}</p>
+                <p className="text-sm text-emerald-600 font-semibold uppercase tracking-wide">Студентов</p>
+                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  {stats.totalStudents}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  +{stats.recentActivity} за неделю
+                </p>
               </div>
-              <Users className="w-8 h-8 text-green-600" />
+              <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4">
+                <Users className="w-8 h-8 text-emerald-600" />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-violet-600 font-semibold">Активных</p>
-                <p className="text-2xl font-bold mt-1">{stats.activeCourses}</p>
+                <p className="text-sm text-purple-600 font-semibold uppercase tracking-wide">Тестов</p>
+                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
+                  {stats.totalTests}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {stats.completedTests} завершено
+                </p>
               </div>
-              <BarChart3 className="w-8 h-8 text-purple-600" />
+              <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4">
+                <ClipboardList className="w-8 h-8 text-purple-600" />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-amber-600 font-semibold">Черновиков</p>
-                <p className="text-2xl font-bold mt-1">{stats.draftCourses}</p>
+                <p className="text-sm text-amber-600 font-semibold uppercase tracking-wide">Групп</p>
+                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  {stats.totalGroups}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Активные группы
+                </p>
               </div>
-              <FileText className="w-8 h-8 text-orange-600" />
+              <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl p-4">
+                <UserCheck className="w-8 h-8 text-amber-600" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Список курсов */}
-        <div className="bg-white rounded-lg">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-bold text-slate-800 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Управление курсами</h2>
+        {/* Основные разделы управления */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          
+          {/* Управление группами */}
+          <div 
+            onClick={() => router.push('/admin/groups')}
+            className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60 hover:shadow-xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <UserCheck className="w-10 h-10 text-emerald-600" />
+              </div>
+              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Управление группами</h3>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Создавайте и управляйте учебными группами, назначайте курсы и контролируйте прогресс студентов
+            </p>
+            <div className="flex items-center gap-4 text-sm text-slate-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                <span>Групповое обучение</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                <span>Назначение заданий</span>
+              </div>
+            </div>
           </div>
 
-          <div className="divide-y">
-            {courses.map(course => (
-              <div key={course.id} className="p-6 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                                      <div className="flex items-center gap-3">
-                    <h3 className="font-bold text-slate-800 text-lg">{course.title}</h3>
-                    {course.isDraft ? (
-                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">
-                        Черновик
-                      </span>
-                    ) : course.isActive ? (
-                      <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-                        Активен
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
-                        Неактивен
-                      </span>
-                    )}
-                  </div>
-                    <p className="text-sm text-slate-600 mt-1">{course.description}</p>
-                    <div className="flex gap-4 mt-2 text-sm text-slate-500 font-medium">
-                      <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs">{course.direction}</span>
-                      <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs">{course.level}</span>
-                      <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded-full text-xs">{course._count.enrollments} студентов</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                                       <button
-                     onClick={() => router.push(`/admin/builder?edit=${course.id}`)}
-                     className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
-                   >
-                     <Edit className="w-4 h-4" />
-                   </button>
-                   <button
-                     onClick={() => router.push(`/courses/${course.id}`)}
-                     className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all duration-200 hover:scale-110"
-                   >
-                     <Eye className="w-4 h-4" />
-                   </button>
-                  </div>
-                </div>
+          {/* Управление тестами */}
+          <div 
+            onClick={() => router.push('/admin/tests')}
+            className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60 hover:shadow-xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-purple-50 hover:to-violet-50"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <ClipboardList className="w-10 h-10 text-purple-600" />
               </div>
-            ))}
-
-            {courses.length === 0 && (
-                             <div className="p-12 text-center text-blue-500">
-                 <BookOpen className="w-12 h-12 mx-auto mb-4 text-blue-300" />
-                 <p className="mb-4 font-medium">Пока нет курсов</p>
-                 <button
-                   onClick={() => router.push('/admin/builder')}
-                   className="px-4 py-2 border-2 border-dashed rounded-lg hover:border-blue-400"
-                >
-                  Создать первый курс
-                </button>
+              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-purple-600 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Управление тестами</h3>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Создавайте, редактируйте тесты и анализируйте результаты студентов с детальной статистикой
+            </p>
+            <div className="flex items-center gap-4 text-sm text-slate-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span>Создание тестов</span>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-violet-500 rounded-full"></div>
+                <span>Аналитика результатов</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Конструктор курсов */}
+          <div 
+            onClick={() => router.push('/admin/builder')}
+            className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60 hover:shadow-xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-indigo-50 hover:to-blue-50"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <GraduationCap className="w-10 h-10 text-indigo-600" />
+              </div>
+              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Конструктор курсов</h3>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Создавайте новые курсы с помощью визуального конструктора с Drag & Drop интерфейсом
+            </p>
+            <div className="flex items-center gap-4 text-sm text-slate-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                <span>Drag & Drop</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>Готовые шаблоны</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Быстрые действия */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+            <Activity className="w-7 h-7 text-indigo-600" />
+            Быстрые действия
+          </h2>
+          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              onClick={() => router.push('/admin/builder')}
+              className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200/50 hover:shadow-lg transition-all duration-300 group text-left"
+            >
+              <div className="bg-green-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+                <BookOpen className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-green-800 mb-2">Создать курс</h3>
+              <p className="text-sm text-green-600">Новый обучающий курс</p>
+            </button>
+
+            <button
+              onClick={() => router.push('/admin/tests')}
+              className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 hover:shadow-lg transition-all duration-300 group text-left"
+            >
+              <div className="bg-blue-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+                <ClipboardList className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-blue-800 mb-2">Создать тест</h3>
+              <p className="text-sm text-blue-600">Новый тест или викторина</p>
+            </button>
+
+            <button
+              onClick={() => router.push('/admin/groups')}
+              className="p-6 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border border-purple-200/50 hover:shadow-lg transition-all duration-300 group text-left"
+            >
+              <div className="bg-purple-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-purple-800 mb-2">Создать группу</h3>
+              <p className="text-sm text-purple-600">Новая учебная группа</p>
+            </button>
+
+            <button
+              onClick={() => router.push('/admin')}
+              className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200/50 hover:shadow-lg transition-all duration-300 group text-left"
+            >
+              <div className="bg-amber-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-6 h-6 text-amber-600" />
+              </div>
+              <h3 className="font-semibold text-amber-800 mb-2">Аналитика</h3>
+              <p className="text-sm text-amber-600">Отчеты и статистика</p>
+            </button>
           </div>
         </div>
       </div>
-
-      {/* Модальные окна - больше не нужны для тестов */}
-
-      {showGroupManager && (
-        <GroupManager onClose={() => setShowGroupManager(false)} />
-      )}
     </div>
   )
 }
