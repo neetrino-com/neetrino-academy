@@ -26,6 +26,7 @@ import {
   Activity
 } from 'lucide-react'
 import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
+import StudentManagementModal from '@/components/admin/StudentManagementModal'
 
 interface GroupStudent {
   id: string
@@ -113,6 +114,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [error, setError] = useState<string>('')
   const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'teachers' | 'courses' | 'assignments'>('overview')
   const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false)
+  const [showStudentManagementModal, setShowStudentManagementModal] = useState(false)
   
   // Развертываем промис params
   const resolvedParams = use(params)
@@ -208,6 +210,29 @@ export default function GroupDetail({ params }: GroupDetailProps) {
 
   if (!group) {
     return null
+  }
+
+  const removeStudentFromGroup = async (studentId: string, studentName: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить студента "${studentName}" из группы? Это действие нельзя отменить.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}/students?studentId=${studentId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Перезагружаем данные группы
+        await fetchGroup()
+      } else {
+        const error = await response.json()
+        alert(`Ошибка удаления студента: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error removing student from group:', error)
+      alert('Ошибка удаления студента из группы')
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -447,7 +472,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Студенты группы</h3>
-                  <button className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowStudentManagementModal(true)}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2"
+                  >
                     <UserPlus className="w-4 h-4" />
                     Добавить студента
                   </button>
@@ -469,10 +497,17 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg">
+                        <button 
+                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
+                          title="Просмотр профиля"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
+                        <button 
+                          onClick={() => removeStudentFromGroup(student.user.id, student.user.name)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                          title="Удалить из группы"
+                        >
                           <UserMinus className="w-4 h-4" />
                         </button>
                       </div>
@@ -482,7 +517,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                     <div className="text-center py-12">
                       <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-gray-500 mb-4">В группе пока нет студентов</p>
-                      <button className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 hover:bg-emerald-50">
+                      <button 
+                        onClick={() => setShowStudentManagementModal(true)}
+                        className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 hover:bg-emerald-50"
+                      >
                         Добавить первого студента
                       </button>
                     </div>
@@ -674,6 +712,20 @@ export default function GroupDetail({ params }: GroupDetailProps) {
           groupName={group.name}
           assignedCourseIds={group.courses.map(gc => gc.course.id)}
           onAssignSuccess={() => {
+            fetchGroup() // Перезагружаем данные группы
+          }}
+        />
+      )}
+
+      {/* Модальное окно управления студентами */}
+      {group && (
+        <StudentManagementModal
+          isOpen={showStudentManagementModal}
+          onClose={() => setShowStudentManagementModal(false)}
+          groupId={group.id}
+          groupName={group.name}
+          assignedStudentIds={group.students.map(gs => gs.user.id)}
+          onAddSuccess={() => {
             fetchGroup() // Перезагружаем данные группы
           }}
         />
