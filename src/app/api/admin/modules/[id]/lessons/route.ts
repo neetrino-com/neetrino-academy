@@ -37,7 +37,7 @@ export async function GET(
 
     // Проверяем существование модуля
     const module = await prisma.module.findUnique({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     if (!module) {
@@ -49,7 +49,7 @@ export async function GET(
 
     // Получаем уроки модуля
     const lessons = await prisma.lesson.findMany({
-      where: { moduleId: params.id },
+      where: { moduleId: (await params).id },
       orderBy: { order: 'asc' }
     })
 
@@ -119,7 +119,7 @@ export async function POST(
         videoUrl: validatedData.videoUrl || null,
         duration: validatedData.duration,
         order: validatedData.order,
-        moduleId: params.id
+        moduleId: (await params).id
       },
       include: {
         module: {

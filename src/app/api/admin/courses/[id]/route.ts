@@ -9,7 +9,7 @@ const updateCourseSchema = z.object({
     description: z.string().min(10, 'Описание должно содержать минимум 10 символов'),
     direction: z.enum(['WORDPRESS', 'VIBE_CODING', 'SHOPIFY']),
     level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
-    price: z.number().min(0, 'Цена не может быть отрицательной').optional(),
+    price: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
     duration: z.number().optional(),
     tags: z.array(z.string()).optional(),
     prerequisites: z.array(z.string()).optional(),
@@ -20,16 +20,16 @@ const updateCourseSchema = z.object({
   modules: z.array(z.object({
     id: z.string(),
     title: z.string(),
-    description: z.string(),
+    description: z.string().optional().default(''),
     order: z.number(),
     lessons: z.array(z.object({
       id: z.string(),
       title: z.string(),
-      description: z.string(),
-      content: z.string(),
-      type: z.enum(['video', 'text', 'mixed']),
-      videoUrl: z.string().optional(),
-      duration: z.number().optional(),
+      description: z.string().optional().default(''),
+      content: z.string().optional().default(''),
+      type: z.enum(['video', 'text', 'mixed']).optional().default('text'),
+      videoUrl: z.string().nullable().optional().default(null),
+      duration: z.number().nullable().optional().default(null),
       order: z.number()
     }))
   })).optional()
@@ -196,7 +196,7 @@ export async function PUT(
         const module = await prisma.module.create({
           data: {
             title: moduleData.title,
-            description: moduleData.description,
+            description: moduleData.description || '',
             order: moduleData.order,
             courseId: (await params).id
           }
@@ -207,10 +207,10 @@ export async function PUT(
           await prisma.lesson.create({
             data: {
               title: lessonData.title,
-              description: lessonData.description,
-              content: lessonData.content,
-              videoUrl: lessonData.videoUrl,
-              duration: lessonData.duration,
+              description: lessonData.description || '',
+              content: lessonData.content || '',
+              videoUrl: lessonData.videoUrl || null,
+              duration: lessonData.duration || null,
               order: lessonData.order,
               moduleId: module.id
             }
@@ -242,7 +242,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(course)
+    return NextResponse.json(updatedCourse)
   } catch (error) {
     console.error('Ошибка обновления курса:', error)
     
