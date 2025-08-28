@@ -2,101 +2,227 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+interface Params {
+  id: string
+}
+
+// Назначить курсы группе
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
   try {
     const session = await auth()
-    
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'TEACHER')) {
-      return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { courseId } = await request.json()
-    
-    if (!courseId) {
-      return NextResponse.json({ error: 'ID курса обязателен' }, { status: 400 })
+    // Проверяем роль пользователя
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'TEACHER')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Проверяем существование группы
+    const { id: groupId } = await params
+    const body = await request.json()
+    const { courseIds } = body
+
+    if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
+      return NextResponse.json(
+        { error: 'courseIds is required and should be a non-empty array' }, 
+        { status: 400 }
+      )
+    }
+
+    // Проверяем, что группа существует
     const group = await prisma.group.findUnique({
-      where: { id: params.id }
+      where: { id: groupId }
     })
 
     if (!group) {
-      return NextResponse.json({ error: 'Группа не найдена' }, { status: 404 })
+      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    // Проверяем существование курса
-    const course = await prisma.course.findUnique({
-      where: { id: courseId }
-    })
-
-    if (!course) {
-      return NextResponse.json({ error: 'Курс не найден' }, { status: 404 })
-    }
-
-    // Проверяем, не привязан ли уже курс к этой группе
-    const existingGroupCourse = await prisma.groupCourse.findFirst({
+    // Проверяем, что все курсы существуют и активны
+    const courses = await prisma.course.findMany({
       where: {
-        groupId: params.id,
-        courseId: courseId
+        id: { in: courseIds },
+        isActive: true,
+        isDraft: false
       }
     })
 
-    if (existingGroupCourse) {
-      return NextResponse.json({ error: 'Курс уже привязан к этой группе' }, { status: 400 })
+    if (courses.length !== courseIds.length) {
+      return NextResponse.json(
+        { error: 'Some courses are not found or not active' }, 
+        { status: 400 }
+      )
     }
 
-    // Добавляем курс к группе
-    const groupCourse = await prisma.groupCourse.create({
-      data: {
-        groupId: params.id,
-        courseId: courseId,
-        assignedAt: new Date(),
-        assignedBy: session.user.id
+    // Проверяем, какие курсы уже назначены
+    const existingAssignments = await prisma.groupCourse.findMany({
+      where: {
+        groupId,
+        courseId: { in: courseIds }
+      }
+    })
+
+    const existingCourseIds = existingAssignments.map(assignment => assignment.courseId)
+    const newCourseIds = courseIds.filter(courseId => !existingCourseIds.includes(courseId))
+
+    if (newCourseIds.length === 0) {
+      return NextResponse.json(
+        { error: 'All selected courses are already assigned to this group' }, 
+        { status: 400 }
+      )
+    }
+
+    // Создаем новые назначения
+    const assignments = await prisma.groupCourse.createMany({
+      data: newCourseIds.map(courseId => ({
+        groupId,
+        courseId,
+        assignedAt: new Date()
+      }))
+    })
+
+    // Возвращаем информацию о назначенных курсах
+    const assignedCourses = await prisma.groupCourse.findMany({
+      where: {
+        groupId,
+        courseId: { in: newCourseIds }
       },
       include: {
-        course: true,
-        group: true
+        course: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            direction: true,
+            level: true,
+            isActive: true
+          }
+        }
+      },
+      orderBy: {
+        assignedAt: 'desc'
       }
     })
 
-    return NextResponse.json(groupCourse, { status: 201 })
+    return NextResponse.json({
+      message: `Successfully assigned ${newCourseIds.length} courses to the group`,
+      assignedCourses,
+      skippedCount: existingCourseIds.length
+    }, { status: 201 })
 
   } catch (error) {
-    console.error('Ошибка добавления курса к группе:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('Error assigning courses to group:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+// Получить курсы группы
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
   try {
     const session = await auth()
-    
-    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'TEACHER')) {
-      return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Получаем все курсы группы
+    const { id: groupId } = await params
+
     const groupCourses = await prisma.groupCourse.findMany({
-      where: { groupId: params.id },
+      where: { groupId },
       include: {
         course: {
-          include: {
-            modules: {
-              include: {
-                lessons: true
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            direction: true,
+            level: true,
+            isActive: true,
+            _count: {
+              select: {
+                modules: true,
+                enrollments: true
               }
             }
           }
         }
       },
-      orderBy: { assignedAt: 'desc' }
+      orderBy: {
+        assignedAt: 'desc'
+      }
     })
 
     return NextResponse.json(groupCourses)
-
   } catch (error) {
-    console.error('Ошибка получения курсов группы:', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+    console.error('Error fetching group courses:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// Удалить курс из группы
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Проверяем роль пользователя
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'TEACHER')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { id: groupId } = await params
+    const { searchParams } = new URL(request.url)
+    const courseId = searchParams.get('courseId')
+
+    if (!courseId) {
+      return NextResponse.json(
+        { error: 'courseId query parameter is required' }, 
+        { status: 400 }
+      )
+    }
+
+    // Проверяем, что назначение существует
+    const assignment = await prisma.groupCourse.findFirst({
+      where: {
+        groupId,
+        courseId
+      }
+    })
+
+    if (!assignment) {
+      return NextResponse.json(
+        { error: 'Course assignment not found' }, 
+        { status: 404 }
+      )
+    }
+
+    // Удаляем назначение
+    await prisma.groupCourse.delete({
+      where: { id: assignment.id }
+    })
+
+    return NextResponse.json({ message: 'Course successfully removed from group' })
+  } catch (error) {
+    console.error('Error removing course from group:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

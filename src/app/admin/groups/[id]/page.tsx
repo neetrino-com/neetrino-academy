@@ -25,6 +25,7 @@ import {
   TrendingUp,
   Activity
 } from 'lucide-react'
+import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
 
 interface GroupStudent {
   id: string
@@ -111,6 +112,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [group, setGroup] = useState<Group | null>(null)
   const [error, setError] = useState<string>('')
   const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'teachers' | 'courses' | 'assignments'>('overview')
+  const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false)
   
   // Развертываем промис params
   const resolvedParams = use(params)
@@ -142,6 +144,29 @@ export default function GroupDetail({ params }: GroupDetailProps) {
       setError('Ошибка загрузки группы')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const removeCourseFromGroup = async (courseId: string, courseTitle: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить курс "${courseTitle}" из группы? Это действие нельзя отменить.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}/courses?courseId=${courseId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Перезагружаем данные группы
+        await fetchGroup()
+      } else {
+        const error = await response.json()
+        alert(`Ошибка удаления курса: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error removing course from group:', error)
+      alert('Ошибка удаления курса из группы')
     }
   }
 
@@ -518,7 +543,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Назначенные курсы</h3>
-                  <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowCourseAssignmentModal(true)}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
+                  >
                     <Plus className="w-4 h-4" />
                     Назначить курс
                   </button>
@@ -548,10 +576,18 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg">
+                        <button 
+                          onClick={() => router.push(`/courses/${groupCourse.course.id}`)}
+                          className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg"
+                          title="Просмотр курса"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
+                        <button 
+                          onClick={() => removeCourseFromGroup(groupCourse.course.id, groupCourse.course.title)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                          title="Удалить курс из группы"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -561,7 +597,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                     <div className="text-center py-12">
                       <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-gray-500 mb-4">Группе не назначены курсы</p>
-                      <button className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 hover:bg-purple-50">
+                      <button 
+                        onClick={() => setShowCourseAssignmentModal(true)}
+                        className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 hover:bg-purple-50"
+                      >
                         Назначить первый курс
                       </button>
                     </div>
@@ -625,6 +664,20 @@ export default function GroupDetail({ params }: GroupDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Модальное окно назначения курсов */}
+      {group && (
+        <CourseAssignmentModal
+          isOpen={showCourseAssignmentModal}
+          onClose={() => setShowCourseAssignmentModal(false)}
+          groupId={group.id}
+          groupName={group.name}
+          assignedCourseIds={group.courses.map(gc => gc.course.id)}
+          onAssignSuccess={() => {
+            fetchGroup() // Перезагружаем данные группы
+          }}
+        />
+      )}
     </div>
   )
 }
