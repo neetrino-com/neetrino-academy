@@ -22,16 +22,15 @@ const updateCourseSchema = z.object({
     title: z.string(),
     description: z.string().optional().default(''),
     order: z.number(),
-    lessons: z.array(z.object({
-      id: z.string(),
-      title: z.string(),
-      description: z.string().optional().default(''),
-      content: z.string().optional().default(''),
-      type: z.enum(['video', 'text', 'mixed']).optional().default('text'),
-      videoUrl: z.string().nullable().optional().default(null),
-      duration: z.number().nullable().optional().default(null),
-      order: z.number()
-    }))
+         lessons: z.array(z.object({
+       id: z.string(),
+       title: z.string(),
+       content: z.string().optional().default(''),
+       type: z.enum(['video', 'text', 'mixed']).optional().default('text'),
+       videoUrl: z.string().nullable().optional().default(null),
+       duration: z.number().nullable().optional().default(null),
+       order: z.number()
+     }))
   })).optional()
 })
 
@@ -170,7 +169,7 @@ export async function PUT(
         direction: validatedData.courseData.direction,
         level: validatedData.courseData.level,
         price: validatedData.courseData.price || 0,
-        duration: validatedData.courseData.duration || 4,
+                 duration: validatedData.courseData.duration ? parseInt(validatedData.courseData.duration.toString()) : 4,
         isDraft: validatedData.courseData.isDraft || false,
         isActive: validatedData.courseData.isActive || false
       }
@@ -202,20 +201,19 @@ export async function PUT(
           }
         })
 
-        // Создаем уроки для модуля
-        for (const lessonData of moduleData.lessons) {
-          await prisma.lesson.create({
-            data: {
-              title: lessonData.title,
-              description: lessonData.description || '',
-              content: lessonData.content || '',
-              videoUrl: lessonData.videoUrl || null,
-              duration: lessonData.duration || null,
-              order: lessonData.order,
-              moduleId: module.id
-            }
-          })
-        }
+                 // Создаем уроки для модуля
+         for (const lessonData of moduleData.lessons) {
+           await prisma.lesson.create({
+             data: {
+               title: lessonData.title,
+               content: lessonData.content || '',
+               videoUrl: lessonData.videoUrl || null,
+               duration: lessonData.duration || null,
+               order: lessonData.order,
+               moduleId: module.id
+             }
+           })
+         }
       }
     }
 
