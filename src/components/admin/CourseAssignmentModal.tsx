@@ -199,15 +199,15 @@ export default function CourseAssignmentModal({
           <div className="mt-4 flex gap-6 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-              <span>Всего курсов: <strong>{filteredCourses.length}</strong></span>
+              <span className="text-gray-700 font-medium">Всего курсов: <strong className="text-gray-900">{filteredCourses.length}</strong></span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span>Доступно для назначения: <strong>{availableCourses.length}</strong></span>
+              <span className="text-gray-700 font-medium">Доступно для назначения: <strong className="text-gray-900">{availableCourses.length}</strong></span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span>Выбрано: <strong>{selectedCourses.length}</strong></span>
+              <span className="text-gray-700 font-medium">Выбрано: <strong className="text-blue-600">{selectedCourses.length}</strong></span>
             </div>
           </div>
         </div>
@@ -335,9 +335,9 @@ export default function CourseAssignmentModal({
           )}
           
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm">
               {selectedCourses.length > 0 && (
-                <span>Выбрано курсов: <strong>{selectedCourses.length}</strong></span>
+                <span className="text-gray-700 font-medium">Выбрано курсов: <strong className="text-blue-600">{selectedCourses.length}</strong></span>
               )}
             </div>
             
