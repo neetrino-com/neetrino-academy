@@ -23,12 +23,14 @@ import {
   GraduationCap,
   Award,
   TrendingUp,
-  Activity
+  Activity,
+  MessageCircle
 } from 'lucide-react'
 import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
 import StudentManagementModal from '@/components/admin/StudentManagementModal'
 import TeacherManagementModal from '@/components/admin/TeacherManagementModal'
 import AssignmentCreationModal from '@/components/admin/AssignmentCreationModal'
+import GroupChat from '@/components/chat/GroupChat'
 
 interface GroupStudent {
   id: string
@@ -322,7 +324,8 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     { id: 'students', label: `Студенты (${group.students.length})`, icon: Users },
     { id: 'teachers', label: `Преподаватели (${group.teachers.length})`, icon: GraduationCap },
     { id: 'courses', label: `Курсы (${group.courses.length})`, icon: BookOpen },
-    { id: 'assignments', label: `Задания (${group.assignments.length})`, icon: Target }
+    { id: 'assignments', label: `Задания (${group.assignments.length})`, icon: Target },
+    { id: 'chat', label: 'Чат', icon: MessageCircle }
   ]
 
   return (
@@ -354,6 +357,13 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               >
                 <Edit className="w-4 h-4" />
                 Редактировать
+              </button>
+              <button
+                onClick={() => router.push(`/admin/groups/${resolvedParams.id}/analytics`)}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center gap-2 transition-all duration-200"
+              >
+                <TrendingUp className="w-4 h-4" />
+                Аналитика
               </button>
               <button
                 className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2 transition-all duration-200"
@@ -774,6 +784,15 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'chat' && (
+              <div className="h-[600px]">
+                <GroupChat 
+                  groupId={group.id} 
+                  groupName={group.name}
+                />
               </div>
             )}
           </div>

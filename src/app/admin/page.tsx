@@ -308,6 +308,33 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Аналитика и отчеты */}
+          <div 
+            onClick={() => router.push('/admin/analytics')}
+            className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60 hover:shadow-xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="w-10 h-10 text-green-600" />
+              </div>
+              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Аналитика и отчеты</h3>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Детальная статистика, графики успеваемости и экспорт данных для анализа
+            </p>
+            <div className="flex items-center gap-4 text-sm text-slate-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Статистика групп</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                <span>Экспорт данных</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Быстрые действия */}

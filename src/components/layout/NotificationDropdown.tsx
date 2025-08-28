@@ -12,12 +12,13 @@ import {
   AlertCircle, 
   BookOpen,
   Users,
-  Calendar
+  Calendar,
+  MessageCircle
 } from 'lucide-react'
 
 interface Notification {
   id: string
-  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED'
+  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED' | 'NEW_MESSAGE'
   title: string
   message: string | null
   isRead: boolean
@@ -140,6 +141,9 @@ export default function NotificationDropdown() {
           case 'DEADLINE_REMINDER':
             router.push(`/assignments/${data.assignmentId}`)
             break
+          case 'NEW_MESSAGE':
+            router.push(`/admin/groups/${data.groupId}`)
+            break
           default:
             router.push('/notifications')
         }
@@ -167,6 +171,8 @@ export default function NotificationDropdown() {
         return <BookOpen className="w-4 h-4 text-purple-600" />
       case 'GROUP_ADDED':
         return <Users className="w-4 h-4 text-indigo-600" />
+      case 'NEW_MESSAGE':
+        return <MessageCircle className="w-4 h-4 text-blue-600" />
       default:
         return <Bell className="w-4 h-4 text-gray-600" />
     }

@@ -229,3 +229,68 @@ export async function notifyStudentsAboutDeadline(
     throw error
   }
 }
+
+// Уведомить участников группы о новом сообщении
+export async function notifyGroupMembersAboutNewMessage(
+  groupId: string,
+  senderId: string,
+  senderName: string,
+  messagePreview: string,
+  messageType: 'REGULAR' | 'ANNOUNCEMENT' | 'SYSTEM' | 'ASSIGNMENT_DISCUSSION'
+) {
+  try {
+    // Получаем всех участников группы кроме отправителя
+    const [groupStudents, groupTeachers] = await Promise.all([
+      prisma.groupStudent.findMany({
+        where: {
+          groupId: groupId,
+          status: 'ACTIVE',
+          userId: { not: senderId }
+        },
+        include: {
+          user: true
+        }
+      }),
+      prisma.groupTeacher.findMany({
+        where: {
+          groupId: groupId,
+          userId: { not: senderId }
+        },
+        include: {
+          user: true
+        }
+      })
+    ])
+
+    // Объединяем всех участников
+    const allMembers = [
+      ...groupStudents.map(s => s.user),
+      ...groupTeachers.map(t => t.user)
+    ]
+
+    // Создаем уведомления для каждого участника
+    const notifications = await Promise.all(
+      allMembers.map(member =>
+        createNotification({
+          userId: member.id,
+          type: 'NEW_MESSAGE',
+          title: messageType === 'ANNOUNCEMENT' 
+            ? 'Новое объявление' 
+            : 'Новое сообщение в группе',
+          message: `${senderName}: ${messagePreview}${messagePreview.length >= 100 ? '...' : ''}`,
+          data: {
+            groupId,
+            senderId,
+            senderName,
+            messageType
+          }
+        })
+      )
+    )
+
+    return notifications
+  } catch (error) {
+    console.error('Error notifying group members about new message:', error)
+    throw error
+  }
+}

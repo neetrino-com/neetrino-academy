@@ -27,6 +27,7 @@ model User {
   groupStudents  GroupStudent[]
   groupTeachers  GroupTeacher[]
   notifications  Notification[]
+  groupMessages  GroupMessage[]
 }
 
 model Course {
@@ -283,6 +284,7 @@ model Group {
   teachers    GroupTeacher[]
   courses     GroupCourse[]
   assignments GroupAssignment[]
+  messages    GroupMessage[]
 }
 
 model GroupStudent {
@@ -344,6 +346,31 @@ model Notification {
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model GroupMessage {
+  id        String           @id @default(cuid())
+  groupId   String
+  userId    String
+  type      MessageType      @default(REGULAR)
+  content   String
+  fileUrl   String?
+  isEdited  Boolean          @default(false)
+  isDeleted Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  group     Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies   GroupMessage[]   @relation("MessageReplies")
+  replyTo   GroupMessage?    @relation("MessageReplies", fields: [replyToId], references: [id])
+  replyToId String?
+}
+
+enum MessageType {
+  REGULAR
+  ANNOUNCEMENT
+  SYSTEM
+  ASSIGNMENT_DISCUSSION
+}
+
 enum NotificationType {
   NEW_ASSIGNMENT
   ASSIGNMENT_SUBMITTED
@@ -351,4 +378,5 @@ enum NotificationType {
   DEADLINE_REMINDER
   COURSE_ASSIGNED
   GROUP_ADDED
+  NEW_MESSAGE
 }

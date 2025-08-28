@@ -17,12 +17,13 @@ import {
   CheckCircle,
   Filter,
   Search,
-  Trash2
+  Trash2,
+  MessageCircle
 } from 'lucide-react'
 
 interface Notification {
   id: string
-  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED'
+  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED' | 'NEW_MESSAGE'
   title: string
   message: string | null
   isRead: boolean
@@ -117,6 +118,9 @@ export default function NotificationsPage() {
           case 'DEADLINE_REMINDER':
             router.push(`/assignments/${data.assignmentId}`)
             break
+          case 'NEW_MESSAGE':
+            router.push(`/admin/groups/${data.groupId}`)
+            break
           default:
             // Остаемся на странице уведомлений
         }
@@ -140,6 +144,8 @@ export default function NotificationsPage() {
         return <BookOpen className="w-5 h-5 text-purple-600" />
       case 'GROUP_ADDED':
         return <Users className="w-5 h-5 text-indigo-600" />
+      case 'NEW_MESSAGE':
+        return <MessageCircle className="w-5 h-5 text-blue-600" />
       default:
         return <Bell className="w-5 h-5 text-gray-600" />
     }
@@ -159,6 +165,8 @@ export default function NotificationsPage() {
         return 'Курс назначен'
       case 'GROUP_ADDED':
         return 'Добавлен в группу'
+      case 'NEW_MESSAGE':
+        return 'Новое сообщение'
       default:
         return 'Уведомление'
     }
