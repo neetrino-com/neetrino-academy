@@ -165,40 +165,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Получение шаблонов курсов
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
 
-    // Проверяем роль пользователя
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
-
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Доступ запрещен. Требуются права администратора' },
-        { status: 403 }
-      )
-    }
-
-    const templates = await prisma.courseTemplate.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
-
-    return NextResponse.json(templates)
-  } catch (error) {
-    console.error('Templates error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch templates' },
-      { status: 500 }
-    )
-  }
-}

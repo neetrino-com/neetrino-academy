@@ -47,7 +47,7 @@ model Course {
   enrollments Enrollment[]
   messages    Message[]
   modules     Module[]
-  templates   CourseTemplate[]
+
   groupCourses GroupCourse[]
 }
 
@@ -264,17 +264,7 @@ enum TeacherRole {
   GUEST
 }
 
-// Модель для шаблонов курсов
-model CourseTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  structure   Json     // JSON структура модулей и уроков
-  category    String
-  courseId    String?
-  createdAt   DateTime @default(now())
-  course      Course?  @relation(fields: [courseId], references: [id])
-}
+
 
 // Групповая система
 model Group {

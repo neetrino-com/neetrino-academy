@@ -1,1400 +1,1694 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
-  Plus, 
-  GripVertical, 
-  Trash2, 
-  Edit2,
-  Save,
-  Eye,
-  Copy,
-  FileText,
-  Video,
-  CheckSquare,
-  ChevronDown,
-  ChevronRight,
-  Loader2,
-  Move,
-  BookOpen,
-  X,
-  ClipboardList
+  BookOpen, FileText, Video, ClipboardList, TestTube, 
+  Rocket, ChevronRight, ChevronLeft, Save, Eye,
+  Plus, Trash2, GripVertical, Upload, Link, Type,
+  Image, File, Clock, Users, Settings, Check
 } from 'lucide-react'
-import CourseTemplateSelector from '@/components/admin/CourseTemplateSelector'
-import QuizBuilder from '@/components/admin/QuizBuilder'
 
-// Типы для конструктора
-interface BuilderModule {
-  id: string
-  title: string
-  description?: string
-  order: number
-  lessons: BuilderLesson[]
-  assignments: BuilderAssignment[]
-  isExpanded: boolean
-}
-
-interface BuilderLesson {
-  id: string
-  title: string
-  type: 'video' | 'text' | 'mixed'
-  content?: string
-  videoUrl?: string
-  duration?: number
-  order: number
-  hasQuiz: boolean
-  quiz?: any
-}
-
-interface BuilderAssignment {
-  id: string
-  title: string
-  description?: string
-  dueDate?: string
-}
-
+// Типы для курса
 interface CourseData {
   title: string
   description: string
-  direction: 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'
-  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
-  duration: number
+  direction: string
+  level: string
   price: number
+  duration: number
+  thumbnail?: string
+  tags?: string[]
+  prerequisites?: string[]
+  learningOutcomes?: string[]
 }
+
+interface Module {
+  id: string
+  title: string
+  description: string
+  order: number
+  lessons: Lesson[]
+}
+
+interface Lesson {
+  id: string
+  title: string
+  description: string
+  content: string
+  type: 'video' | 'text' | 'mixed'
+  videoUrl?: string
+  duration?: number
+  order: number
+  files?: FileAttachment[]
+  hasAssignment?: boolean
+  hasQuiz?: boolean
+}
+
+interface FileAttachment {
+  id: string
+  name: string
+  url: string
+  type: string
+  size: number
+}
+
+interface Assignment {
+  id: string
+  lessonId: string
+  moduleId?: string
+  title: string
+  description: string
+  dueDate?: string
+  maxScore?: number
+  files?: FileAttachment[]
+}
+
+interface Quiz {
+  id: string
+  lessonId: string
+  title: string
+  description: string
+  questions: QuizQuestion[]
+  timeLimit?: number
+  passingScore: number
+}
+
+interface QuizQuestion {
+  id: string
+  question: string
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE'
+  points: number
+  options: QuizOption[]
+}
+
+interface QuizOption {
+  id: string
+  text: string
+  isCorrect: boolean
+}
+
+// Этапы создания курса
+const STEPS = [
+  { id: 'overview', title: 'Обзор', icon: BookOpen },
+  { id: 'structure', title: 'Структура', icon: FileText },
+  { id: 'lessons', title: 'Уроки', icon: Video },
+  { id: 'assignments', title: 'Задания', icon: ClipboardList },
+  { id: 'tests', title: 'Тесты', icon: TestTube },
+  { id: 'publish', title: 'Публикация', icon: Rocket }
+]
 
 export default function CourseBuilder() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const editCourseId = searchParams.get('edit')
+  
+  const [currentStep, setCurrentStep] = useState(0)
   const [courseData, setCourseData] = useState<CourseData>({
     title: '',
     description: '',
     direction: 'WORDPRESS',
     level: 'BEGINNER',
+    price: 0,
     duration: 4,
-    price: 0
+    tags: [],
+    prerequisites: [],
+    learningOutcomes: []
   })
-  
-  const [modules, setModules] = useState<BuilderModule[]>([])
-  const [activeTab, setActiveTab] = useState<'overview' | 'structure' | 'content' | 'settings'>('overview')
+  const [modules, setModules] = useState<Module[]>([])
+  const [assignments, setAssignments] = useState<Assignment[]>([])
+  const [quizzes, setQuizzes] = useState<Quiz[]>([])
+  const [selectedModule, setSelectedModule] = useState<string | null>(null)
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [draggedItem, setDraggedItem] = useState<{type: 'module' | 'lesson' | 'assignment', moduleId?: string, item: any} | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-  const [showTemplates, setShowTemplates] = useState(false)
-  const [showVideoModal, setShowVideoModal] = useState(false)
-  const [showFileModal, setShowFileModal] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
-  const [showQuizBuilder, setShowQuizBuilder] = useState(false)
-  const [selectedLessonForQuiz, setSelectedLessonForQuiz] = useState<{moduleId: string, lessonId: string} | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isEditing, setIsEditing] = useState(false)
 
-  // Добавить новый модуль
+  // Загрузка существующего курса для редактирования
+  useEffect(() => {
+    if (editCourseId) {
+      loadExistingCourse()
+    }
+  }, [editCourseId])
+
+  const loadExistingCourse = async () => {
+    if (!editCourseId) return
+    
+    try {
+      setLoading(true)
+      setIsEditing(true)
+      
+      // Загружаем данные курса
+      const courseResponse = await fetch(`/api/admin/courses/${editCourseId}`)
+      if (!courseResponse.ok) throw new Error('Курс не найден')
+      
+      const course = await courseResponse.json()
+      
+      // Загружаем модули курса
+      const modulesResponse = await fetch(`/api/admin/courses/${editCourseId}/modules`)
+      const modulesData = modulesResponse.ok ? await modulesResponse.json() : []
+      
+      // Загружаем уроки для каждого модуля
+      const modulesWithLessons = await Promise.all(
+        modulesData.map(async (module: any) => {
+          const lessonsResponse = await fetch(`/api/admin/modules/${module.id}/lessons`)
+          const lessons = lessonsResponse.ok ? await lessonsResponse.json() : []
+          return {
+            ...module,
+            lessons: lessons.map((lesson: any) => ({
+              ...lesson,
+              type: lesson.videoUrl ? 'video' : 'text',
+              files: []
+            }))
+          }
+        })
+      )
+      
+      // Обновляем состояние
+      setCourseData({
+        title: course.title || '',
+        description: course.description || '',
+        direction: course.direction || 'WORDPRESS',
+        level: course.level || 'BEGINNER',
+        price: course.price || 0,
+        duration: course.duration || 4,
+        tags: course.tags || [],
+        prerequisites: course.prerequisites || [],
+        learningOutcomes: course.learningOutcomes || []
+      })
+      
+      setModules(modulesWithLessons)
+      
+    } catch (error) {
+      console.error('Ошибка загрузки курса:', error)
+      alert('Ошибка загрузки курса для редактирования')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Валидация текущего шага
+  const validateStep = (showErrors = true) => {
+    const newErrors: Record<string, string> = {}
+
+    switch (currentStep) {
+      case 0: // Обзор
+        if (!courseData.title) newErrors.title = 'Название курса обязательно'
+        if (!courseData.description) newErrors.description = 'Описание курса обязательно'
+        break
+      case 1: // Структура
+        if (modules.length === 0) newErrors.modules = 'Добавьте хотя бы один модуль'
+        modules.forEach(module => {
+          if (module.lessons.length === 0) {
+            newErrors[`module_${module.id}`] = `Модуль "${module.title}" должен содержать хотя бы один урок`
+          }
+        })
+        break
+      case 2: // Уроки
+        // Проверка заполненности уроков
+        break
+    }
+
+    if (showErrors) {
+      setErrors(newErrors)
+    }
+    return Object.keys(newErrors).length === 0
+  }
+
+  // Переход между шагами
+  const goToStep = (step: number) => {
+    if (step < currentStep) {
+      setCurrentStep(step)
+      setErrors({})
+    } else if (validateStep(true)) {
+      setCurrentStep(step)
+      setErrors({})
+    }
+  }
+
+  // Добавление модуля
   const addModule = () => {
-    const newModule: BuilderModule = {
-      id: `module-${Date.now()}`,
+    const newModule: Module = {
+      id: `module_${Date.now()}`,
       title: `Модуль ${modules.length + 1}`,
       description: '',
       order: modules.length,
-      lessons: [],
-      assignments: [],
-      isExpanded: true
+      lessons: []
     }
     setModules([...modules, newModule])
   }
 
-  // Открыть QuizBuilder для урока
-  const openQuizBuilder = (moduleId: string, lessonId: string) => {
-    setSelectedLessonForQuiz({ moduleId, lessonId })
-    setShowQuizBuilder(true)
-  }
-
-  // Сохранить тест
-  const handleQuizSave = (quiz: any) => {
-    if (selectedLessonForQuiz) {
-      setModules(modules.map(module => {
-        if (module.id === selectedLessonForQuiz.moduleId) {
-          return {
-            ...module,
-            lessons: module.lessons.map(lesson => 
-              lesson.id === selectedLessonForQuiz.lessonId 
-                ? { ...lesson, quiz, hasQuiz: true }
-                : lesson
-            )
-          }
-        }
-        return module
-      }))
-    }
-    
-    setShowQuizBuilder(false)
-    setSelectedLessonForQuiz(null)
-  }
-
-  // Добавить урок в модуль
+  // Добавление урока
   const addLesson = (moduleId: string) => {
-    setModules(modules.map(module => {
-      if (module.id === moduleId) {
-        const newLesson: BuilderLesson = {
-          id: `lesson-${Date.now()}`,
-          title: `Урок ${module.lessons.length + 1}`,
-          type: 'video',
-          order: module.lessons.length,
-          hasQuiz: false,
-          quiz: undefined
-        }
-        return {
-          ...module,
-          lessons: [...module.lessons, newLesson]
-        }
-      }
-      return module
-    }))
-  }
+    const moduleIndex = modules.findIndex(m => m.id === moduleId)
+    if (moduleIndex === -1) return
 
-  // Добавить задание в модуль
-  const addAssignment = (moduleId: string) => {
-    setModules(modules.map(module => {
-      if (module.id === moduleId) {
-        const newAssignment: BuilderAssignment = {
-          id: `assignment-${Date.now()}`,
-          title: `Задание ${module.assignments.length + 1}`,
-          description: ''
-        }
-        return {
-          ...module,
-          assignments: [...module.assignments, newAssignment]
-        }
-      }
-      return module
-    }))
-  }
-
-  // Удалить модуль
-  const deleteModule = (moduleId: string) => {
-    setModules(modules.filter(m => m.id !== moduleId))
-  }
-
-  // Удалить урок
-  const deleteLesson = (moduleId: string, lessonId: string) => {
-    setModules(modules.map(m => {
-      if (m.id === moduleId) {
-        return {
-          ...m,
-          lessons: m.lessons.filter(l => l.id !== lessonId)
-        }
-      }
-      return m
-    }))
-  }
-
-  // Удалить задание
-  const deleteAssignment = (moduleId: string, assignmentId: string) => {
-    setModules(modules.map(m => {
-      if (m.id === moduleId) {
-        return {
-          ...m,
-          assignments: m.assignments.filter(a => a.id !== assignmentId)
-        }
-      }
-      return m
-    }))
-  }
-
-  // Переключить развернутость модуля
-  const toggleModule = (moduleId: string) => {
-    setModules(modules.map(m => 
-      m.id === moduleId ? {...m, isExpanded: !m.isExpanded} : m
-    ))
-  }
-
-  // Улучшенные Drag & Drop функции
-  const handleDragStart = (e: React.DragEvent, type: 'module' | 'lesson' | 'assignment', item: any, moduleId?: string) => {
-    setDraggedItem({ type, item, moduleId })
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', JSON.stringify({ type, item, moduleId }))
-  }
-
-  const handleDragOver = (e: React.DragEvent, index?: number) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    if (index !== undefined) {
-      setDragOverIndex(index)
-    }
-  }
-
-  const handleDragLeave = () => {
-    setDragOverIndex(null)
-  }
-
-  const handleDrop = (e: React.DragEvent, targetIndex?: number, targetModuleId?: string, targetType?: 'lesson' | 'assignment') => {
-    e.preventDefault()
-    setDragOverIndex(null)
-    
-    if (!draggedItem) return
-
-    if (draggedItem.type === 'module') {
-      // Перемещение модулей
-      const newModules = [...modules]
-      const draggedIndex = modules.findIndex(m => m.id === draggedItem.item.id)
-      const targetIdx = targetIndex ?? modules.length
-      
-      if (draggedIndex !== -1 && draggedIndex !== targetIdx) {
-        const [draggedModule] = newModules.splice(draggedIndex, 1)
-        newModules.splice(targetIdx, 0, draggedModule)
-        
-        // Обновляем порядок
-        setModules(newModules.map((m, i) => ({...m, order: i})))
-      }
-    } else if (draggedItem.type === 'lesson' && targetModuleId) {
-      // Перемещение уроков внутри модуля
-      setModules(modules.map(module => {
-        if (module.id === targetModuleId) {
-          const newLessons = [...module.lessons]
-          const draggedIndex = newLessons.findIndex(l => l.id === draggedItem.item.id)
-          const targetIdx = targetIndex ?? newLessons.length
-          
-          if (draggedIndex !== -1 && draggedIndex !== targetIdx) {
-            const [draggedLesson] = newLessons.splice(draggedIndex, 1)
-            newLessons.splice(targetIdx, 0, draggedLesson)
-            
-            // Обновляем порядок
-            return {
-              ...module,
-              lessons: newLessons.map((l, i) => ({...l, order: i}))
-            }
-          }
-        }
-        return module
-      }))
-    } else if (draggedItem.type === 'assignment' && targetModuleId) {
-      // Перемещение заданий внутри модуля
-      setModules(modules.map(module => {
-        if (module.id === targetModuleId) {
-          const newAssignments = [...module.assignments]
-          const draggedIndex = newAssignments.findIndex(a => a.id === draggedItem.item.id)
-          const targetIdx = targetIndex ?? newAssignments.length
-          
-          if (draggedIndex !== -1 && draggedIndex !== targetIdx) {
-            const [draggedAssignment] = newAssignments.splice(draggedIndex, 1)
-            newAssignments.splice(targetIdx, 0, draggedAssignment)
-            
-            return {
-              ...module,
-              assignments: newAssignments
-            }
-          }
-        }
-        return module
-      }))
-    }
-    
-    setDraggedItem(null)
-  }
-
-  // Применить шаблон
-  const applyTemplate = (template: any) => {
-    setCourseData({
-      ...courseData,
-      title: template.name,
-      description: template.description,
-      direction: template.category as any
-    })
-    
-    const newModules = template.structure.modules.map((module: any, index: number) => ({
-      id: `module-${Date.now()}-${index}`,
-      title: module.title,
+    const newLesson: Lesson = {
+      id: `lesson_${Date.now()}`,
+      title: `Урок ${modules[moduleIndex].lessons.length + 1}`,
       description: '',
-      order: index,
-      lessons: module.lessons.map((lesson: any, lessonIndex: number) => ({
-        id: `lesson-${Date.now()}-${index}-${lessonIndex}`,
-        title: lesson.title,
-        type: lesson.type,
-        order: lessonIndex,
-        hasQuiz: false,
-        quiz: undefined
-      })),
-      assignments: module.assignments.map((assignment: any, assignmentIndex: number) => ({
-        id: `assignment-${Date.now()}-${index}-${assignmentIndex}`,
-        title: assignment.title,
-        description: ''
-      })),
-      isExpanded: true
-    }))
-    
-    setModules(newModules)
-    setShowTemplates(false)
-  }
-
-  // Сохранить курс
-  const saveCourse = async () => {
-    if (!courseData.title.trim()) {
-      alert('Введите название курса')
-      return
+      content: '',
+      type: 'text',
+      order: modules[moduleIndex].lessons.length
     }
 
+    const updatedModules = [...modules]
+    updatedModules[moduleIndex].lessons.push(newLesson)
+    setModules(updatedModules)
+  }
+
+  // Рендер шага "Обзор"
+  const renderOverviewStep = () => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900">Основная информация о курсе</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Название курса *
+          </label>
+          <input
+            type="text"
+            value={courseData.title}
+            onChange={(e) => setCourseData({...courseData, title: e.target.value})}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+              errors.title ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Например: WordPress для начинающих"
+          />
+          {errors.title && (
+            <p className="mt-1 text-sm text-red-500">{errors.title}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Направление
+          </label>
+          <select
+            value={courseData.direction}
+            onChange={(e) => setCourseData({...courseData, direction: e.target.value})}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="WORDPRESS">WordPress</option>
+            <option value="VIBE_CODING">Vibe Coding</option>
+            <option value="SHOPIFY">Shopify</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Уровень
+          </label>
+          <select
+            value={courseData.level}
+            onChange={(e) => setCourseData({...courseData, level: e.target.value})}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="BEGINNER">Начальный</option>
+            <option value="INTERMEDIATE">Средний</option>
+            <option value="ADVANCED">Продвинутый</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Длительность (недель)
+          </label>
+          <input
+            type="number"
+            value={courseData.duration}
+            onChange={(e) => setCourseData({...courseData, duration: parseInt(e.target.value) || 4})}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            min="1"
+            max="52"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Цена (₽)
+          </label>
+          <input
+            type="number"
+            value={courseData.price}
+            onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            min="0"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Описание курса *
+        </label>
+        <textarea
+          value={courseData.description}
+          onChange={(e) => setCourseData({...courseData, description: e.target.value})}
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 h-32 ${
+            errors.description ? 'border-red-500' : 'border-gray-300'
+          }`}
+          placeholder="Подробное описание курса..."
+        />
+        {errors.description && (
+          <p className="mt-1 text-sm text-red-500">{errors.description}</p>
+        )}
+      </div>
+
+      {/* Дополнительные поля */}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Предварительные требования
+          </label>
+          <div className="space-y-2">
+            {(courseData.prerequisites || []).map((prereq, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={prereq}
+                  onChange={(e) => {
+                    const newPrereqs = [...(courseData.prerequisites || [])]
+                    newPrereqs[index] = e.target.value
+                    setCourseData({...courseData, prerequisites: newPrereqs})
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Например: Базовые знания HTML"
+                />
+                <button
+                  onClick={() => {
+                    const newPrereqs = courseData.prerequisites?.filter((_, i) => i !== index)
+                    setCourseData({...courseData, prerequisites: newPrereqs})
+                  }}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setCourseData({
+                ...courseData, 
+                prerequisites: [...(courseData.prerequisites || []), '']
+              })}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+            >
+              <Plus className="w-4 h-4" />
+              Добавить требование
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Чему научится студент
+          </label>
+          <div className="space-y-2">
+            {(courseData.learningOutcomes || []).map((outcome, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={outcome}
+                  onChange={(e) => {
+                    const newOutcomes = [...(courseData.learningOutcomes || [])]
+                    newOutcomes[index] = e.target.value
+                    setCourseData({...courseData, learningOutcomes: newOutcomes})
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Например: Создавать сайты на WordPress"
+                />
+                <button
+                  onClick={() => {
+                    const newOutcomes = courseData.learningOutcomes?.filter((_, i) => i !== index)
+                    setCourseData({...courseData, learningOutcomes: newOutcomes})
+                  }}
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setCourseData({
+                ...courseData, 
+                learningOutcomes: [...(courseData.learningOutcomes || []), '']
+              })}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+            >
+              <Plus className="w-4 h-4" />
+              Добавить результат обучения
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Рендер шага "Структура"
+  const renderStructureStep = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">Структура курса</h2>
+        <button
+          onClick={addModule}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4" />
+          Добавить модуль
+        </button>
+      </div>
+
+      {errors.modules && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {errors.modules}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {modules.map((module, moduleIndex) => (
+          <div key={module.id} className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-4">
+              <div className="cursor-move text-gray-400 hover:text-gray-600 pt-1">
+                <GripVertical className="w-5 h-5" />
+              </div>
+              
+              <div className="flex-1 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={module.title}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      updatedModules[moduleIndex].title = e.target.value
+                      setModules(updatedModules)
+                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Название модуля"
+                  />
+                  <input
+                    type="text"
+                    value={module.description}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      updatedModules[moduleIndex].description = e.target.value
+                      setModules(updatedModules)
+                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Описание модуля"
+                  />
+                </div>
+
+                {errors[`module_${module.id}`] && (
+                  <p className="text-sm text-red-500">{errors[`module_${module.id}`]}</p>
+                )}
+
+                {/* Уроки модуля */}
+                <div className="ml-8 space-y-2">
+                  {module.lessons.map((lesson, lessonIndex) => (
+                    <div key={lesson.id} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                      <GripVertical className="w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={lesson.title}
+                        onChange={(e) => {
+                          const updatedModules = [...modules]
+                          updatedModules[moduleIndex].lessons[lessonIndex].title = e.target.value
+                          setModules(updatedModules)
+                        }}
+                        className="flex-1 px-3 py-1 border border-gray-200 rounded bg-white"
+                        placeholder="Название урока"
+                      />
+                      <button
+                        onClick={() => setSelectedLesson(lesson.id)}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        title="Редактировать урок"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const updatedModules = [...modules]
+                          updatedModules[moduleIndex].lessons = updatedModules[moduleIndex].lessons.filter(
+                            l => l.id !== lesson.id
+                          )
+                          setModules(updatedModules)
+                        }}
+                        className="p-1 text-red-500 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  <button
+                    onClick={() => addLesson(module.id)}
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 ml-6"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Добавить урок
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setModules(modules.filter(m => m.id !== module.id))
+                }}
+                className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // Рендер шага "Уроки"
+  const renderLessonsStep = () => {
+    const allLessons = modules.flatMap(m => 
+      m.lessons.map(l => ({...l, moduleTitle: m.title, moduleId: m.id}))
+    )
+
+    if (allLessons.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <Video className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет уроков</h3>
+          <p className="text-gray-500 mb-4">Сначала создайте структуру курса с модулями и уроками</p>
+          <button
+            onClick={() => setCurrentStep(1)}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            Перейти к структуре
+          </button>
+        </div>
+      )
+    }
+
+    const currentLesson = selectedLesson 
+      ? allLessons.find(l => l.id === selectedLesson)
+      : allLessons[0]
+
+    return (
+      <div className="flex gap-6">
+        {/* Список уроков */}
+        <div className="w-80 bg-gray-50 rounded-lg p-4">
+          <h3 className="font-semibold text-gray-900 mb-4">Все уроки</h3>
+          <div className="space-y-2 max-h-[600px] overflow-y-auto">
+            {modules.map(module => (
+              <div key={module.id}>
+                <div className="text-xs font-medium text-gray-500 uppercase tracking-wider px-2 py-1">
+                  {module.title}
+                </div>
+                {module.lessons.map(lesson => (
+                  <button
+                    key={lesson.id}
+                    onClick={() => setSelectedLesson(lesson.id)}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                      selectedLesson === lesson.id 
+                        ? 'bg-blue-100 text-blue-700' 
+                        : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">{lesson.title}</span>
+                      <div className="flex items-center gap-1">
+                        {lesson.hasAssignment && (
+                          <ClipboardList className="w-3 h-3 text-green-600" />
+                        )}
+                        {lesson.hasQuiz && (
+                          <TestTube className="w-3 h-3 text-purple-600" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Редактор урока */}
+        {currentLesson && (
+          <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">
+              Редактирование урока: {currentLesson.title}
+            </h3>
+
+            <div className="space-y-6">
+              {/* Основная информация */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Название урока
+                  </label>
+                  <input
+                    type="text"
+                    value={currentLesson.title}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].title = e.target.value
+                      setModules(updatedModules)
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Тип урока
+                  </label>
+                  <select
+                    value={currentLesson.type}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed'
+                      setModules(updatedModules)
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="text">Текстовый</option>
+                    <option value="video">Видео</option>
+                    <option value="mixed">Смешанный</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Описание */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Описание урока
+                </label>
+                <textarea
+                  value={currentLesson.description}
+                  onChange={(e) => {
+                    const updatedModules = [...modules]
+                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                    updatedModules[moduleIndex].lessons[lessonIndex].description = e.target.value
+                    setModules(updatedModules)
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-24"
+                  placeholder="Краткое описание урока..."
+                />
+              </div>
+
+              {/* Видео URL если тип video или mixed */}
+              {(currentLesson.type === 'video' || currentLesson.type === 'mixed') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL видео
+                  </label>
+                  <input
+                    type="text"
+                    value={currentLesson.videoUrl || ''}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].videoUrl = e.target.value
+                      setModules(updatedModules)
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://youtube.com/watch?v=..."
+                  />
+                </div>
+              )}
+
+              {/* Контент урока */}
+              {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Содержание урока
+                  </label>
+                  <div className="border border-gray-300 rounded-lg">
+                    {/* Панель инструментов редактора */}
+                    <div className="border-b border-gray-200 p-2 flex items-center gap-2 bg-gray-50">
+                      <button className="p-2 hover:bg-gray-200 rounded" title="Жирный">
+                        <strong>B</strong>
+                      </button>
+                      <button className="p-2 hover:bg-gray-200 rounded" title="Курсив">
+                        <em>I</em>
+                      </button>
+                      <div className="w-px h-6 bg-gray-300" />
+                      <button className="p-2 hover:bg-gray-200 rounded" title="Заголовок">
+                        <Type className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 hover:bg-gray-200 rounded" title="Ссылка">
+                        <Link className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 hover:bg-gray-200 rounded" title="Изображение">
+                        <Image className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 hover:bg-gray-200 rounded" title="Файл">
+                        <File className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      value={currentLesson.content}
+                      onChange={(e) => {
+                        const updatedModules = [...modules]
+                        const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                        const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                        updatedModules[moduleIndex].lessons[lessonIndex].content = e.target.value
+                        setModules(updatedModules)
+                      }}
+                      className="w-full px-4 py-3 min-h-[300px] focus:outline-none"
+                      placeholder="Введите содержание урока..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Файлы урока */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Прикрепленные файлы
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    Перетащите файлы сюда или нажмите для выбора
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF, DOC, ZIP до 10MB
+                  </p>
+                </div>
+              </div>
+
+              {/* Флаги для заданий и тестов */}
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={currentLesson.hasAssignment || false}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].hasAssignment = e.target.checked
+                      setModules(updatedModules)
+                    }}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-sm text-gray-700">Добавить задание к уроку</span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={currentLesson.hasQuiz || false}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].hasQuiz = e.target.checked
+                      setModules(updatedModules)
+                    }}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-sm text-gray-700">Добавить тест к уроку</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Рендер шага "Задания"
+  const renderAssignmentsStep = () => {
+    const lessonsWithAssignments = modules.flatMap(m => 
+      m.lessons.filter(l => l.hasAssignment).map(l => ({
+        ...l, 
+        moduleTitle: m.title, 
+        moduleId: m.id
+      }))
+    )
+
+    if (lessonsWithAssignments.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет заданий</h3>
+          <p className="text-gray-500 mb-4">
+            Отметьте уроки, к которым нужно добавить задания, на этапе "Уроки"
+          </p>
+          <button
+            onClick={() => setCurrentStep(2)}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            Перейти к урокам
+          </button>
+        </div>
+      )
+    }
+
+    const currentAssignment = assignments.find(a => a.lessonId === selectedLesson) || 
+      (selectedLesson ? { 
+        id: `assignment_${Date.now()}`,
+        lessonId: selectedLesson,
+        title: '',
+        description: '',
+        maxScore: 100
+      } : null)
+
+    return (
+      <div className="flex gap-6">
+        {/* Список уроков с заданиями */}
+        <div className="w-80 bg-gray-50 rounded-lg p-4">
+          <h3 className="font-semibold text-gray-900 mb-4">Уроки с заданиями</h3>
+          <div className="space-y-2">
+            {lessonsWithAssignments.map(lesson => {
+              const hasAssignment = assignments.some(a => a.lessonId === lesson.id)
+              return (
+                <button
+                  key={lesson.id}
+                  onClick={() => setSelectedLesson(lesson.id)}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                    selectedLesson === lesson.id 
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium">{lesson.title}</div>
+                      <div className="text-xs text-gray-500">{lesson.moduleTitle}</div>
+                    </div>
+                    {hasAssignment && (
+                      <Check className="w-4 h-4 text-green-600" />
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Редактор задания */}
+        {currentAssignment && selectedLesson && (
+          <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">
+              Задание для урока: {lessonsWithAssignments.find(l => l.id === selectedLesson)?.title}
+            </h3>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название задания *
+                </label>
+                <input
+                  type="text"
+                  value={currentAssignment.title}
+                  onChange={(e) => {
+                    const updated = { ...currentAssignment, title: e.target.value }
+                    setAssignments(prev => {
+                      const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                      return [...filtered, updated]
+                    })
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Например: Создать главную страницу сайта"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Описание задания *
+                </label>
+                <textarea
+                  value={currentAssignment.description}
+                  onChange={(e) => {
+                    const updated = { ...currentAssignment, description: e.target.value }
+                    setAssignments(prev => {
+                      const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                      return [...filtered, updated]
+                    })
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-32"
+                  placeholder="Подробное описание задания, требования, критерии оценки..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Максимальный балл
+                  </label>
+                  <input
+                    type="number"
+                    value={currentAssignment.maxScore || 100}
+                    onChange={(e) => {
+                      const updated = { ...currentAssignment, maxScore: parseInt(e.target.value) || 100 }
+                      setAssignments(prev => {
+                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    min="1"
+                    max="1000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Срок сдачи (опционально)
+                  </label>
+                  <input
+                    type="date"
+                    value={currentAssignment.dueDate || ''}
+                    onChange={(e) => {
+                      const updated = { ...currentAssignment, dueDate: e.target.value }
+                      setAssignments(prev => {
+                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Файлы и материалы
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    Загрузите файлы с примерами или шаблонами
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF, DOC, ZIP до 10MB
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Рендер шага "Тесты"
+  const renderTestsStep = () => {
+    const lessonsWithQuizzes = modules.flatMap(m => 
+      m.lessons.filter(l => l.hasQuiz).map(l => ({
+        ...l, 
+        moduleTitle: m.title, 
+        moduleId: m.id
+      }))
+    )
+
+    if (lessonsWithQuizzes.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет тестов</h3>
+          <p className="text-gray-500 mb-4">
+            Отметьте уроки, к которым нужно добавить тесты, на этапе "Уроки"
+          </p>
+          <button
+            onClick={() => setCurrentStep(2)}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            Перейти к урокам
+          </button>
+        </div>
+      )
+    }
+
+    const currentQuiz = quizzes.find(q => q.lessonId === selectedLesson) || 
+      (selectedLesson ? { 
+        id: `quiz_${Date.now()}`,
+        lessonId: selectedLesson,
+        title: '',
+        description: '',
+        questions: [],
+        timeLimit: 30,
+        passingScore: 70
+      } : null)
+
+    return (
+      <div className="flex gap-6">
+        {/* Список уроков с тестами */}
+        <div className="w-80 bg-gray-50 rounded-lg p-4">
+          <h3 className="font-semibold text-gray-900 mb-4">Уроки с тестами</h3>
+          <div className="space-y-2">
+            {lessonsWithQuizzes.map(lesson => {
+              const hasQuiz = quizzes.some(q => q.lessonId === lesson.id)
+              return (
+                <button
+                  key={lesson.id}
+                  onClick={() => setSelectedLesson(lesson.id)}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                    selectedLesson === lesson.id 
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium">{lesson.title}</div>
+                      <div className="text-xs text-gray-500">{lesson.moduleTitle}</div>
+                    </div>
+                    {hasQuiz && (
+                      <Check className="w-4 h-4 text-green-600" />
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Редактор теста */}
+        {currentQuiz && selectedLesson && (
+          <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">
+              Тест для урока: {lessonsWithQuizzes.find(l => l.id === selectedLesson)?.title}
+            </h3>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Название теста
+                  </label>
+                  <input
+                    type="text"
+                    value={currentQuiz.title}
+                    onChange={(e) => {
+                      const updated = { ...currentQuiz, title: e.target.value }
+                      setQuizzes(prev => {
+                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Например: Проверка знаний по уроку 1"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Проходной балл (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={currentQuiz.passingScore}
+                    onChange={(e) => {
+                      const updated = { ...currentQuiz, passingScore: parseInt(e.target.value) || 70 }
+                      setQuizzes(prev => {
+                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Время на выполнение (минут)
+                </label>
+                <input
+                  type="number"
+                  value={currentQuiz.timeLimit || 0}
+                  onChange={(e) => {
+                    const updated = { ...currentQuiz, timeLimit: parseInt(e.target.value) || 0 }
+                    setQuizzes(prev => {
+                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                      return [...filtered, updated]
+                    })
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                  placeholder="0 - без ограничения времени"
+                />
+              </div>
+
+              {/* Вопросы теста */}
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-medium text-gray-900">Вопросы теста</h4>
+                  <button
+                    onClick={() => {
+                      const newQuestion: QuizQuestion = {
+                        id: `question_${Date.now()}`,
+                        question: '',
+                        type: 'SINGLE_CHOICE',
+                        points: 1,
+                        options: [
+                          { id: `opt_${Date.now()}_1`, text: '', isCorrect: false },
+                          { id: `opt_${Date.now()}_2`, text: '', isCorrect: false }
+                        ]
+                      }
+                      const updated = { 
+                        ...currentQuiz, 
+                        questions: [...(currentQuiz.questions || []), newQuestion]
+                      }
+                      setQuizzes(prev => {
+                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Добавить вопрос
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {(currentQuiz.questions || []).map((question, qIndex) => (
+                    <div key={question.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="cursor-move text-gray-400 hover:text-gray-600 pt-1">
+                          <GripVertical className="w-5 h-5" />
+                        </div>
+                        
+                        <div className="flex-1 space-y-3">
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="col-span-2">
+                              <input
+                                type="text"
+                                value={question.question}
+                                onChange={(e) => {
+                                  const updatedQuestions = [...(currentQuiz.questions || [])]
+                                  updatedQuestions[qIndex] = { ...question, question: e.target.value }
+                                  const updated = { ...currentQuiz, questions: updatedQuestions }
+                                  setQuizzes(prev => {
+                                    const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                    return [...filtered, updated]
+                                  })
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                placeholder="Текст вопроса"
+                              />
+                            </div>
+                            <select
+                              value={question.type}
+                              onChange={(e) => {
+                                const updatedQuestions = [...(currentQuiz.questions || [])]
+                                updatedQuestions[qIndex] = { 
+                                  ...question, 
+                                  type: e.target.value as 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE'
+                                }
+                                const updated = { ...currentQuiz, questions: updatedQuestions }
+                                setQuizzes(prev => {
+                                  const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                  return [...filtered, updated]
+                                })
+                              }}
+                              className="px-3 py-2 border border-gray-300 rounded-lg"
+                            >
+                              <option value="SINGLE_CHOICE">Один ответ</option>
+                              <option value="MULTIPLE_CHOICE">Несколько ответов</option>
+                              <option value="TRUE_FALSE">Да/Нет</option>
+                            </select>
+                          </div>
+
+                          {/* Варианты ответов */}
+                          <div className="ml-4 space-y-2">
+                            {question.options.map((option, oIndex) => (
+                              <div key={option.id} className="flex items-center gap-2">
+                                <input
+                                  type={question.type === 'SINGLE_CHOICE' ? 'radio' : 'checkbox'}
+                                  checked={option.isCorrect}
+                                  onChange={(e) => {
+                                    const updatedQuestions = [...(currentQuiz.questions || [])]
+                                    const updatedOptions = [...question.options]
+                                    if (question.type === 'SINGLE_CHOICE') {
+                                      // Для single choice сбрасываем все другие
+                                      updatedOptions.forEach(opt => opt.isCorrect = false)
+                                    }
+                                    updatedOptions[oIndex].isCorrect = e.target.checked
+                                    updatedQuestions[qIndex] = { ...question, options: updatedOptions }
+                                    const updated = { ...currentQuiz, questions: updatedQuestions }
+                                    setQuizzes(prev => {
+                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                      return [...filtered, updated]
+                                    })
+                                  }}
+                                  className="w-4 h-4"
+                                />
+                                <input
+                                  type="text"
+                                  value={option.text}
+                                  onChange={(e) => {
+                                    const updatedQuestions = [...(currentQuiz.questions || [])]
+                                    const updatedOptions = [...question.options]
+                                    updatedOptions[oIndex].text = e.target.value
+                                    updatedQuestions[qIndex] = { ...question, options: updatedOptions }
+                                    const updated = { ...currentQuiz, questions: updatedQuestions }
+                                    setQuizzes(prev => {
+                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                      return [...filtered, updated]
+                                    })
+                                  }}
+                                  className="flex-1 px-3 py-1 border border-gray-200 rounded"
+                                  placeholder={`Вариант ${oIndex + 1}`}
+                                />
+                                <button
+                                  onClick={() => {
+                                    const updatedQuestions = [...(currentQuiz.questions || [])]
+                                    const updatedOptions = question.options.filter((_, i) => i !== oIndex)
+                                    updatedQuestions[qIndex] = { ...question, options: updatedOptions }
+                                    const updated = { ...currentQuiz, questions: updatedQuestions }
+                                    setQuizzes(prev => {
+                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                      return [...filtered, updated]
+                                    })
+                                  }}
+                                  className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const updatedQuestions = [...(currentQuiz.questions || [])]
+                                const newOption = { 
+                                  id: `opt_${Date.now()}`, 
+                                  text: '', 
+                                  isCorrect: false 
+                                }
+                                updatedQuestions[qIndex] = { 
+                                  ...question, 
+                                  options: [...question.options, newOption]
+                                }
+                                const updated = { ...currentQuiz, questions: updatedQuestions }
+                                setQuizzes(prev => {
+                                  const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                  return [...filtered, updated]
+                                })
+                              }}
+                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Добавить вариант
+                            </button>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            const updatedQuestions = (currentQuiz.questions || []).filter((_, i) => i !== qIndex)
+                            const updated = { ...currentQuiz, questions: updatedQuestions }
+                            setQuizzes(prev => {
+                              const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                              return [...filtered, updated]
+                            })
+                          }}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Рендер шага "Публикация"
+  const renderPublishStep = () => {
+    const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
+    const lessonsWithContent = modules.flatMap(m => m.lessons).filter(l => l.content || l.videoUrl)
+    const assignmentsCount = assignments.filter(a => a.title && a.description).length
+    const quizzesCount = quizzes.filter(q => q.questions && q.questions.length > 0).length
+
+    return (
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Финальная проверка и публикация</h2>
+        
+        {/* Статистика курса */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Статистика курса</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{modules.length}</div>
+              <div className="text-sm text-gray-600">Модулей</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{totalLessons}</div>
+              <div className="text-sm text-gray-600">Уроков</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{assignmentsCount}</div>
+              <div className="text-sm text-gray-600">Заданий</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{quizzesCount}</div>
+              <div className="text-sm text-gray-600">Тестов</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Чек-лист */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Проверка готовности</h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              {courseData.title && courseData.description ? (
+                <Check className="w-5 h-5 text-green-600" />
+              ) : (
+                <X className="w-5 h-5 text-red-600" />
+              )}
+              <span className={courseData.title && courseData.description ? 'text-gray-700' : 'text-red-600'}>
+                Основная информация заполнена
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {modules.length > 0 ? (
+                <Check className="w-5 h-5 text-green-600" />
+              ) : (
+                <X className="w-5 h-5 text-red-600" />
+              )}
+              <span className={modules.length > 0 ? 'text-gray-700' : 'text-red-600'}>
+                Создана структура курса
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {lessonsWithContent.length === totalLessons ? (
+                <Check className="w-5 h-5 text-green-600" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+              )}
+              <span className={lessonsWithContent.length === totalLessons ? 'text-gray-700' : 'text-yellow-600'}>
+                Контент добавлен для всех уроков ({lessonsWithContent.length}/{totalLessons})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {assignmentsCount > 0 || quizzesCount > 0 ? (
+                <Check className="w-5 h-5 text-green-600" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+              )}
+              <span className="text-gray-700">
+                Добавлены задания или тесты
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Настройки публикации */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Настройки публикации</h3>
+          <div className="space-y-4">
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 rounded"
+                defaultChecked
+              />
+              <span className="text-gray-700">Опубликовать курс сразу после сохранения</span>
+            </label>
+            
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 rounded"
+              />
+              <span className="text-gray-700">Отправить уведомление студентам о новом курсе</span>
+            </label>
+
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 rounded"
+              />
+              <span className="text-gray-700">Создать черновик для дальнейшего редактирования</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    )
+  }
+
+  // Функция сохранения курса
+  const saveCourse = async (isDraft: boolean) => {
     setSaving(true)
     try {
-      // Сначала сохраняем курс
-      const response = await fetch('/api/admin/builder', {
-        method: 'POST',
+      // Валидация обязательных полей
+      if (!courseData.title || !courseData.description || !courseData.direction || !courseData.level) {
+        throw new Error('Пожалуйста, заполните все обязательные поля курса')
+      }
+
+      if (modules.length === 0) {
+        throw new Error('Добавьте хотя бы один модуль к курсу')
+      }
+
+      for (const module of modules) {
+        if (!module.title) {
+          throw new Error(`Модуль ${module.order + 1}: заполните название`)
+        }
+        if (module.lessons.length === 0) {
+          throw new Error(`Модуль "${module.title}": добавьте хотя бы один урок`)
+        }
+        for (const lesson of module.lessons) {
+          if (!lesson.title) {
+            throw new Error(`Урок в модуле "${module.title}": заполните название`)
+          }
+        }
+      }
+
+      const url = isEditing 
+        ? `/api/admin/courses/${editCourseId}` 
+        : '/api/admin/builder'
+      
+      const method = isEditing ? 'PUT' : 'POST'
+      
+      // Подготавливаем данные для отправки
+      const requestData = {
+        courseData: {
+          ...courseData,
+          isDraft,
+          isActive: !isDraft
+        },
+        modules: modules.map(module => ({
+          ...module,
+          lessons: module.lessons,
+          assignments: assignments.filter(a => 
+            module.lessons.some(l => l.id === a.lessonId)
+          ).map(a => ({
+            title: a.title,
+            description: a.description,
+            dueDate: a.dueDate
+          }))
+        }))
+      }
+
+      // Логируем данные для отладки
+      console.log('Отправляемые данные:', JSON.stringify(requestData, null, 2))
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          courseData,
-          modules: modules.map((m, i) => ({...m, order: i}))
-        })
+        body: JSON.stringify(requestData)
       })
 
       if (response.ok) {
         const result = await response.json()
         
-        // Теперь сохраняем тесты для уроков, которые их имеют
-        const lessonsWithQuizzes = modules.flatMap(module => 
-          module.lessons.filter(lesson => lesson.hasQuiz && lesson.quiz)
-        )
-
-        for (const lesson of lessonsWithQuizzes) {
-          try {
+        // Сохраняем тесты
+        for (const quiz of quizzes) {
+          if (quiz.questions && quiz.questions.length > 0) {
             await fetch('/api/admin/quizzes', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                lessonId: lesson.id,
-                ...lesson.quiz
-              })
+              body: JSON.stringify(quiz)
             })
-          } catch (quizError) {
-            console.error('Ошибка сохранения теста для урока:', lesson.id, quizError)
           }
         }
 
+        alert(isDraft 
+          ? (isEditing ? 'Курс обновлен как черновик!' : 'Черновик сохранен!')
+          : (isEditing ? 'Курс обновлен и опубликован!' : 'Курс опубликован!')
+        )
         router.push('/admin')
       } else {
         const errorData = await response.json()
-        throw new Error(`Ошибка сохранения: ${errorData.error || 'Неизвестная ошибка'}`)
+        console.error('Ошибка сервера:', errorData)
+        throw new Error(errorData.error || 'Ошибка сохранения')
       }
     } catch (error) {
       console.error('Ошибка сохранения:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка'
-      alert(`Ошибка при сохранении курса: ${errorMessage}`)
+      alert(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     } finally {
       setSaving(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      {/* Хедер */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="px-6 py-4">
-          <div className="flex justify-between items-center">
-                         <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Конструктор курса</h1>
-            <div className="flex gap-3">
-                                                           <button 
-                  onClick={() => setShowPreview(true)}
-                  className="px-4 py-2 border border-indigo-300 rounded-lg hover:bg-indigo-50 text-indigo-600 font-medium transition-all duration-200 hover:scale-105"
-                >
-                  <Eye className="w-4 h-4 inline mr-2" />
-                  Просмотр
-                </button>
-                             <button 
-                 onClick={saveCourse}
-                 disabled={saving}
-                 className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 font-medium transition-all duration-200 hover:scale-105 shadow-lg"
-               >
-                {saving ? (
-                  <Loader2 className="w-4 h-4 inline mr-2 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 inline mr-2" />
-                )}
-                Сохранить
-              </button>
-            </div>
-          </div>
+  // Импортируем недостающие иконки
+  const X = () => <span>✗</span>
+  const AlertCircle = () => <span>⚠</span>
 
-          {/* Табы */}
-          <div className="flex gap-6 mt-4">
-            {(['overview', 'structure', 'content', 'settings'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                                 className={`pb-2 px-1 border-b-2 transition-all duration-200 ${
-                   activeTab === tab 
-                     ? 'border-indigo-600 text-indigo-600 font-semibold' 
-                     : 'border-transparent text-slate-600 hover:text-indigo-600 hover:border-indigo-300'
-                 }`}
-              >
-                {tab === 'overview' && 'Обзор'}
-                {tab === 'structure' && 'Структура'}
-                {tab === 'content' && 'Контент'}
-                {tab === 'settings' && 'Настройки'}
-              </button>
-            ))}
+  // Рендер текущего шага
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 0:
+        return renderOverviewStep()
+      case 1:
+        return renderStructureStep()
+      case 2:
+        return renderLessonsStep()
+      case 3:
+        return renderAssignmentsStep()
+      case 4:
+        return renderTestsStep()
+      case 5:
+        return renderPublishStep()
+      default:
+        return null
+    }
+  }
+
+  // Показываем загрузку при редактировании
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка курса для редактирования...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Хедер с навигацией по шагам */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-4">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {isEditing ? 'Редактирование курса' : 'Конструктор курса'}
+              </h1>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {/* Предпросмотр */}}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium"
+                >
+                  <Eye className="w-4 h-4" />
+                  Предпросмотр
+                </button>
+                <button
+                  onClick={() => saveCourse(true)}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'Сохранение...' : 'Черновик'}
+                </button>
+                <button
+                  onClick={() => saveCourse(false)}
+                  disabled={saving || !courseData.title || !courseData.description || modules.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
+                >
+                  <Rocket className="w-4 h-4" />
+                  {saving ? 'Публикация...' : 'Опубликовать курс'}
+                </button>
+              </div>
+            </div>
+
+            {/* Навигация по шагам */}
+            <div className="flex items-center justify-between">
+              {STEPS.map((step, index) => {
+                const Icon = step.icon
+                const isActive = index === currentStep
+                const isCompleted = index < currentStep
+                const isDisabled = index > currentStep && !validateStep(false)
+
+                return (
+                  <div key={step.id} className="flex items-center flex-1">
+                    <button
+                      onClick={() => goToStep(index)}
+                      disabled={isDisabled}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                        isActive 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : isCompleted
+                          ? 'text-green-600 hover:bg-green-50'
+                          : isDisabled
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
+                      <span className="font-medium">{step.title}</span>
+                    </button>
+                    {index < STEPS.length - 1 && (
+                      <ChevronRight className="w-5 h-5 text-gray-400 mx-2" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Контент */}
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Таб: Обзор */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg p-6">
-                             <h2 className="text-xl font-bold mb-4 text-slate-800">Основная информация</h2>
-              <div className="space-y-4">
-                <div>
-                                     <label className="block text-sm font-semibold mb-1 text-slate-700">Название курса</label>
-                                     <input
-                     type="text"
-                     value={courseData.title}
-                     onChange={(e) => setCourseData({...courseData, title: e.target.value})}
-                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                     placeholder="WordPress для начинающих"
-                   />
-                </div>
-                <div>
-                                     <label className="block text-sm font-semibold mb-1 text-slate-700">Описание</label>
-                  <textarea
-                    value={courseData.description}
-                    onChange={(e) => setCourseData({...courseData, description: e.target.value})}
-                                         className="w-full px-3 py-2 border border-slate-300 rounded-lg h-24 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                    placeholder="Краткое описание курса..."
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                                         <label className="block text-sm font-semibold mb-1 text-slate-700">Направление</label>
-                                          <select 
-                        value={courseData.direction}
-                        onChange={(e) => setCourseData({...courseData, direction: e.target.value as any})}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                      >
-                      <option value="WORDPRESS">WordPress</option>
-                      <option value="VIBE_CODING">Программирование</option>
-                      <option value="SHOPIFY">Shopify</option>
-                    </select>
-                  </div>
-                  <div>
-                                         <label className="block text-sm font-semibold mb-1 text-slate-700">Уровень</label>
-                                           <select
-                         value={courseData.level}
-                         onChange={(e) => setCourseData({...courseData, level: e.target.value as any})}
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                       >
-                      <option value="BEGINNER">Начальный</option>
-                      <option value="INTERMEDIATE">Средний</option>
-                      <option value="ADVANCED">Продвинутый</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                                         <label className="block text-sm font-semibold mb-1 text-slate-700">Длительность (недель)</label>
-                                           <input
-                         type="number"
-                         value={courseData.duration}
-                         onChange={(e) => setCourseData({...courseData, duration: parseInt(e.target.value) || 4})}
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                         min="1"
-                         max="52"
-                       />
-                  </div>
-                  <div>
-                                         <label className="block text-sm font-semibold mb-1 text-slate-700">Цена</label>
-                                           <input
-                         type="number"
-                         value={courseData.price}
-                         onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
-                         min="0"
-                       />
-                  </div>
-                </div>
-              </div>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {renderCurrentStep()}
 
-            <div className="bg-white rounded-lg p-6">
-                             <h2 className="text-xl font-bold mb-4 text-slate-800">Статистика</h2>
-              <div className="space-y-3">
-                                 <div className="flex justify-between">
-                   <span className="text-indigo-600 font-semibold">Модулей:</span>
-                   <span className="font-medium">{modules.length}</span>
-                 </div>
-                 <div className="flex justify-between">
-                   <span className="text-emerald-600 font-semibold">Уроков:</span>
-                   <span className="font-medium">
-                     {modules.reduce((acc, m) => acc + m.lessons.length, 0)}
-                   </span>
-                 </div>
-                 <div className="flex justify-between">
-                   <span className="text-violet-600 font-semibold">Заданий:</span>
-                   <span className="font-medium">
-                     {modules.reduce((acc, m) => acc + m.assignments.length, 0)}
-                   </span>
-                 </div>
-                 <div className="flex justify-between">
-                   <span className="text-amber-600 font-semibold">Длительность:</span>
-                   <span className="font-medium">{courseData.duration} недель</span>
-                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Таб: Структура */}
-        {activeTab === 'structure' && (
-          <div className="bg-white rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-                             <h2 className="text-xl font-bold text-slate-800">Структура курса</h2>
-              <div className="flex gap-2">
-                                                  <button
-                   onClick={() => setShowTemplates(true)}
-                   className="px-4 py-2 border border-violet-300 rounded-lg hover:bg-violet-50 text-violet-600 font-medium flex items-center gap-2 transition-all duration-200 hover:scale-105"
-                 >
-                   <BookOpen className="w-4 h-4" />
-                   Шаблоны
-                 </button>
-                                 <button
-                   onClick={addModule}
-                   className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 flex items-center gap-2 font-medium transition-all duration-200 hover:scale-105 shadow-lg"
-                 >
-                   <Plus className="w-4 h-4" />
-                   Добавить модуль
-                 </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {modules.map((module, moduleIndex) => (
-                <div key={module.id}>
-                  {/* Drop zone перед модулем */}
-                  {dragOverIndex === moduleIndex && (
-                    <div className="h-2 bg-indigo-200 rounded my-2 border-2 border-dashed border-indigo-400" />
-                  )}
-                  
-                  <div
-                    className={`border rounded-lg transition-all ${
-                      draggedItem?.item?.id === module.id ? 'opacity-50' : ''
-                    }`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, 'module', module)}
-                    onDragOver={(e) => handleDragOver(e, moduleIndex)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, moduleIndex)}
-                  >
-                                         <div className="p-4 bg-indigo-50 flex items-center gap-3">
-                       <GripVertical className="w-5 h-5 text-indigo-400 cursor-move" />
-                       <button
-                         onClick={() => toggleModule(module.id)}
-                         className="text-indigo-600 hover:text-indigo-900"
-                       >
-                        {module.isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                      </button>
-                      <input
-                        type="text"
-                        value={module.title}
-                        onChange={(e) => setModules(modules.map(m => 
-                          m.id === module.id ? {...m, title: e.target.value} : m
-                        ))}
-                        className="flex-1 px-2 py-1 bg-transparent font-medium"
-                        placeholder="Название модуля"
-                      />
-                                             <span className="text-sm text-indigo-600 font-medium">
-                         {module.lessons.length} уроков, {module.assignments.length} заданий
-                       </span>
-                      <button
-                        onClick={() => deleteModule(module.id)}
-                        className="text-red-600 hover:text-red-700 p-1"
-                        title="Удалить модуль"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {module.isExpanded && (
-                      <div className="p-4 space-y-3">
-                        {/* Уроки */}
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-semibold text-slate-700 mb-2">Уроки:</h4>
-                          {module.lessons.map((lesson, lessonIndex) => (
-                            <div key={lesson.id}>
-                              {/* Drop zone перед уроком */}
-                              {dragOverIndex === lessonIndex && draggedItem?.type === 'lesson' && draggedItem?.moduleId === module.id && (
-                                <div className="h-1 bg-emerald-200 rounded my-1 border border-dashed border-emerald-400" />
-                              )}
-                              
-                              <div 
-                                className={`flex items-center gap-3 p-2 bg-indigo-50 rounded transition-all ${
-                                  draggedItem?.item?.id === lesson.id ? 'opacity-50' : ''
-                                }`}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, 'lesson', lesson, module.id)}
-                                onDragOver={(e) => handleDragOver(e, lessonIndex)}
-                                onDragLeave={handleDragLeave}
-                                onDrop={(e) => handleDrop(e, lessonIndex, module.id, 'lesson')}
-                              >
-                                <GripVertical className="w-4 h-4 text-indigo-400 cursor-move" />
-                                {lesson.type === 'video' && <Video className="w-4 h-4 text-indigo-600" />}
-                                {lesson.type === 'text' && <FileText className="w-4 h-4 text-emerald-600" />}
-                                <input
-                                  type="text"
-                                  value={lesson.title}
-                                  onChange={(e) => setModules(modules.map(m => {
-                                    if (m.id === module.id) {
-                                      return {
-                                        ...m,
-                                        lessons: m.lessons.map(l => 
-                                          l.id === lesson.id ? {...l, title: e.target.value} : l
-                                        )
-                                      }
-                                    }
-                                    return m
-                                  }))}
-                                  className="flex-1 px-2 py-1 bg-white border rounded"
-                                  placeholder="Название урока"
-                                />
-                                {lesson.hasQuiz && <CheckSquare className="w-4 h-4 text-purple-600" />}
-                                                                 <button
-                                   onClick={() => deleteLesson(module.id, lesson.id)}
-                                   className="text-red-600 hover:text-red-700 p-1"
-                                   title="Удалить урок"
-                                 >
-                                   <Trash2 className="w-3 h-3" />
-                                 </button>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          {/* Drop zone в конце уроков */}
-                          {dragOverIndex === module.lessons.length && draggedItem?.type === 'lesson' && draggedItem?.moduleId === module.id && (
-                            <div className="h-1 bg-emerald-200 rounded my-1 border border-dashed border-emerald-400" />
-                          )}
-                        </div>
-
-                        {/* Задания */}
-                        {module.assignments.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-slate-700 mb-2">Задания:</h4>
-                            {module.assignments.map((assignment, assignmentIndex) => (
-                              <div key={assignment.id}>
-                                {/* Drop zone перед заданием */}
-                                {dragOverIndex === assignmentIndex && draggedItem?.type === 'assignment' && draggedItem?.moduleId === module.id && (
-                                  <div className="h-1 bg-violet-200 rounded my-1 border border-dashed border-violet-400" />
-                                )}
-                                
-                                <div 
-                                  className={`flex items-center gap-3 p-2 bg-emerald-50 rounded transition-all ${
-                                    draggedItem?.item?.id === assignment.id ? 'opacity-50' : ''
-                                  }`}
-                                  draggable
-                                  onDragStart={(e) => handleDragStart(e, 'assignment', assignment, module.id)}
-                                  onDragOver={(e) => handleDragOver(e, assignmentIndex)}
-                                  onDragLeave={handleDragLeave}
-                                  onDrop={(e) => handleDrop(e, assignmentIndex, module.id, 'assignment')}
-                                >
-                                  <GripVertical className="w-4 h-4 text-emerald-400 cursor-move" />
-                                  <CheckSquare className="w-4 h-4 text-emerald-600" />
-                                  <input
-                                    type="text"
-                                    value={assignment.title}
-                                    onChange={(e) => setModules(modules.map(m => {
-                                      if (m.id === module.id) {
-                                        return {
-                                          ...m,
-                                          assignments: m.assignments.map(a => 
-                                            a.id === assignment.id ? {...a, title: e.target.value} : a
-                                          )
-                                        }
-                                      }
-                                      return m
-                                    }))}
-                                    className="flex-1 px-2 py-1 bg-white border rounded"
-                                    placeholder="Название задания"
-                                  />
-                                  <button
-                                    onClick={() => deleteAssignment(module.id, assignment.id)}
-                                    className="text-red-600 hover:text-red-700 p-1"
-                                    title="Удалить задание"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                            
-                            {/* Drop zone в конце заданий */}
-                            {dragOverIndex === module.assignments.length && draggedItem?.type === 'assignment' && draggedItem?.moduleId === module.id && (
-                              <div className="h-1 bg-violet-200 rounded my-1 border border-dashed border-violet-400" />
-                            )}
-                          </div>
-                        )}
-
-                        {/* Кнопки добавления */}
-                        <div className="flex gap-2 pt-2 border-t border-slate-200">
-                          <button
-                            onClick={() => addLesson(module.id)}
-                            className="px-3 py-1.5 text-sm border border-indigo-300 rounded hover:bg-indigo-50 text-indigo-600 flex items-center gap-1 transition-all duration-200 hover:scale-105"
-                          >
-                            <Plus className="w-3 h-3" />
-                            Урок
-                          </button>
-                          <button
-                            onClick={() => addAssignment(module.id)}
-                            className="px-3 py-1.5 text-sm border border-emerald-300 rounded hover:bg-emerald-50 text-emerald-600 flex items-center gap-1 transition-all duration-200 hover:scale-105"
-                          >
-                            <Plus className="w-3 h-3" />
-                            Задание
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {/* Drop zone в конце */}
-              {dragOverIndex === modules.length && (
-                <div className="h-2 bg-indigo-200 rounded my-2 border-2 border-dashed border-indigo-400" />
-              )}
-
-                             {modules.length === 0 && (
-                 <div className="text-center py-12 text-indigo-500">
-                   <p className="mb-4 font-medium">Пока нет модулей</p>
-                   <button
-                     onClick={addModule}
-                     className="px-4 py-2 border-2 border-dashed border-indigo-300 rounded-lg hover:border-indigo-400 text-indigo-600 transition-all duration-200 hover:scale-105"
-                   >
-                    <Plus className="w-4 h-4 inline mr-2" />
-                    Создать первый модуль
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-                 {/* Таб: Контент */}
-         {activeTab === 'content' && (
-           <div className="bg-white rounded-lg p-6">
-             <div className="flex justify-between items-center mb-6">
-               <h2 className="text-xl font-bold text-slate-800">Редактирование контента</h2>
-               <div className="flex gap-2">
-                 <button 
-                   onClick={() => setShowVideoModal(true)}
-                   className="px-4 py-2 border border-indigo-300 rounded-lg hover:bg-indigo-50 text-indigo-600 font-medium transition-all duration-200"
-                 >
-                   <Plus className="w-4 h-4 inline mr-2" />
-                   Добавить видео
-                 </button>
-                 <button 
-                   onClick={() => setShowFileModal(true)}
-                   className="px-4 py-2 border border-emerald-300 rounded-lg hover:bg-emerald-50 text-emerald-600 font-medium transition-all duration-200"
-                 >
-                   <Plus className="w-4 h-4 inline mr-2" />
-                   Добавить файл
-                 </button>
-               </div>
-             </div>
-
-             {modules.length === 0 ? (
-               <div className="text-center py-12 text-indigo-500">
-                 <p className="mb-4 font-medium">Сначала создайте модули и уроки в разделе "Структура"</p>
-                 <button
-                   onClick={() => setActiveTab('structure')}
-                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200"
-                 >
-                   Перейти к структуре
-                 </button>
-               </div>
-             ) : (
-               <div className="space-y-6">
-                 {modules.map((module) => (
-                   <div key={module.id} className="border border-slate-200 rounded-lg p-4">
-                     <h3 className="text-lg font-semibold text-slate-800 mb-4">{module.title}</h3>
-                     
-                     {module.lessons.length === 0 ? (
-                       <p className="text-slate-500 text-center py-4">В этом модуле пока нет уроков</p>
-                     ) : (
-                       <div className="space-y-4">
-                         {module.lessons.map((lesson) => (
-                           <div key={lesson.id} className="border border-slate-200 rounded-lg p-4">
-                             <div className="flex items-center justify-between mb-3">
-                               <h4 className="font-medium text-slate-800">{lesson.title}</h4>
-                               <div className="flex gap-2">
-                                 <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                   lesson.type === 'video' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
-                                 }`}>
-                                   {lesson.type === 'video' ? 'Видео' : 'Текст'}
-                                 </span>
-                                 {lesson.hasQuiz && (
-                                   <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700">
-                                     Тест
-                                   </span>
-                                 )}
-                               </div>
-                             </div>
-                             
-                             <div className="space-y-3">
-                               {/* Тип контента */}
-                               <div>
-                                 <label className="block text-sm font-medium text-slate-700 mb-1">Тип контента</label>
-                                 <select
-                                   value={lesson.type}
-                                   onChange={(e) => setModules(modules.map(m => {
-                                     if (m.id === module.id) {
-                                       return {
-                                         ...m,
-                                         lessons: m.lessons.map(l => 
-                                           l.id === lesson.id ? {...l, type: e.target.value as any} : l
-                                         )
-                                       }
-                                     }
-                                     return m
-                                   }))}
-                                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                 >
-                                   <option value="video">Видео</option>
-                                   <option value="text">Текст</option>
-                                   <option value="mixed">Смешанный</option>
-                                 </select>
-                               </div>
-
-                               {/* URL видео */}
-                               {lesson.type === 'video' && (
-                                 <div>
-                                   <label className="block text-sm font-medium text-slate-700 mb-1">URL видео</label>
-                                   <input
-                                     type="url"
-                                     value={lesson.videoUrl || ''}
-                                     onChange={(e) => setModules(modules.map(m => {
-                                       if (m.id === module.id) {
-                                         return {
-                                           ...m,
-                                           lessons: m.lessons.map(l => 
-                                             l.id === lesson.id ? {...l, videoUrl: e.target.value} : l
-                                           )
-                                         }
-                                       }
-                                       return m
-                                     }))}
-                                     placeholder="https://www.youtube.com/watch?v=..."
-                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   />
-                                 </div>
-                               )}
-
-                               {/* Длительность */}
-                               <div>
-                                 <label className="block text-sm font-medium text-slate-700 mb-1">Длительность (минуты)</label>
-                                 <input
-                                   type="number"
-                                   value={lesson.duration || ''}
-                                   onChange={(e) => setModules(modules.map(m => {
-                                     if (m.id === module.id) {
-                                       return {
-                                         ...m,
-                                         lessons: m.lessons.map(l => 
-                                           l.id === lesson.id ? {...l, duration: parseInt(e.target.value) || 0} : l
-                                         )
-                                       }
-                                     }
-                                     return m
-                                   }))}
-                                   placeholder="15"
-                                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                 />
-                               </div>
-
-                               {/* Текстовый контент */}
-                               <div>
-                                 <label className="block text-sm font-medium text-slate-700 mb-1">Описание урока</label>
-                                 <textarea
-                                   value={lesson.content || ''}
-                                   onChange={(e) => setModules(modules.map(m => {
-                                     if (m.id === module.id) {
-                                       return {
-                                         ...m,
-                                         lessons: m.lessons.map(l => 
-                                           l.id === lesson.id ? {...l, content: e.target.value} : l
-                                         )
-                                       }
-                                     }
-                                     return m
-                                   }))}
-                                   placeholder="Описание урока, основные моменты, что студент узнает..."
-                                   rows={4}
-                                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                 />
-                               </div>
-
-                               {/* Тест */}
-                               <div className="space-y-3">
-                                 <div className="flex items-center gap-2">
-                                   <input
-                                     type="checkbox"
-                                     id={`quiz-${lesson.id}`}
-                                     checked={lesson.hasQuiz}
-                                     onChange={(e) => setModules(modules.map(m => {
-                                       if (m.id === module.id) {
-                                         return {
-                                           ...m,
-                                           lessons: m.lessons.map(l => 
-                                             l.id === lesson.id ? {...l, hasQuiz: e.target.checked} : l
-                                           )
-                                         }
-                                       }
-                                       return m
-                                     }))}
-                                     className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                                   />
-                                   <label htmlFor={`quiz-${lesson.id}`} className="text-sm font-medium text-slate-700">
-                                     Добавить тест к уроку
-                                   </label>
-                                 </div>
-                                 
-                                 {lesson.hasQuiz && (
-                                   <div className="flex items-center gap-2">
-                                     <button
-                                       type="button"
-                                       onClick={() => openQuizBuilder(module.id, lesson.id)}
-                                       className="px-3 py-1.5 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-2 transition-colors"
-                                     >
-                                       <ClipboardList className="w-4 h-4" />
-                                       {lesson.quiz ? 'Редактировать тест' : 'Создать тест'}
-                                     </button>
-                                     {lesson.quiz && (
-                                       <span className="text-xs text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">
-                                         Тест создан
-                                       </span>
-                                     )}
-                                   </div>
-                                 )}
-                               </div>
-                             </div>
-                           </div>
-                         ))}
-                       </div>
-                     )}
-                   </div>
-                 ))}
-               </div>
-             )}
-           </div>
-         )}
-
-         {/* Таб: Настройки */}
-         {activeTab === 'settings' && (
-           <div className="bg-white rounded-lg p-6">
-             <h2 className="text-xl font-bold text-slate-800 mb-6">Настройки курса</h2>
-             
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-               {/* Основные настройки */}
-               <div className="space-y-6">
-                 <div className="border border-slate-200 rounded-lg p-4">
-                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Основные настройки</h3>
-                   
-                   <div className="space-y-4">
-                     {/* Статус курса */}
-                     <div>
-                       <label className="block text-sm font-medium text-slate-700 mb-1">Статус курса</label>
-                       <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                         <option value="draft">Черновик</option>
-                         <option value="published">Опубликован</option>
-                         <option value="archived">Архив</option>
-                       </select>
-                     </div>
-
-                     {/* Видимость */}
-                     <div>
-                       <label className="block text-sm font-medium text-slate-700 mb-1">Видимость</label>
-                       <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                         <option value="public">Публичный</option>
-                         <option value="private">Приватный</option>
-                         <option value="unlisted">Не в списке</option>
-                       </select>
-                     </div>
-
-                     {/* Язык */}
-                     <div>
-                       <label className="block text-sm font-medium text-slate-700 mb-1">Язык курса</label>
-                       <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                         <option value="ru">Русский</option>
-                         <option value="en">English</option>
-                         <option value="kz">Қазақша</option>
-                       </select>
-                     </div>
-
-                     {/* Сертификат */}
-                     <div className="flex items-center gap-2">
-                       <input
-                         type="checkbox"
-                         id="certificate"
-                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                       />
-                       <label htmlFor="certificate" className="text-sm font-medium text-slate-700">
-                         Выдавать сертификат по завершении
-                       </label>
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Настройки обучения */}
-                 <div className="border border-slate-200 rounded-lg p-4">
-                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Настройки обучения</h3>
-                   
-                   <div className="space-y-4">
-                     {/* Прогресс */}
-                     <div className="flex items-center gap-2">
-                       <input
-                         type="checkbox"
-                         id="progress"
-                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                       />
-                       <label htmlFor="progress" className="text-sm font-medium text-slate-700">
-                         Отслеживать прогресс студентов
-                       </label>
-                     </div>
-
-                     {/* Повторное прохождение */}
-                     <div className="flex items-center gap-2">
-                       <input
-                         type="checkbox"
-                         id="retake"
-                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                       />
-                       <label htmlFor="retake" className="text-sm font-medium text-slate-700">
-                         Разрешить повторное прохождение
-                       </label>
-                     </div>
-
-                     {/* Обсуждения */}
-                     <div className="flex items-center gap-2">
-                       <input
-                         type="checkbox"
-                         id="discussions"
-                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                       />
-                       <label htmlFor="discussions" className="text-sm font-medium text-slate-700">
-                         Включить обсуждения
-                       </label>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-
-               {/* Дополнительные настройки */}
-               <div className="space-y-6">
-                 {/* SEO настройки */}
-                 <div className="border border-slate-200 rounded-lg p-4">
-                   <h3 className="text-lg font-semibold text-slate-800 mb-4">SEO настройки</h3>
-                   
-                   <div className="space-y-4">
-                     <div>
-                       <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
-                       <input
-                         type="text"
-                         placeholder="Название для поисковых систем"
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       />
-                     </div>
-
-                     <div>
-                       <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
-                       <textarea
-                         placeholder="Краткое описание для поисковых систем"
-                         rows={3}
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       />
-                     </div>
-
-                     <div>
-                       <label className="block text-sm font-medium text-slate-700 mb-1">Ключевые слова</label>
-                       <input
-                         type="text"
-                         placeholder="wordpress, обучение, сайты"
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       />
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Уведомления */}
-                 <div className="border border-slate-200 rounded-lg p-4">
-                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Уведомления</h3>
-                   
-                   <div className="space-y-4">
-                     <div className="flex items-center gap-2">
-                       <input
-                         type="checkbox"
-                         id="email-notifications"
-                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                       />
-                       <label htmlFor="email-notifications" className="text-sm font-medium text-slate-700">
-                         Email уведомления о новых студентах
-                       </label>
-                     </div>
-
-                     <div className="flex items-center gap-2">
-                       <input
-                         type="checkbox"
-                         id="completion-notifications"
-                         className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                       />
-                       <label htmlFor="completion-notifications" className="text-sm font-medium text-slate-700">
-                         Уведомления о завершении курса
-                       </label>
-                     </div>
-                   </div>
-                 </div>
-
-                 {/* Опасная зона */}
-                 <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                   <h3 className="text-lg font-semibold text-red-800 mb-4">Опасная зона</h3>
-                   
-                   <div className="space-y-4">
-                     <button className="w-full px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-100 transition-all duration-200">
-                       Дублировать курс
-                     </button>
-                     <button className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200">
-                       Удалить курс
-                     </button>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         )}
-
-        {/* Модальное окно шаблонов */}
-        {showTemplates && (
-          <CourseTemplateSelector
-            onSelectTemplate={applyTemplate}
-            onClose={() => setShowTemplates(false)}
-          />
-        )}
-
-        {/* Модальное окно добавления видео */}
-        {showVideoModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-slate-800">Добавить видео</h3>
-                <button
-                  onClick={() => setShowVideoModal(false)}
-                  className="text-slate-500 hover:text-slate-700"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">URL видео</label>
-                  <input
-                    type="url"
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Название</label>
-                  <input
-                    type="text"
-                    placeholder="Название видео"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Описание</label>
-                  <textarea
-                    placeholder="Краткое описание видео"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowVideoModal(false)}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50"
-                >
-                  Отмена
-                </button>
-                <button className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                  Добавить
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Модальное окно добавления файла */}
-        {showFileModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-slate-800">Добавить файл</h3>
-                <button
-                  onClick={() => setShowFileModal(false)}
-                  className="text-slate-500 hover:text-slate-700"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Выберите файл</label>
-                  <input
-                    type="file"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Название</label>
-                  <input
-                    type="text"
-                    placeholder="Название файла"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Описание</label>
-                  <textarea
-                    placeholder="Описание файла"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowFileModal(false)}
-                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50"
-                >
-                  Отмена
-                </button>
-                <button className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                  Загрузить
-                </button>
-              </div>
-            </div>
-                     </div>
-         )}
-
-        {/* Модальное окно предварительного просмотра */}
-        {showPreview && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b p-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-slate-800">Предварительный просмотр курса</h3>
-                  <button
-                    onClick={() => setShowPreview(false)}
-                    className="text-slate-500 hover:text-slate-700"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                {/* Заголовок курса */}
-                <div className="mb-8">
-                  <h1 className="text-3xl font-bold text-slate-800 mb-2">{courseData.title || 'Название курса'}</h1>
-                  <p className="text-slate-600 mb-4">{courseData.description || 'Описание курса'}</p>
-                  <div className="flex gap-4 text-sm text-slate-500">
-                    <span>Направление: {courseData.direction}</span>
-                    <span>Уровень: {courseData.level}</span>
-                    <span>Длительность: {courseData.duration} недель</span>
-                    <span>Цена: {courseData.price} ₸</span>
-                  </div>
-                </div>
-
-                {/* Структура курса */}
-                <div className="space-y-6">
-                  {modules.map((module, moduleIndex) => (
-                    <div key={module.id} className="border border-slate-200 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-slate-800 mb-3">
-                        Модуль {moduleIndex + 1}: {module.title}
-                      </h3>
-                      
-                      {module.description && (
-                        <p className="text-slate-600 mb-4">{module.description}</p>
-                      )}
-
-                      {/* Уроки */}
-                      {module.lessons.length > 0 && (
-                        <div className="space-y-2 mb-4">
-                          <h4 className="font-medium text-slate-700">Уроки:</h4>
-                          {module.lessons.map((lesson, lessonIndex) => (
-                            <div key={lesson.id} className="flex items-center gap-3 p-2 bg-slate-50 rounded">
-                              <span className="text-sm text-slate-500">Урок {lessonIndex + 1}</span>
-                              <span className="font-medium">{lesson.title}</span>
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                lesson.type === 'video' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
-                              }`}>
-                                {lesson.type === 'video' ? 'Видео' : 'Текст'}
-                              </span>
-                              {lesson.duration && (
-                                <span className="text-xs text-slate-500">{lesson.duration} мин</span>
-                              )}
-                              {lesson.hasQuiz && (
-                                <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-700">Тест</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Задания */}
-                      {module.assignments.length > 0 && (
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-slate-700">Задания:</h4>
-                          {module.assignments.map((assignment, assignmentIndex) => (
-                            <div key={assignment.id} className="flex items-center gap-3 p-2 bg-slate-50 rounded">
-                              <span className="text-sm text-slate-500">Задание {assignmentIndex + 1}</span>
-                              <span className="font-medium">{assignment.title}</span>
-                              {assignment.dueDate && (
-                                <span className="text-xs text-slate-500">Срок: {assignment.dueDate}</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {modules.length === 0 && (
-                  <div className="text-center py-12 text-slate-500">
-                    <p>Курс пока не содержит модулей</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Модальное окно QuizBuilder */}
-        {showQuizBuilder && selectedLessonForQuiz && (
-          <QuizBuilder
-            lessonId={selectedLessonForQuiz.lessonId}
-            onSave={handleQuizSave}
-            onCancel={() => {
-              setShowQuizBuilder(false)
-              setSelectedLessonForQuiz(null)
-            }}
-          />
-        )}
-       </div>
-     </div>
-   )
- }
+        {/* Навигация внизу */}
+        <div className="flex justify-between mt-8">
+          <button
+            onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+            disabled={currentStep === 0}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Назад
+          </button>
+          
+          {currentStep < STEPS.length - 1 && (
+            <button
+              onClick={() => goToStep(currentStep + 1)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Далее
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -111,19 +111,13 @@ export default function AdminDashboard() {
                 Создать тест
               </button>
               <button
-                onClick={() => router.push('/admin/builder/v2')}
+                onClick={() => router.push('/admin/builder')}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Конструктор v2
+                Конструктор курсов
               </button>
-              <button
-                onClick={() => router.push('/admin/builder')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Создать курс
-              </button>
+
             </div>
           </div>
         </div>
@@ -210,7 +204,7 @@ export default function AdminDashboard() {
 
                   <div className="flex gap-2">
                                        <button
-                     onClick={() => router.push(`/admin/builder/v2?edit=${course.id}`)}
+                     onClick={() => router.push(`/admin/builder?edit=${course.id}`)}
                      className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
                    >
                      <Edit className="w-4 h-4" />
