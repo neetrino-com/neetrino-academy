@@ -134,7 +134,12 @@ export async function PUT(
     }
 
     const body = await request.json()
+    console.log('=== PUT /api/admin/courses/[id] вызван ===')
+    console.log('Course ID:', (await params).id)
+    console.log('Request body:', JSON.stringify(body, null, 2))
+    
     const validatedData = updateCourseSchema.parse(body)
+    console.log('Validated data:', JSON.stringify(validatedData, null, 2))
 
     // Генерируем новый slug из названия курса
     const newSlug = validatedData.courseData.title
@@ -159,18 +164,29 @@ export async function PUT(
       )
     }
 
+    // Подготавливаем данные для обновления
+    const updateData = {
+      title: validatedData.courseData.title,
+      description: validatedData.courseData.description,
+      slug: newSlug,
+      direction: validatedData.courseData.direction,
+      level: validatedData.courseData.level,
+      price: validatedData.courseData.price || 0,
+      isDraft: validatedData.courseData.isDraft !== undefined ? validatedData.courseData.isDraft : existingCourse.isDraft,
+      isActive: validatedData.courseData.isActive !== undefined ? validatedData.courseData.isActive : existingCourse.isActive
+    }
+    
+    console.log('Данные для обновления курса:', JSON.stringify(updateData, null, 2))
+    console.log('Старые значения: isDraft =', existingCourse.isDraft, ', isActive =', existingCourse.isActive)
+    console.log('Новые значения: isDraft =', updateData.isDraft, ', isActive =', updateData.isActive)
+
     // Обновляем курс
     const course = await prisma.course.update({
       where: { id: (await params).id },
-      data: {
-        title: validatedData.courseData.title,
-        description: validatedData.courseData.description,
-        slug: newSlug,
-        direction: validatedData.courseData.direction,
-        level: validatedData.courseData.level,
-        price: validatedData.courseData.price || 0
-      }
+      data: updateData
     })
+    
+    console.log('Курс обновлен успешно. Новые значения: isDraft =', course.isDraft, ', isActive =', course.isActive)
 
     // Если есть модули, обновляем их
     if (validatedData.modules && validatedData.modules.length > 0) {
