@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { 
@@ -37,9 +37,9 @@ interface Group extends GroupFormData {
 }
 
 interface EditGroupProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function EditGroup({ params }: EditGroupProps) {
@@ -49,6 +49,9 @@ export default function EditGroup({ params }: EditGroupProps) {
   const [loadingGroup, setLoadingGroup] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [group, setGroup] = useState<Group | null>(null)
+  
+  // Развертываем промис params
+  const resolvedParams = use(params)
   
   const [formData, setFormData] = useState<GroupFormData>({
     name: '',
@@ -70,12 +73,12 @@ export default function EditGroup({ params }: EditGroupProps) {
     }
 
     fetchGroup()
-  }, [session, status, router, params.id])
+  }, [session, status, router, resolvedParams.id])
 
   const fetchGroup = async () => {
     try {
       setLoadingGroup(true)
-      const response = await fetch(`/api/admin/groups/${params.id}`)
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}`)
       
       if (response.ok) {
         const groupData = await response.json()
@@ -184,7 +187,7 @@ export default function EditGroup({ params }: EditGroupProps) {
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/admin/groups/${params.id}`, {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -193,7 +196,7 @@ export default function EditGroup({ params }: EditGroupProps) {
       })
 
       if (response.ok) {
-        router.push(`/admin/groups/${params.id}`)
+        router.push(`/admin/groups/${resolvedParams.id}`)
       } else {
         const error = await response.json()
         setErrors({ submit: error.error || 'Ошибка обновления группы' })
@@ -253,7 +256,7 @@ export default function EditGroup({ params }: EditGroupProps) {
               </div>
             </div>
             <button
-              onClick={() => router.push(`/admin/groups/${params.id}`)}
+              onClick={() => router.push(`/admin/groups/${resolvedParams.id}`)}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-all duration-200"
             >
               <Eye className="w-4 h-4" />
@@ -501,7 +504,7 @@ export default function EditGroup({ params }: EditGroupProps) {
           <div className="flex gap-4 pt-6">
             <button
               type="button"
-              onClick={() => router.push(`/admin/groups/${params.id}`)}
+              onClick={() => router.push(`/admin/groups/${resolvedParams.id}`)}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
               disabled={loading}
             >
