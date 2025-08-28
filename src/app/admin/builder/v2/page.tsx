@@ -1447,26 +1447,7 @@ export default function CourseBuilderV2() {
           </div>
         </div>
 
-        {/* Кнопки действий */}
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={() => saveCourse(true)}
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-          >
-            <Save className="w-5 h-5" />
-            {saving ? 'Сохранение...' : 'Сохранить как черновик'}
-          </button>
-          
-          <button
-            onClick={() => saveCourse(false)}
-            disabled={saving || !courseData.title || !courseData.description || modules.length === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-          >
-            <Rocket className="w-5 h-5" />
-            {saving ? 'Публикация...' : 'Опубликовать курс'}
-          </button>
-        </div>
+
       </div>
     )
   }
@@ -1586,23 +1567,31 @@ export default function CourseBuilderV2() {
               <h1 className="text-2xl font-bold text-gray-900">
                 {isEditing ? 'Редактирование курса' : 'Конструктор курса v2'}
               </h1>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {/* Предпросмотр */}}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  <Eye className="w-4 h-4" />
-                  Предпросмотр
-                </button>
-                <button
-                  onClick={() => {/* Сохранение */}}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving ? 'Сохранение...' : 'Сохранить'}
-                </button>
-              </div>
+                             <div className="flex items-center gap-3">
+                 <button
+                   onClick={() => {/* Предпросмотр */}}
+                   className="flex items-center gap-2 px-4 py-2 text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium"
+                 >
+                   <Eye className="w-4 h-4" />
+                   Предпросмотр
+                 </button>
+                 <button
+                   onClick={() => saveCourse(true)}
+                   disabled={saving}
+                   className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
+                 >
+                   <Save className="w-4 h-4" />
+                   {saving ? 'Сохранение...' : 'Черновик'}
+                 </button>
+                 <button
+                   onClick={() => saveCourse(false)}
+                   disabled={saving || !courseData.title || !courseData.description || modules.length === 0}
+                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm font-medium"
+                 >
+                   <Rocket className="w-4 h-4" />
+                   {saving ? 'Публикация...' : 'Опубликовать курс'}
+                 </button>
+               </div>
             </div>
 
             {/* Навигация по шагам */}
@@ -1661,21 +1650,13 @@ export default function CourseBuilderV2() {
             Назад
           </button>
           
-          {currentStep < STEPS.length - 1 ? (
+          {currentStep < STEPS.length - 1 && (
             <button
               onClick={() => goToStep(currentStep + 1)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Далее
               <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={() => {/* Публикация курса */}}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              <Rocket className="w-4 h-4" />
-              Опубликовать курс
             </button>
           )}
         </div>
