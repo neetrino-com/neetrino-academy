@@ -10,7 +10,7 @@ const updateCourseSchema = z.object({
     direction: z.enum(['WORDPRESS', 'VIBE_CODING', 'SHOPIFY']),
     level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
     price: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
-    duration: z.number().optional(),
+    duration: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || 4 : val).optional(),
     tags: z.array(z.string()).optional(),
     prerequisites: z.array(z.string()).optional(),
     learningOutcomes: z.array(z.string()).optional(),
@@ -168,10 +168,7 @@ export async function PUT(
         slug: newSlug,
         direction: validatedData.courseData.direction,
         level: validatedData.courseData.level,
-        price: validatedData.courseData.price || 0,
-                 duration: validatedData.courseData.duration ? parseInt(validatedData.courseData.duration.toString()) : 4,
-        isDraft: validatedData.courseData.isDraft || false,
-        isActive: validatedData.courseData.isActive || false
+        price: validatedData.courseData.price || 0
       }
     })
 
@@ -246,7 +243,7 @@ export async function PUT(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Неверные данные', details: error.errors },
+        { error: 'Неверные данные', details: error.issues },
         { status: 400 }
       )
     }

@@ -1485,30 +1485,36 @@ export default function CourseBuilderV2() {
       
       const method = isEditing ? 'PUT' : 'POST'
       
+      // Подготавливаем данные для отправки
+      const requestData = {
+        courseData: {
+          ...courseData,
+          isDraft,
+          isActive: !isDraft
+        },
+        modules: modules.map(module => ({
+          ...module,
+          lessons: module.lessons,
+          assignments: assignments.filter(a => 
+            module.lessons.some(l => l.id === a.lessonId)
+          ).map(a => ({
+            title: a.title,
+            description: a.description,
+            dueDate: a.dueDate,
+            maxScore: a.maxScore
+          }))
+        }))
+      }
+
+      // Логируем данные для отладки
+      console.log('Отправляемые данные:', JSON.stringify(requestData, null, 2))
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          courseData: {
-            ...courseData,
-            isDraft,
-            isActive: !isDraft
-          },
-          modules: modules.map(module => ({
-            ...module,
-            lessons: module.lessons,
-            assignments: assignments.filter(a => 
-              module.lessons.some(l => l.id === a.lessonId)
-            ).map(a => ({
-              title: a.title,
-              description: a.description,
-              dueDate: a.dueDate,
-              maxScore: a.maxScore
-            }))
-          }))
-        })
+        body: JSON.stringify(requestData)
       })
 
       if (response.ok) {
@@ -1534,6 +1540,7 @@ export default function CourseBuilderV2() {
         router.push('/admin')
       } else {
         const errorData = await response.json()
+        console.error('Ошибка сервера:', errorData)
         throw new Error(errorData.error || 'Ошибка сохранения')
       }
     } catch (error) {
