@@ -61,7 +61,7 @@ export function AppHeader() {
               </div>
               <div>
                 <span className={`text-xl font-bold group-hover:text-opacity-80 transition-all duration-300 ${
-                  isStudent ? 'text-blue-900' : 'text-red-900'
+                  isStudent ? 'text-blue-900' : 'text-emerald-600'
                 }`}>
                   Neetrino Academy
                 </span>
