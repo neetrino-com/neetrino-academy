@@ -18,9 +18,11 @@ import {
   Loader2,
   Move,
   BookOpen,
-  X
+  X,
+  ClipboardList
 } from 'lucide-react'
 import CourseTemplateSelector from '@/components/admin/CourseTemplateSelector'
+import QuizBuilder from '@/components/admin/QuizBuilder'
 
 // Типы для конструктора
 interface BuilderModule {
@@ -42,6 +44,7 @@ interface BuilderLesson {
   duration?: number
   order: number
   hasQuiz: boolean
+  quiz?: any
 }
 
 interface BuilderAssignment {
@@ -80,6 +83,8 @@ export default function CourseBuilder() {
   const [showVideoModal, setShowVideoModal] = useState(false)
   const [showFileModal, setShowFileModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [showQuizBuilder, setShowQuizBuilder] = useState(false)
+  const [selectedLessonForQuiz, setSelectedLessonForQuiz] = useState<{moduleId: string, lessonId: string} | null>(null)
 
   // Добавить новый модуль
   const addModule = () => {
@@ -95,6 +100,34 @@ export default function CourseBuilder() {
     setModules([...modules, newModule])
   }
 
+  // Открыть QuizBuilder для урока
+  const openQuizBuilder = (moduleId: string, lessonId: string) => {
+    setSelectedLessonForQuiz({ moduleId, lessonId })
+    setShowQuizBuilder(true)
+  }
+
+  // Сохранить тест
+  const handleQuizSave = (quiz: any) => {
+    if (selectedLessonForQuiz) {
+      setModules(modules.map(module => {
+        if (module.id === selectedLessonForQuiz.moduleId) {
+          return {
+            ...module,
+            lessons: module.lessons.map(lesson => 
+              lesson.id === selectedLessonForQuiz.lessonId 
+                ? { ...lesson, quiz, hasQuiz: true }
+                : lesson
+            )
+          }
+        }
+        return module
+      }))
+    }
+    
+    setShowQuizBuilder(false)
+    setSelectedLessonForQuiz(null)
+  }
+
   // Добавить урок в модуль
   const addLesson = (moduleId: string) => {
     setModules(modules.map(module => {
@@ -104,7 +137,8 @@ export default function CourseBuilder() {
           title: `Урок ${module.lessons.length + 1}`,
           type: 'video',
           order: module.lessons.length,
-          hasQuiz: false
+          hasQuiz: false,
+          quiz: undefined
         }
         return {
           ...module,
@@ -274,7 +308,8 @@ export default function CourseBuilder() {
         title: lesson.title,
         type: lesson.type,
         order: lessonIndex,
-        hasQuiz: false
+        hasQuiz: false,
+        quiz: undefined
       })),
       assignments: module.assignments.map((assignment: any, assignmentIndex: number) => ({
         id: `assignment-${Date.now()}-${index}-${assignmentIndex}`,
@@ -297,6 +332,7 @@ export default function CourseBuilder() {
 
     setSaving(true)
     try {
+      // Сначала сохраняем курс
       const response = await fetch('/api/admin/builder', {
         method: 'POST',
         headers: {
@@ -310,13 +346,38 @@ export default function CourseBuilder() {
 
       if (response.ok) {
         const result = await response.json()
+        
+        // Теперь сохраняем тесты для уроков, которые их имеют
+        const lessonsWithQuizzes = modules.flatMap(module => 
+          module.lessons.filter(lesson => lesson.hasQuiz && lesson.quiz)
+        )
+
+        for (const lesson of lessonsWithQuizzes) {
+          try {
+            await fetch('/api/admin/quizzes', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                lessonId: lesson.id,
+                ...lesson.quiz
+              })
+            })
+          } catch (quizError) {
+            console.error('Ошибка сохранения теста для урока:', lesson.id, quizError)
+          }
+        }
+
         router.push('/admin')
       } else {
-        throw new Error('Ошибка сохранения')
+        const errorData = await response.json()
+        throw new Error(`Ошибка сохранения: ${errorData.error || 'Неизвестная ошибка'}`)
       }
     } catch (error) {
       console.error('Ошибка сохранения:', error)
-      alert('Ошибка при сохранении курса')
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка'
+      alert(`Ошибка при сохранении курса: ${errorMessage}`)
     } finally {
       setSaving(false)
     }
@@ -868,27 +929,47 @@ export default function CourseBuilder() {
                                </div>
 
                                {/* Тест */}
-                               <div className="flex items-center gap-2">
-                                 <input
-                                   type="checkbox"
-                                   id={`quiz-${lesson.id}`}
-                                   checked={lesson.hasQuiz}
-                                   onChange={(e) => setModules(modules.map(m => {
-                                     if (m.id === module.id) {
-                                       return {
-                                         ...m,
-                                         lessons: m.lessons.map(l => 
-                                           l.id === lesson.id ? {...l, hasQuiz: e.target.checked} : l
-                                         )
+                               <div className="space-y-3">
+                                 <div className="flex items-center gap-2">
+                                   <input
+                                     type="checkbox"
+                                     id={`quiz-${lesson.id}`}
+                                     checked={lesson.hasQuiz}
+                                     onChange={(e) => setModules(modules.map(m => {
+                                       if (m.id === module.id) {
+                                         return {
+                                           ...m,
+                                           lessons: m.lessons.map(l => 
+                                             l.id === lesson.id ? {...l, hasQuiz: e.target.checked} : l
+                                           )
+                                         }
                                        }
-                                     }
-                                     return m
-                                   }))}
-                                   className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
-                                 />
-                                 <label htmlFor={`quiz-${lesson.id}`} className="text-sm font-medium text-slate-700">
-                                   Добавить тест к уроку
-                                 </label>
+                                       return m
+                                     }))}
+                                     className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                                   />
+                                   <label htmlFor={`quiz-${lesson.id}`} className="text-sm font-medium text-slate-700">
+                                     Добавить тест к уроку
+                                   </label>
+                                 </div>
+                                 
+                                 {lesson.hasQuiz && (
+                                   <div className="flex items-center gap-2">
+                                     <button
+                                       type="button"
+                                       onClick={() => openQuizBuilder(module.id, lesson.id)}
+                                       className="px-3 py-1.5 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 flex items-center gap-2 transition-colors"
+                                     >
+                                       <ClipboardList className="w-4 h-4" />
+                                       {lesson.quiz ? 'Редактировать тест' : 'Создать тест'}
+                                     </button>
+                                     {lesson.quiz && (
+                                       <span className="text-xs text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">
+                                         Тест создан
+                                       </span>
+                                     )}
+                                   </div>
+                                 )}
                                </div>
                              </div>
                            </div>
@@ -1300,6 +1381,18 @@ export default function CourseBuilder() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Модальное окно QuizBuilder */}
+        {showQuizBuilder && selectedLessonForQuiz && (
+          <QuizBuilder
+            lessonId={selectedLessonForQuiz.lessonId}
+            onSave={handleQuizSave}
+            onCancel={() => {
+              setShowQuizBuilder(false)
+              setSelectedLessonForQuiz(null)
+            }}
+          />
         )}
        </div>
      </div>

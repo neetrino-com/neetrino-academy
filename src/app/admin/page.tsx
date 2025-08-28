@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import QuizBuilder from '@/components/admin/QuizBuilder'
+import GroupManager from '@/components/admin/GroupManager'
 import { 
   Plus, 
   Edit, 
@@ -12,7 +14,9 @@ import {
   FileText,
   BarChart3,
   Settings,
-  Loader2
+  Loader2,
+  ClipboardList,
+  UserCheck
 } from 'lucide-react'
 
 interface Course {
@@ -32,6 +36,8 @@ export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
+  const [showQuizBuilder, setShowQuizBuilder] = useState(false)
+  const [showGroupManager, setShowGroupManager] = useState(false)
   const [stats, setStats] = useState({
     totalCourses: 0,
     totalStudents: 0,
@@ -88,13 +94,36 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Панель администратора</h1>
-            <button
-              onClick={() => router.push('/admin/builder')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Создать курс
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowGroupManager(true)}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2"
+              >
+                <UserCheck className="w-4 h-4" />
+                Управление группами
+              </button>
+              <button
+                onClick={() => setShowQuizBuilder(true)}
+                className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 flex items-center gap-2"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Создать тест
+              </button>
+              <button
+                onClick={() => router.push('/admin/builder/v2')}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Конструктор v2
+              </button>
+              <button
+                onClick={() => router.push('/admin/builder')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Создать курс
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -203,6 +232,22 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Модальные окна */}
+      {showQuizBuilder && (
+        <QuizBuilder
+          lessonId=""
+          onSave={(quiz) => {
+            console.log('Тест сохранен:', quiz)
+            setShowQuizBuilder(false)
+          }}
+          onCancel={() => setShowQuizBuilder(false)}
+        />
+      )}
+
+      {showGroupManager && (
+        <GroupManager onClose={() => setShowGroupManager(false)} />
+      )}
     </div>
   )
 }

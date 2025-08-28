@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { Decimal } from '@prisma/client/runtime/library'
 
 // Создание курса через конструктор
 export async function POST(request: NextRequest) {
@@ -35,13 +36,16 @@ export async function POST(request: NextRequest) {
       const newCourse = await tx.course.create({
         data: {
           title: courseData.title,
-          description: courseData.description,
+          description: courseData.description || '',
           slug: courseData.title.toLowerCase().replace(/\s+/g, '-'),
           direction: courseData.direction,
           level: courseData.level,
-          price: courseData.price,
-          duration: courseData.duration,
+          price: new Decimal(courseData.price || 0),
+          duration: courseData.duration || 4,
           createdBy: user.id
+        },
+        include: {
+          creator: true
         }
       })
 
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
         const newModule = await tx.module.create({
           data: {
             title: module.title,
-            description: module.description,
+            description: module.description || '',
             order: module.order,
             courseId: newCourse.id
           }
@@ -61,9 +65,9 @@ export async function POST(request: NextRequest) {
           await tx.lesson.create({
             data: {
               title: lesson.title,
-              content: lesson.content,
-              videoUrl: lesson.videoUrl,
-              duration: lesson.duration,
+              content: lesson.content || '',
+              videoUrl: lesson.videoUrl || null,
+              duration: lesson.duration || null,
               order: lesson.order,
               moduleId: newModule.id
             }
@@ -75,7 +79,7 @@ export async function POST(request: NextRequest) {
           await tx.assignment.create({
             data: {
               title: assignment.title,
-              description: assignment.description,
+              description: assignment.description || '',
               dueDate: assignment.dueDate ? new Date(assignment.dueDate) : null,
               moduleId: newModule.id,
               createdBy: user.id
@@ -90,8 +94,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(course)
   } catch (error) {
     console.error('Builder error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
-      { error: 'Failed to create course' },
+      { error: 'Failed to create course', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

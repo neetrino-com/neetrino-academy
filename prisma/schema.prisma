@@ -18,11 +18,14 @@ model User {
   updatedAt      DateTime         @updatedAt
   achievements   Achievement[]
   assignments    Assignment[]
+  courses        Course[]
   enrollments    Enrollment[]
   lessonProgress LessonProgress[]
   messages       Message[]
   quizAttempts   QuizAttempt[]
   submissions    Submission[]
+  groupStudents  GroupStudent[]
+  groupTeachers  GroupTeacher[]
 }
 
 model Course {
@@ -40,10 +43,12 @@ model Course {
   createdBy   String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  creator     User?        @relation(fields: [createdBy], references: [id])
   enrollments Enrollment[]
   messages    Message[]
   modules     Module[]
   templates   CourseTemplate[]
+  groupCourses GroupCourse[]
 }
 
 model Module {
@@ -140,6 +145,7 @@ model Assignment {
   creator     User         @relation(fields: [createdBy], references: [id])
   module      Module       @relation(fields: [moduleId], references: [id])
   submissions Submission[]
+  groupAssignments GroupAssignment[]
 }
 
 model LessonProgress {
@@ -240,6 +246,24 @@ enum QuestionType {
   TRUE_FALSE
 }
 
+enum GroupType {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum GroupMemberStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum TeacherRole {
+  MAIN
+  ASSISTANT
+  GUEST
+}
+
 // Модель для шаблонов курсов
 model CourseTemplate {
   id          String   @id @default(cuid())
@@ -250,4 +274,69 @@ model CourseTemplate {
   courseId    String?
   createdAt   DateTime @default(now())
   course      Course?  @relation(fields: [courseId], references: [id])
+}
+
+// Групповая система
+model Group {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  type        GroupType    @default(ONLINE)
+  maxStudents Int          @default(30)
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  students    GroupStudent[]
+  teachers    GroupTeacher[]
+  courses     GroupCourse[]
+  assignments GroupAssignment[]
+}
+
+model GroupStudent {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  joinedAt  DateTime @default(now())
+  status    GroupMemberStatus @default(ACTIVE)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model GroupTeacher {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      TeacherRole @default(MAIN)
+  joinedAt  DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model GroupCourse {
+  id        String   @id @default(cuid())
+  groupId   String
+  courseId  String
+  assignedAt DateTime @default(now())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, courseId])
+}
+
+model GroupAssignment {
+  id          String   @id @default(cuid())
+  groupId     String
+  assignmentId String
+  dueDate     DateTime
+  assignedAt  DateTime @default(now())
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  assignment  Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, assignmentId])
 }
