@@ -23,7 +23,7 @@ import {
 
 interface Notification {
   id: string
-  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED' | 'NEW_MESSAGE'
+  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED' | 'NEW_MESSAGE' | 'EVENT_REMINDER' | 'EVENT_CANCELLED' | 'EVENT_UPDATED'
   title: string
   message: string | null
   isRead: boolean
@@ -121,6 +121,11 @@ export default function NotificationsPage() {
           case 'NEW_MESSAGE':
             router.push(`/admin/groups/${data.groupId}`)
             break
+          case 'EVENT_REMINDER':
+          case 'EVENT_CANCELLED':
+          case 'EVENT_UPDATED':
+            router.push(`/calendar?event=${data.eventId}`)
+            break
           default:
             // Остаемся на странице уведомлений
         }
@@ -146,6 +151,12 @@ export default function NotificationsPage() {
         return <Users className="w-5 h-5 text-indigo-600" />
       case 'NEW_MESSAGE':
         return <MessageCircle className="w-5 h-5 text-blue-600" />
+      case 'EVENT_REMINDER':
+        return <Calendar className="w-5 h-5 text-green-600" />
+      case 'EVENT_CANCELLED':
+        return <Calendar className="w-5 h-5 text-red-600" />
+      case 'EVENT_UPDATED':
+        return <Calendar className="w-5 h-5 text-orange-600" />
       default:
         return <Bell className="w-5 h-5 text-gray-600" />
     }
@@ -167,6 +178,12 @@ export default function NotificationsPage() {
         return 'Добавлен в группу'
       case 'NEW_MESSAGE':
         return 'Новое сообщение'
+      case 'EVENT_REMINDER':
+        return 'Событие'
+      case 'EVENT_CANCELLED':
+        return 'Событие отменено'
+      case 'EVENT_UPDATED':
+        return 'Событие изменено'
       default:
         return 'Уведомление'
     }

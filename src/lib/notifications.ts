@@ -294,3 +294,283 @@ export async function notifyGroupMembersAboutNewMessage(
     throw error
   }
 }
+
+// Уведомить участников о событии
+export async function notifyEventParticipants(
+  eventId: string,
+  notificationType: 'EVENT_REMINDER' | 'EVENT_CANCELLED' | 'EVENT_UPDATED',
+  eventTitle: string,
+  eventDate: Date,
+  groupId?: string | null
+) {
+  try {
+    // Получаем всех участников события
+    const eventAttendees = await prisma.eventAttendee.findMany({
+      where: {
+        eventId: eventId
+      },
+      include: {
+        user: true
+      }
+    })
+
+    // Если событие связано с группой, добавляем всех участников группы
+    let allParticipants = eventAttendees.map(attendee => attendee.user)
+
+    if (groupId) {
+      const [groupStudents, groupTeachers] = await Promise.all([
+        prisma.groupStudent.findMany({
+          where: {
+            groupId: groupId,
+            status: 'ACTIVE'
+          },
+          include: {
+            user: true
+          }
+        }),
+        prisma.groupTeacher.findMany({
+          where: {
+            groupId: groupId
+          },
+          include: {
+            user: true
+          }
+        })
+      ])
+
+      // Объединяем всех участников и убираем дубликаты
+      const groupMembers = [
+        ...groupStudents.map(s => s.user),
+        ...groupTeachers.map(t => t.user)
+      ]
+
+      const existingUserIds = new Set(allParticipants.map(p => p.id))
+      const newParticipants = groupMembers.filter(member => !existingUserIds.has(member.id))
+      
+      allParticipants = [...allParticipants, ...newParticipants]
+    }
+
+    // Формируем заголовок и сообщение в зависимости от типа уведомления
+    let title: string
+    let message: string
+
+    switch (notificationType) {
+      case 'EVENT_REMINDER':
+        title = 'Новое событие'
+        message = `Создано событие "${eventTitle}" на ${eventDate.toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`
+        break
+      case 'EVENT_UPDATED':
+        title = 'Событие изменено'
+        message = `Событие "${eventTitle}" было изменено. Новая дата: ${eventDate.toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`
+        break
+      case 'EVENT_CANCELLED':
+        title = 'Событие отменено'
+        message = `Событие "${eventTitle}" было отменено`
+        break
+      default:
+        title = 'Уведомление о событии'
+        message = `Обновление по событию "${eventTitle}"`
+    }
+
+    // Создаем уведомления для всех участников
+    const notifications = await Promise.all(
+      allParticipants.map(participant =>
+        createNotification({
+          userId: participant.id,
+          type: notificationType,
+          title,
+          message,
+          data: {
+            eventId,
+            eventTitle,
+            eventDate: eventDate.toISOString(),
+            groupId
+          }
+        })
+      )
+    )
+
+    return notifications
+  } catch (error) {
+    console.error('Error notifying event participants:', error)
+    throw error
+  }
+}
+
+// Уведомления о приближающихся дедлайнах
+export async function notifyUpcomingDeadlines() {
+  try {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(23, 59, 59, 999)
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Находим все дедлайны заданий, которые заканчиваются завтра
+    const upcomingAssignments = await prisma.assignment.findMany({
+      where: {
+        dueDate: {
+          gte: today,
+          lte: tomorrow
+        }
+      },
+      include: {
+        groupAssignments: {
+          include: {
+            group: {
+              include: {
+                students: {
+                  where: {
+                    status: 'ACTIVE'
+                  },
+                  include: {
+                    user: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    // Находим все события, которые начинаются завтра
+    const upcomingEvents = await prisma.event.findMany({
+      where: {
+        startDate: {
+          gte: today,
+          lte: tomorrow
+        },
+        isActive: true
+      },
+      include: {
+        attendees: {
+          include: {
+            user: true
+          }
+        },
+        group: {
+          include: {
+            students: {
+              where: {
+                status: 'ACTIVE'
+              },
+              include: {
+                user: true
+              }
+            },
+            teachers: {
+              include: {
+                user: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    const notifications: any[] = []
+
+    // Создаем уведомления о дедлайнах заданий
+    for (const assignment of upcomingAssignments) {
+      for (const groupAssignment of assignment.groupAssignments) {
+        for (const student of groupAssignment.group.students) {
+          notifications.push(
+            await createNotification({
+              userId: student.user.id,
+              type: 'DEADLINE_REMINDER',
+              title: 'Дедлайн завтра!',
+              message: `Завтра истекает срок сдачи задания "${assignment.title}"`,
+              data: {
+                assignmentId: assignment.id,
+                assignmentTitle: assignment.title,
+                dueDate: assignment.dueDate?.toISOString(),
+                groupId: groupAssignment.group.id
+              }
+            })
+          )
+        }
+      }
+    }
+
+    // Создаем уведомления о предстоящих событиях
+    for (const event of upcomingEvents) {
+      // Уведомляем прямых участников
+      for (const attendee of event.attendees) {
+        notifications.push(
+          await createNotification({
+            userId: attendee.user.id,
+            type: 'EVENT_REMINDER',
+            title: 'Событие завтра',
+            message: `Завтра запланировано событие "${event.title}" в ${event.startDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`,
+            data: {
+              eventId: event.id,
+              eventTitle: event.title,
+              eventDate: event.startDate.toISOString(),
+              groupId: event.groupId
+            }
+          })
+        )
+      }
+
+      // Уведомляем участников группы (если они не являются прямыми участниками)
+      if (event.group) {
+        const directAttendeeIds = new Set(event.attendees.map(a => a.userId))
+        
+        for (const student of event.group.students) {
+          if (!directAttendeeIds.has(student.user.id)) {
+            notifications.push(
+              await createNotification({
+                userId: student.user.id,
+                type: 'EVENT_REMINDER',
+                title: 'Событие завтра',
+                message: `Завтра запланировано событие "${event.title}" для вашей группы в ${event.startDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`,
+                data: {
+                  eventId: event.id,
+                  eventTitle: event.title,
+                  eventDate: event.startDate.toISOString(),
+                  groupId: event.groupId
+                }
+              })
+            )
+          }
+        }
+
+        for (const teacher of event.group.teachers) {
+          if (!directAttendeeIds.has(teacher.user.id)) {
+            notifications.push(
+              await createNotification({
+                userId: teacher.user.id,
+                type: 'EVENT_REMINDER',
+                title: 'Событие завтра',
+                message: `Завтра запланировано событие "${event.title}" для группы ${event.group.name} в ${event.startDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`,
+                data: {
+                  eventId: event.id,
+                  eventTitle: event.title,
+                  eventDate: event.startDate.toISOString(),
+                  groupId: event.groupId
+                }
+              })
+            )
+          }
+        }
+      }
+    }
+
+    return notifications
+  } catch (error) {
+    console.error('Error notifying about upcoming deadlines:', error)
+    throw error
+  }
+}

@@ -18,7 +18,7 @@ import {
 
 interface Notification {
   id: string
-  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED' | 'NEW_MESSAGE'
+  type: 'NEW_ASSIGNMENT' | 'ASSIGNMENT_SUBMITTED' | 'ASSIGNMENT_GRADED' | 'DEADLINE_REMINDER' | 'COURSE_ASSIGNED' | 'GROUP_ADDED' | 'NEW_MESSAGE' | 'EVENT_REMINDER' | 'EVENT_CANCELLED' | 'EVENT_UPDATED'
   title: string
   message: string | null
   isRead: boolean
@@ -144,6 +144,11 @@ export default function NotificationDropdown() {
           case 'NEW_MESSAGE':
             router.push(`/admin/groups/${data.groupId}`)
             break
+          case 'EVENT_REMINDER':
+          case 'EVENT_CANCELLED':
+          case 'EVENT_UPDATED':
+            router.push(`/calendar?event=${data.eventId}`)
+            break
           default:
             router.push('/notifications')
         }
@@ -173,6 +178,12 @@ export default function NotificationDropdown() {
         return <Users className="w-4 h-4 text-indigo-600" />
       case 'NEW_MESSAGE':
         return <MessageCircle className="w-4 h-4 text-blue-600" />
+      case 'EVENT_REMINDER':
+        return <Calendar className="w-4 h-4 text-green-600" />
+      case 'EVENT_CANCELLED':
+        return <Calendar className="w-4 h-4 text-red-600" />
+      case 'EVENT_UPDATED':
+        return <Calendar className="w-4 h-4 text-orange-600" />
       default:
         return <Bell className="w-4 h-4 text-gray-600" />
     }

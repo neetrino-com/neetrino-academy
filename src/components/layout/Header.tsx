@@ -62,6 +62,12 @@ export function Header() {
                 >
                   Задания
                 </Link>
+                <Link
+                  href="/calendar"
+                  className="text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Календарь
+                </Link>
                 {(session.user.role === 'ADMIN' || session.user.role === 'TEACHER') && (
                   <Link
                     href="/admin"

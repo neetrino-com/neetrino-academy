@@ -28,6 +28,8 @@ model User {
   groupTeachers  GroupTeacher[]
   notifications  Notification[]
   groupMessages  GroupMessage[]
+  eventAttendees EventAttendee[]
+  createdEvents  Event[]         @relation("EventCreator")
 }
 
 model Course {
@@ -49,6 +51,7 @@ model Course {
   enrollments Enrollment[]
   messages    Message[]
   modules     Module[]
+  events      Event[]
 
   groupCourses GroupCourse[]
 }
@@ -148,6 +151,7 @@ model Assignment {
   module      Module       @relation(fields: [moduleId], references: [id])
   submissions Submission[]
   groupAssignments GroupAssignment[]
+  events      Event[]
 }
 
 model LessonProgress {
@@ -285,6 +289,7 @@ model Group {
   courses     GroupCourse[]
   assignments GroupAssignment[]
   messages    GroupMessage[]
+  events      Event[]
 }
 
 model GroupStudent {
@@ -371,6 +376,67 @@ enum MessageType {
   ASSIGNMENT_DISCUSSION
 }
 
+model Event {
+  id            String          @id @default(cuid())
+  title         String
+  description   String?
+  type          EventType
+  startDate     DateTime
+  endDate       DateTime
+  location      String?
+  isRecurring   Boolean         @default(false)
+  recurringRule String?         // JSON string for recurring rules
+  createdById   String
+  groupId       String?
+  courseId      String?
+  assignmentId  String?
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  createdBy     User            @relation("EventCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  group         Group?          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  course        Course?         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assignment    Assignment?     @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  attendees     EventAttendee[]
+}
+
+model EventAttendee {
+  id         String            @id @default(cuid())
+  eventId    String
+  userId     String
+  status     AttendanceStatus  @default(PENDING)
+  response   String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  
+  event      Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([eventId, userId])
+}
+
+enum EventType {
+  LESSON
+  EXAM
+  DEADLINE
+  MEETING
+  WORKSHOP
+  SEMINAR
+  CONSULTATION
+  ANNOUNCEMENT
+  OTHER
+}
+
+enum AttendanceStatus {
+  PENDING
+  ATTENDING
+  NOT_ATTENDING
+  MAYBE
+  ATTENDED
+  ABSENT
+}
+
 enum NotificationType {
   NEW_ASSIGNMENT
   ASSIGNMENT_SUBMITTED
@@ -379,4 +445,7 @@ enum NotificationType {
   COURSE_ASSIGNED
   GROUP_ADDED
   NEW_MESSAGE
+  EVENT_REMINDER
+  EVENT_CANCELLED
+  EVENT_UPDATED
 }

@@ -24,13 +24,16 @@ import {
   Award,
   TrendingUp,
   Activity,
-  MessageCircle
+  MessageCircle,
+  Calendar as CalendarIcon
 } from 'lucide-react'
 import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
 import StudentManagementModal from '@/components/admin/StudentManagementModal'
 import TeacherManagementModal from '@/components/admin/TeacherManagementModal'
 import AssignmentCreationModal from '@/components/admin/AssignmentCreationModal'
 import GroupChat from '@/components/chat/GroupChat'
+import CalendarComponent from '@/components/calendar/Calendar'
+import EventModal from '@/components/calendar/EventModal'
 
 interface GroupStudent {
   id: string
@@ -116,11 +119,13 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [loading, setLoading] = useState(true)
   const [group, setGroup] = useState<Group | null>(null)
   const [error, setError] = useState<string>('')
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'teachers' | 'courses' | 'assignments'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'teachers' | 'courses' | 'assignments' | 'schedule' | 'chat'>('overview')
   const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false)
   const [showStudentManagementModal, setShowStudentManagementModal] = useState(false)
   const [showTeacherManagementModal, setShowTeacherManagementModal] = useState(false)
   const [showAssignmentCreationModal, setShowAssignmentCreationModal] = useState(false)
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [editingEventId, setEditingEventId] = useState<string | undefined>()
   
   // Развертываем промис params
   const resolvedParams = use(params)
@@ -175,6 +180,47 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     } catch (error) {
       console.error('Error removing course from group:', error)
       alert('Ошибка удаления курса из группы')
+    }
+  }
+
+  // Функции для работы с событиями
+  const handleEventCreate = () => {
+    setEditingEventId(undefined)
+    setShowEventModal(true)
+  }
+
+  const handleEventEdit = (eventId: string) => {
+    setEditingEventId(eventId)
+    setShowEventModal(true)
+  }
+
+  const handleEventSubmit = async (eventData: any) => {
+    try {
+      const url = editingEventId 
+        ? `/api/events/${editingEventId}` 
+        : '/api/events'
+      
+      const method = editingEventId ? 'PATCH' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData)
+      })
+
+      if (response.ok) {
+        setShowEventModal(false)
+        setEditingEventId(undefined)
+        // Календарь автоматически обновится
+      } else {
+        const error = await response.json()
+        alert(`Ошибка: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error saving event:', error)
+      alert('Ошибка сохранения события')
     }
   }
 
@@ -325,6 +371,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     { id: 'teachers', label: `Преподаватели (${group.teachers.length})`, icon: GraduationCap },
     { id: 'courses', label: `Курсы (${group.courses.length})`, icon: BookOpen },
     { id: 'assignments', label: `Задания (${group.assignments.length})`, icon: Target },
+    { id: 'schedule', label: 'Расписание', icon: CalendarIcon },
     { id: 'chat', label: 'Чат', icon: MessageCircle }
   ]
 
@@ -787,6 +834,17 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               </div>
             )}
 
+            {activeTab === 'schedule' && (
+              <div className="h-[600px]">
+                <CalendarComponent
+                  groupId={group.id}
+                  canCreateEvents={session?.user?.role === 'ADMIN' || session?.user?.role === 'TEACHER'}
+                  onEventCreate={handleEventCreate}
+                  onEventEdit={handleEventEdit}
+                />
+              </div>
+            )}
+
             {activeTab === 'chat' && (
               <div className="h-[600px]">
                 <GroupChat 
@@ -850,6 +908,18 @@ export default function GroupDetail({ params }: GroupDetailProps) {
           onAssignmentCreated={fetchGroup}
         />
       )}
+
+      {/* Модальное окно создания/редактирования событий */}
+      <EventModal
+        isOpen={showEventModal}
+        onClose={() => {
+          setShowEventModal(false)
+          setEditingEventId(undefined)
+        }}
+        onSubmit={handleEventSubmit}
+        eventId={editingEventId}
+        groupId={group?.id}
+      />
     </div>
   )
 }
