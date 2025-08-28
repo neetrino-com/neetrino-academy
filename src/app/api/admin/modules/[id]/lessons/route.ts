@@ -89,7 +89,7 @@ export async function POST(
 
     // Проверяем существование модуля
     const module = await prisma.module.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         course: {
           select: {

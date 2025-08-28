@@ -35,7 +35,7 @@ export async function GET(
 
     // Проверяем существование курса
     const course = await prisma.course.findUnique({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     if (!course) {
@@ -47,7 +47,7 @@ export async function GET(
 
     // Получаем модули курса
     const modules = await prisma.module.findMany({
-      where: { courseId: params.id },
+      where: { courseId: (await params).id },
       orderBy: { order: 'asc' }
     })
 
@@ -87,7 +87,7 @@ export async function POST(
 
     // Проверяем существование курса
     const course = await prisma.course.findUnique({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     if (!course) {
@@ -106,7 +106,7 @@ export async function POST(
         title: validatedData.title,
         description: validatedData.description,
         order: validatedData.order,
-        courseId: params.id
+        courseId: (await params).id
       },
       include: {
         course: {

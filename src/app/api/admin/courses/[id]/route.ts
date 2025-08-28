@@ -6,7 +6,7 @@ import { z } from 'zod'
 const updateCourseSchema = z.object({
   courseData: z.object({
     title: z.string().min(3, 'Название должно содержать минимум 3 символа'),
-    description: z.string().min(10, 'Описание должно содержать минимум 10 символов'),
+    description: z.string().min(5, 'Описание должно содержать минимум 5 символов'),
     direction: z.enum(['WORDPRESS', 'VIBE_CODING', 'SHOPIFY']),
     level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
     price: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
