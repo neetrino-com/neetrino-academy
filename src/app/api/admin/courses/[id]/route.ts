@@ -88,7 +88,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(updatedCourse)
+    return NextResponse.json(course)
   } catch (error) {
     console.error('Ошибка получения курса:', error)
     return NextResponse.json(
