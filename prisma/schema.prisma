@@ -14,6 +14,8 @@ model User {
   password       String
   role           UserRole         @default(STUDENT)
   avatar         String?
+  isActive       Boolean          @default(true)
+  lastLoginAt    DateTime?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   achievements   Achievement[]
@@ -30,6 +32,7 @@ model User {
   groupMessages  GroupMessage[]
   eventAttendees EventAttendee[]
   createdEvents  Event[]         @relation("EventCreator")
+  auditLogs      AuditLog[]
 }
 
 model Course {
@@ -448,4 +451,20 @@ enum NotificationType {
   EVENT_REMINDER
   EVENT_CANCELLED
   EVENT_UPDATED
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  userId      String?   // кто выполнил действие
+  action      String    // тип действия (USER_CREATED, USER_UPDATED, BULK_ACTION, etc.)
+  entity      String    // на какой сущности (User, Course, Group, etc.)
+  entityId    String?   // ID сущности
+  details     String?   // дополнительные детали в JSON
+  ipAddress   String?   // IP адрес
+  userAgent   String?   // User Agent
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
 }

@@ -38,8 +38,20 @@ export async function GET(request: NextRequest) {
         email: true,
         role: true,
         avatar: true,
+        isActive: true,
+        lastLoginAt: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        _count: {
+          select: {
+            enrollments: true,
+            assignments: true,
+            submissions: true,
+            quizAttempts: true,
+            groupStudents: true,
+            groupTeachers: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'

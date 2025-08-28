@@ -388,6 +388,17 @@ export default function AdminDashboard() {
               <h3 className="font-semibold text-amber-800 mb-2">Управление курсами</h3>
               <p className="text-sm text-amber-600">Просмотр всех курсов</p>
             </button>
+
+            <button
+              onClick={() => router.push('/admin/users')}
+              className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50 hover:shadow-lg transition-all duration-300 group text-left"
+            >
+              <div className="bg-emerald-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h3 className="font-semibold text-emerald-800 mb-2">Управление пользователями</h3>
+              <p className="text-sm text-emerald-600">Массовые операции и экспорт</p>
+            </button>
           </div>
         </div>
       </div>
