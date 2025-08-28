@@ -28,6 +28,7 @@ import {
 import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
 import StudentManagementModal from '@/components/admin/StudentManagementModal'
 import TeacherManagementModal from '@/components/admin/TeacherManagementModal'
+import AssignmentCreationModal from '@/components/admin/AssignmentCreationModal'
 
 interface GroupStudent {
   id: string
@@ -117,6 +118,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false)
   const [showStudentManagementModal, setShowStudentManagementModal] = useState(false)
   const [showTeacherManagementModal, setShowTeacherManagementModal] = useState(false)
+  const [showAssignmentCreationModal, setShowAssignmentCreationModal] = useState(false)
   
   // Развертываем промис params
   const resolvedParams = use(params)
@@ -257,6 +259,29 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     } catch (error) {
       console.error('Error removing teacher from group:', error)
       alert('Ошибка удаления преподавателя из группы')
+    }
+  }
+
+  const removeAssignmentFromGroup = async (assignmentId: string, assignmentTitle: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить задание "${assignmentTitle}" из группы? Это действие нельзя отменить.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}/assignments?assignmentId=${assignmentId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Перезагружаем данные группы
+        await fetchGroup()
+      } else {
+        const error = await response.json()
+        alert(`Ошибка удаления задания: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error removing assignment from group:', error)
+      alert('Ошибка удаления задания из группы')
     }
   }
 
@@ -689,7 +714,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Задания группы</h3>
-                  <button className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowAssignmentCreationModal(true)}
+                    className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2"
+                  >
                     <Plus className="w-4 h-4" />
                     Создать задание
                   </button>
@@ -716,10 +744,18 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg">
+                        <button 
+                          onClick={() => router.push(`/admin/assignments/${groupAssignment.assignment.id}`)}
+                          className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg"
+                          title="Просмотр задания"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
+                        <button 
+                          onClick={() => removeAssignmentFromGroup(groupAssignment.assignment.id, groupAssignment.assignment.title)}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                          title="Удалить задание из группы"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -729,7 +765,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                     <div className="text-center py-12">
                       <Target className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-gray-500 mb-4">У группы пока нет заданий</p>
-                      <button className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50">
+                      <button 
+                        onClick={() => setShowAssignmentCreationModal(true)}
+                        className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50"
+                      >
                         Создать первое задание
                       </button>
                     </div>
@@ -780,6 +819,16 @@ export default function GroupDetail({ params }: GroupDetailProps) {
           onAddSuccess={() => {
             fetchGroup() // Перезагружаем данные группы
           }}
+        />
+      )}
+
+      {/* Модальное окно создания заданий */}
+      {group && (
+        <AssignmentCreationModal
+          isOpen={showAssignmentCreationModal}
+          onClose={() => setShowAssignmentCreationModal(false)}
+          groupId={group.id}
+          onAssignmentCreated={fetchGroup}
         />
       )}
     </div>
