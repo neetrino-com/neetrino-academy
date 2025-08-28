@@ -136,14 +136,16 @@ export default function AdminDashboard() {
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-emerald-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <UserCheck className="w-8 h-8 text-emerald-600" />
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
-                  {stats.totalGroups}
-                </p>
-                <p className="text-xs text-emerald-600 font-medium mt-1">активных</p>
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <UserCheck className="w-8 h-8 text-emerald-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
+                    {stats.totalGroups}
+                  </p>
+                  <p className="text-xs text-emerald-600 font-medium mt-1">активных</p>
+                </div>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors duration-300" />
             </div>
@@ -159,14 +161,16 @@ export default function AdminDashboard() {
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-purple-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <ClipboardList className="w-8 h-8 text-purple-600" />
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent leading-none">
-                  {stats.totalTests}
-                </p>
-                <p className="text-xs text-purple-600 font-medium mt-1">всего</p>
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <ClipboardList className="w-8 h-8 text-purple-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent leading-none">
+                    {stats.totalTests}
+                  </p>
+                  <p className="text-xs text-purple-600 font-medium mt-1">всего</p>
+                </div>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-purple-600 transition-colors duration-300" />
             </div>
@@ -182,14 +186,16 @@ export default function AdminDashboard() {
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-indigo-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-indigo-50 hover:to-blue-50 hover:border-indigo-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <BookOpen className="w-8 h-8 text-indigo-600" />
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent leading-none">
-                  {stats.totalCourses}
-                </p>
-                <p className="text-xs text-indigo-600 font-medium mt-1">всего</p>
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <BookOpen className="w-8 h-8 text-indigo-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent leading-none">
+                    {stats.totalCourses}
+                  </p>
+                  <p className="text-xs text-indigo-600 font-medium mt-1">всего</p>
+                </div>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
             </div>
@@ -205,14 +211,16 @@ export default function AdminDashboard() {
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-8 h-8 text-red-600" />
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
-                  {stats.totalStudents}
-                </p>
-                <p className="text-xs text-red-600 font-medium mt-1">студентов</p>
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="w-8 h-8 text-red-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                    {stats.totalStudents}
+                  </p>
+                  <p className="text-xs text-red-600 font-medium mt-1">студентов</p>
+                </div>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
             </div>
@@ -228,14 +236,16 @@ export default function AdminDashboard() {
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-orange-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <Target className="w-8 h-8 text-orange-600" />
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent leading-none">
-                  23
-                </p>
-                <p className="text-xs text-orange-600 font-medium mt-1">новых</p>
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <Target className="w-8 h-8 text-orange-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent leading-none">
+                    23
+                  </p>
+                  <p className="text-xs text-orange-600 font-medium mt-1">новых</p>
+                </div>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-orange-600 transition-colors duration-300" />
             </div>
@@ -251,14 +261,16 @@ export default function AdminDashboard() {
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-green-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <BarChart3 className="w-8 h-8 text-green-600" />
-              </div>
-              <div className="text-center flex-1">
-                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
-                  100%
-                </p>
-                <p className="text-xs text-green-600 font-medium mt-1">покрытие</p>
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <BarChart3 className="w-8 h-8 text-green-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
+                    100%
+                  </p>
+                  <p className="text-xs text-green-600 font-medium mt-1">покрытие</p>
+                </div>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
             </div>
