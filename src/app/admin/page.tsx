@@ -255,9 +255,9 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Конструктор курсов */}
+          {/* Управление курсами */}
           <div 
-            onClick={() => router.push('/admin/builder')}
+            onClick={() => router.push('/admin/courses')}
             className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60 hover:shadow-xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-indigo-50 hover:to-blue-50"
           >
             <div className="flex items-center justify-between mb-6">
@@ -266,18 +266,18 @@ export default function AdminDashboard() {
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Конструктор курсов</h3>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Управление курсами</h3>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Создавайте новые курсы с помощью визуального конструктора с Drag & Drop интерфейсом
+              Создавайте, редактируйте курсы и управляйте образовательным контентом с удобным интерфейсом
             </p>
             <div className="flex items-center gap-4 text-sm text-slate-500">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                <span>Drag & Drop</span>
+                <span>Создание курсов</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span>Готовые шаблоны</span>
+                <span>Управление контентом</span>
               </div>
             </div>
           </div>
@@ -320,19 +320,19 @@ export default function AdminDashboard() {
               <div className="bg-purple-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Users className="w-6 h-6 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-purple-800 mb-2">Создать группу</h3>
-              <p className="text-sm text-purple-600">Новая учебная группа</p>
+              <h3 className="font-semibold text-purple-800 mb-2">Управление группами</h3>
+              <p className="text-sm text-purple-600">Просмотр всех групп</p>
             </button>
 
             <button
-              onClick={() => router.push('/admin')}
+              onClick={() => router.push('/admin/courses')}
               className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200/50 hover:shadow-lg transition-all duration-300 group text-left"
             >
               <div className="bg-amber-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
                 <BarChart3 className="w-6 h-6 text-amber-600" />
               </div>
-              <h3 className="font-semibold text-amber-800 mb-2">Аналитика</h3>
-              <p className="text-sm text-amber-600">Отчеты и статистика</p>
+              <h3 className="font-semibold text-amber-800 mb-2">Управление курсами</h3>
+              <p className="text-sm text-amber-600">Просмотр всех курсов</p>
             </button>
           </div>
         </div>
