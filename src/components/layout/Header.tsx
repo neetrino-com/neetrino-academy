@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
+import NotificationDropdown from './NotificationDropdown'
 
 export function Header() {
   const { data: session, status } = useSession()
@@ -55,6 +56,12 @@ export function Header() {
                 >
                   Дашборд
                 </Link>
+                <Link
+                  href="/assignments"
+                  className="text-indigo-600 hover:text-indigo-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Задания
+                </Link>
                 {(session.user.role === 'ADMIN' || session.user.role === 'TEACHER') && (
                   <Link
                     href="/admin"
@@ -63,6 +70,7 @@ export function Header() {
                     Админ-панель
                   </Link>
                 )}
+                <NotificationDropdown />
                 <div className="relative">
                                      <button 
                      onClick={() => signOut()}

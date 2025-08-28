@@ -26,6 +26,7 @@ model User {
   submissions    Submission[]
   groupStudents  GroupStudent[]
   groupTeachers  GroupTeacher[]
+  notifications  Notification[]
 }
 
 model Course {
@@ -329,4 +330,25 @@ model GroupAssignment {
   assignment  Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, assignmentId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String?
+  isRead    Boolean          @default(false)
+  data      String?          // JSON data for additional context
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  NEW_ASSIGNMENT
+  ASSIGNMENT_SUBMITTED
+  ASSIGNMENT_GRADED
+  DEADLINE_REMINDER
+  COURSE_ASSIGNED
+  GROUP_ADDED
 }

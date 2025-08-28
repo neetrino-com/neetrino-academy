@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
+import StudentAssignments from '@/components/dashboard/StudentAssignments'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -210,6 +211,9 @@ export default async function DashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Виджет заданий для студентов */}
+          <StudentAssignments />
         </div>
       </div>
     </div>

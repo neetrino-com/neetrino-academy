@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { notifyGroupStudentsAboutNewAssignment } from '@/lib/notifications'
 
 interface Params {
   id: string
@@ -94,6 +95,19 @@ export async function POST(
         dueDate: new Date(dueDate)
       }
     })
+
+    // Отправляем уведомления студентам группы о новом задании
+    try {
+      await notifyGroupStudentsAboutNewAssignment(
+        groupId,
+        assignment.title,
+        assignment.id,
+        new Date(dueDate)
+      )
+    } catch (notificationError) {
+      console.error('Error sending notifications:', notificationError)
+      // Не прерываем выполнение, если уведомления не отправились
+    }
 
     // Возвращаем созданное задание с полной информацией
     const createdAssignment = await prisma.groupAssignment.findUnique({
