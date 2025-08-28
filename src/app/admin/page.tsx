@@ -127,78 +127,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        {/* Улучшенная статистика */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-indigo-600 font-semibold uppercase tracking-wide">Всего курсов</p>
-                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                  {stats.totalCourses}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats.activeCourses} активных • {stats.draftCourses} черновиков
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4">
-                <BookOpen className="w-8 h-8 text-indigo-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-emerald-600 font-semibold uppercase tracking-wide">Студентов</p>
-                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  {stats.totalStudents}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  +{stats.recentActivity} за неделю
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4">
-                <Users className="w-8 h-8 text-emerald-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-purple-600 font-semibold uppercase tracking-wide">Тестов</p>
-                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">
-                  {stats.totalTests}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stats.completedTests} завершено
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4">
-                <ClipboardList className="w-8 h-8 text-purple-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-amber-600 font-semibold uppercase tracking-wide">Групп</p>
-                <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                  {stats.totalGroups}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Активные группы
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl p-4">
-                <UserCheck className="w-8 h-8 text-amber-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Основные разделы управления */}
+        {/* Объединенные блоки управления с статистикой */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
           
           {/* Управление группами */}
@@ -209,6 +138,12 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-4">
               <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
                 <UserCheck className="w-8 h-8 text-emerald-600" />
+              </div>
+              <div className="text-center flex-1">
+                <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
+                  {stats.totalGroups}
+                </p>
+                <p className="text-xs text-emerald-600 font-medium mt-1">активных</p>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors duration-300" />
             </div>
@@ -227,6 +162,12 @@ export default function AdminDashboard() {
               <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
                 <ClipboardList className="w-8 h-8 text-purple-600" />
               </div>
+              <div className="text-center flex-1">
+                <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent leading-none">
+                  {stats.totalTests}
+                </p>
+                <p className="text-xs text-purple-600 font-medium mt-1">всего</p>
+              </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-purple-600 transition-colors duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-3">Тесты</h3>
@@ -242,7 +183,13 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                <GraduationCap className="w-8 h-8 text-indigo-600" />
+                <BookOpen className="w-8 h-8 text-indigo-600" />
+              </div>
+              <div className="text-center flex-1">
+                <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent leading-none">
+                  {stats.totalCourses}
+                </p>
+                <p className="text-xs text-indigo-600 font-medium mt-1">всего</p>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
             </div>
@@ -261,6 +208,12 @@ export default function AdminDashboard() {
               <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
                 <Users className="w-8 h-8 text-red-600" />
               </div>
+              <div className="text-center flex-1">
+                <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                  {stats.totalStudents}
+                </p>
+                <p className="text-xs text-red-600 font-medium mt-1">студентов</p>
+              </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-3">Пользователи</h3>
@@ -277,6 +230,12 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-4">
               <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
                 <Target className="w-8 h-8 text-orange-600" />
+              </div>
+              <div className="text-center flex-1">
+                <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent leading-none">
+                  23
+                </p>
+                <p className="text-xs text-orange-600 font-medium mt-1">новых</p>
               </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-orange-600 transition-colors duration-300" />
             </div>
@@ -295,6 +254,12 @@ export default function AdminDashboard() {
               <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
                 <BarChart3 className="w-8 h-8 text-green-600" />
               </div>
+              <div className="text-center flex-1">
+                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
+                  100%
+                </p>
+                <p className="text-xs text-green-600 font-medium mt-1">покрытие</p>
+              </div>
               <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-3">Аналитика</h3>
@@ -304,48 +269,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Быстрые действия */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-            <Activity className="w-7 h-7 text-indigo-600" />
-            Быстрые действия
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button
-              onClick={() => router.push('/admin/builder')}
-              className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200/50 hover:shadow-lg transition-all duration-300 group text-left"
-            >
-              <div className="bg-green-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
-                <BookOpen className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="font-semibold text-green-800 mb-2">Создать курс</h3>
-              <p className="text-sm text-green-600">Быстрое создание нового курса</p>
-            </button>
 
-            <button
-              onClick={() => router.push('/admin/tests')}
-              className="p-6 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border border-purple-200/50 hover:shadow-lg transition-all duration-300 group text-left"
-            >
-              <div className="bg-purple-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
-                <ClipboardList className="w-6 h-6 text-purple-600" />
-              </div>
-              <h3 className="font-semibold text-purple-800 mb-2">Создать тест</h3>
-              <p className="text-sm text-purple-600">Быстрое создание нового теста</p>
-            </button>
-
-            <button
-              onClick={() => router.push('/admin/groups/create')}
-              className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50 hover:shadow-lg transition-all duration-300 group text-left"
-            >
-              <div className="bg-blue-100 rounded-lg p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="font-semibold text-blue-800 mb-2">Создать группу</h3>
-              <p className="text-sm text-blue-600">Быстрое создание новой группы</p>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   )
