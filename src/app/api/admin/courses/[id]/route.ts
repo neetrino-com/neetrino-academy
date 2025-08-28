@@ -4,12 +4,35 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 
 const updateCourseSchema = z.object({
-  title: z.string().min(3, 'Название должно содержать минимум 3 символа'),
-  description: z.string().min(10, 'Описание должно содержать минимум 10 символов'),
-  direction: z.enum(['WORDPRESS', 'VIBE_CODING', 'SHOPIFY']),
-  level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
-  price: z.number().min(0, 'Цена не может быть отрицательной').optional(),
-  isActive: z.boolean().default(true)
+  courseData: z.object({
+    title: z.string().min(3, 'Название должно содержать минимум 3 символа'),
+    description: z.string().min(10, 'Описание должно содержать минимум 10 символов'),
+    direction: z.enum(['WORDPRESS', 'VIBE_CODING', 'SHOPIFY']),
+    level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
+    price: z.number().min(0, 'Цена не может быть отрицательной').optional(),
+    duration: z.number().optional(),
+    tags: z.array(z.string()).optional(),
+    prerequisites: z.array(z.string()).optional(),
+    learningOutcomes: z.array(z.string()).optional(),
+    isDraft: z.boolean().optional(),
+    isActive: z.boolean().optional()
+  }),
+  modules: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    order: z.number(),
+    lessons: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      description: z.string(),
+      content: z.string(),
+      type: z.enum(['video', 'text', 'mixed']),
+      videoUrl: z.string().optional(),
+      duration: z.number().optional(),
+      order: z.number()
+    }))
+  })).optional()
 })
 
 // GET /api/admin/courses/[id] - получение курса
@@ -65,7 +88,7 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(course)
+    return NextResponse.json(updatedCourse)
   } catch (error) {
     console.error('Ошибка получения курса:', error)
     return NextResponse.json(
@@ -115,7 +138,7 @@ export async function PUT(
     const validatedData = updateCourseSchema.parse(body)
 
     // Генерируем новый slug из названия курса
-    const newSlug = validatedData.title
+    const newSlug = validatedData.courseData.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
@@ -141,14 +164,64 @@ export async function PUT(
     const course = await prisma.course.update({
       where: { id: (await params).id },
       data: {
-        title: validatedData.title,
-        description: validatedData.description,
+        title: validatedData.courseData.title,
+        description: validatedData.courseData.description,
         slug: newSlug,
-        direction: validatedData.direction,
-        level: validatedData.level,
-        price: validatedData.price || 0,
-        isActive: validatedData.isActive
-      },
+        direction: validatedData.courseData.direction,
+        level: validatedData.courseData.level,
+        price: validatedData.courseData.price || 0,
+        duration: validatedData.courseData.duration || 4,
+        isDraft: validatedData.courseData.isDraft || false,
+        isActive: validatedData.courseData.isActive || false
+      }
+    })
+
+    // Если есть модули, обновляем их
+    if (validatedData.modules && validatedData.modules.length > 0) {
+      // Удаляем старые модули и уроки
+      await prisma.lesson.deleteMany({
+        where: {
+          module: {
+            courseId: (await params).id
+          }
+        }
+      })
+      
+      await prisma.module.deleteMany({
+        where: { courseId: (await params).id }
+      })
+
+      // Создаем новые модули и уроки
+      for (const moduleData of validatedData.modules) {
+        const module = await prisma.module.create({
+          data: {
+            title: moduleData.title,
+            description: moduleData.description,
+            order: moduleData.order,
+            courseId: (await params).id
+          }
+        })
+
+        // Создаем уроки для модуля
+        for (const lessonData of moduleData.lessons) {
+          await prisma.lesson.create({
+            data: {
+              title: lessonData.title,
+              description: lessonData.description,
+              content: lessonData.content,
+              videoUrl: lessonData.videoUrl,
+              duration: lessonData.duration,
+              order: lessonData.order,
+              moduleId: module.id
+            }
+          })
+        }
+      }
+    }
+
+    // Получаем обновленный курс с модулями
+    const updatedCourse = await prisma.course.findUnique({
+      where: { id: (await params).id },
       include: {
         modules: {
           include: {
@@ -158,7 +231,8 @@ export async function PUT(
                 assignments: true
               }
             }
-          }
+          },
+          orderBy: { order: 'asc' }
         },
         _count: {
           select: {

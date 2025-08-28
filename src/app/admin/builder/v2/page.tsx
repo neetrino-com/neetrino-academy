@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   BookOpen, FileText, Video, ClipboardList, TestTube, 
   Rocket, ChevronRight, ChevronLeft, Save, Eye,
@@ -100,6 +100,9 @@ const STEPS = [
 
 export default function CourseBuilderV2() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const editCourseId = searchParams.get('edit')
+  
   const [currentStep, setCurrentStep] = useState(0)
   const [courseData, setCourseData] = useState<CourseData>({
     title: '',
@@ -118,7 +121,72 @@ export default function CourseBuilderV2() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null)
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isEditing, setIsEditing] = useState(false)
+
+  // Загрузка существующего курса для редактирования
+  useEffect(() => {
+    if (editCourseId) {
+      loadExistingCourse()
+    }
+  }, [editCourseId])
+
+  const loadExistingCourse = async () => {
+    if (!editCourseId) return
+    
+    try {
+      setLoading(true)
+      setIsEditing(true)
+      
+      // Загружаем данные курса
+      const courseResponse = await fetch(`/api/admin/courses/${editCourseId}`)
+      if (!courseResponse.ok) throw new Error('Курс не найден')
+      
+      const course = await courseResponse.json()
+      
+      // Загружаем модули курса
+      const modulesResponse = await fetch(`/api/admin/courses/${editCourseId}/modules`)
+      const modulesData = modulesResponse.ok ? await modulesResponse.json() : []
+      
+      // Загружаем уроки для каждого модуля
+      const modulesWithLessons = await Promise.all(
+        modulesData.map(async (module: any) => {
+          const lessonsResponse = await fetch(`/api/admin/modules/${module.id}/lessons`)
+          const lessons = lessonsResponse.ok ? await lessonsResponse.json() : []
+          return {
+            ...module,
+            lessons: lessons.map((lesson: any) => ({
+              ...lesson,
+              type: lesson.videoUrl ? 'video' : 'text',
+              files: []
+            }))
+          }
+        })
+      )
+      
+      // Обновляем состояние
+      setCourseData({
+        title: course.title || '',
+        description: course.description || '',
+        direction: course.direction || 'WORDPRESS',
+        level: course.level || 'BEGINNER',
+        price: course.price || 0,
+        duration: course.duration || 4,
+        tags: course.tags || [],
+        prerequisites: course.prerequisites || [],
+        learningOutcomes: course.learningOutcomes || []
+      })
+      
+      setModules(modulesWithLessons)
+      
+    } catch (error) {
+      console.error('Ошибка загрузки курса:', error)
+      alert('Ошибка загрузки курса для редактирования')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Валидация текущего шага
   const validateStep = (showErrors = true) => {
@@ -1407,8 +1475,14 @@ export default function CourseBuilderV2() {
   const saveCourse = async (isDraft: boolean) => {
     setSaving(true)
     try {
-      const response = await fetch('/api/admin/builder', {
-        method: 'POST',
+      const url = isEditing 
+        ? `/api/admin/courses/${editCourseId}` 
+        : '/api/admin/builder'
+      
+      const method = isEditing ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -1449,7 +1523,10 @@ export default function CourseBuilderV2() {
           }
         }
 
-        alert(isDraft ? 'Черновик сохранен!' : 'Курс опубликован!')
+        alert(isDraft 
+          ? (isEditing ? 'Курс обновлен как черновик!' : 'Черновик сохранен!')
+          : (isEditing ? 'Курс обновлен и опубликован!' : 'Курс опубликован!')
+        )
         router.push('/admin')
       } else {
         const errorData = await response.json()
@@ -1487,6 +1564,18 @@ export default function CourseBuilderV2() {
     }
   }
 
+  // Показываем загрузку при редактировании
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка курса для редактирования...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Хедер с навигацией по шагам */}
@@ -1494,7 +1583,9 @@ export default function CourseBuilderV2() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold text-gray-900">Конструктор курса v2</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {isEditing ? 'Редактирование курса' : 'Конструктор курса v2'}
+              </h1>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => {/* Предпросмотр */}}

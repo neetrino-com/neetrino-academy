@@ -201,7 +201,7 @@ export default function AdminDashboard() {
 
                   <div className="flex gap-2">
                                        <button
-                     onClick={() => router.push(`/admin/builder?id=${course.id}`)}
+                     onClick={() => router.push(`/admin/builder/v2?edit=${course.id}`)}
                      className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
                    >
                      <Edit className="w-4 h-4" />
