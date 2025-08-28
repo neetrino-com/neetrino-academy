@@ -29,30 +29,65 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json()
     const { courseData, modules } = data
+    
+    // Подробное логирование входящих данных
+    console.log('=== Builder API - Входящие данные ===')
+    console.log('courseData:', JSON.stringify(courseData, null, 2))
+    console.log('modules:', JSON.stringify(modules, null, 2))
+    console.log('==========================================')
+    
+    // Проверяем обязательные поля
+    if (!courseData || !courseData.title || !courseData.description) {
+      console.error('Отсутствуют обязательные поля courseData')
+      return NextResponse.json(
+        { error: 'Отсутствуют обязательные поля курса (title, description)' },
+        { status: 400 }
+      )
+    }
+    
+    if (!modules || !Array.isArray(modules) || modules.length === 0) {
+      console.error('Отсутствуют модули')
+      return NextResponse.json(
+        { error: 'Курс должен содержать хотя бы один модуль' },
+        { status: 400 }
+      )
+    }
 
     // Создаём курс со всеми модулями и уроками транзакционно
     const course = await prisma.$transaction(async (tx) => {
+      console.log('=== Начинаем транзакцию создания курса ===')
+      
+      // Подготавливаем данные для создания курса
+      const courseCreateData = {
+        title: courseData.title,
+        description: courseData.description || '',
+        slug: courseData.title.toLowerCase().replace(/\s+/g, '-'),
+        direction: courseData.direction,
+        level: courseData.level,
+        price: new Decimal(courseData.price || 0),
+        duration: courseData.duration || 4,
+        isDraft: courseData.isDraft || false,
+        isActive: courseData.isActive !== undefined ? courseData.isActive : !courseData.isDraft,
+        createdBy: user.id
+      }
+      
+      console.log('Данные для создания курса:', JSON.stringify(courseCreateData, null, 2))
+      
       // Создаём курс
       const newCourse = await tx.course.create({
-        data: {
-          title: courseData.title,
-          description: courseData.description || '',
-          slug: courseData.title.toLowerCase().replace(/\s+/g, '-'),
-          direction: courseData.direction,
-          level: courseData.level,
-          price: new Decimal(courseData.price || 0),
-          duration: courseData.duration || 4,
-          isDraft: courseData.isDraft || false,
-          isActive: courseData.isActive !== undefined ? courseData.isActive : !courseData.isDraft,
-          createdBy: user.id
-        },
+        data: courseCreateData,
         include: {
           creator: true
         }
       })
+      
+      console.log('Курс создан успешно, ID:', newCourse.id)
 
       // Создаём модули с уроками
-      for (const module of modules) {
+      for (let i = 0; i < modules.length; i++) {
+        const module = modules[i]
+        console.log(`Создаём модуль ${i + 1}:`, module.title)
+        
         const newModule = await tx.module.create({
           data: {
             title: module.title,
@@ -61,19 +96,26 @@ export async function POST(request: NextRequest) {
             courseId: newCourse.id
           }
         })
+        
+        console.log(`Модуль создан, ID: ${newModule.id}`)
 
         // Создаём уроки
-        for (const lesson of module.lessons) {
-          await tx.lesson.create({
-            data: {
-              title: lesson.title,
-              content: lesson.content || '',
-              videoUrl: lesson.videoUrl || null,
-              duration: lesson.duration || null,
-              order: lesson.order,
-              moduleId: newModule.id
-            }
-          })
+        if (module.lessons && module.lessons.length > 0) {
+          for (let j = 0; j < module.lessons.length; j++) {
+            const lesson = module.lessons[j]
+            console.log(`  Создаём урок ${j + 1}:`, lesson.title)
+            
+            await tx.lesson.create({
+              data: {
+                title: lesson.title,
+                content: lesson.content || '',
+                videoUrl: lesson.videoUrl || null,
+                duration: lesson.duration || null,
+                order: lesson.order,
+                moduleId: newModule.id
+              }
+            })
+          }
         }
 
         // Создаём задания (если есть)
