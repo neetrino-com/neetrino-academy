@@ -55,7 +55,7 @@ export function AppHeader() {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm ${
                 isStudent 
                   ? 'bg-gradient-to-br from-blue-600 to-indigo-600 group-hover:from-blue-700 group-hover:to-indigo-700' 
-                  : 'bg-gradient-to-br from-red-600 to-pink-600 group-hover:from-red-700 group-hover:to-pink-700'
+                  : 'bg-gradient-to-br from-emerald-600 to-teal-600 group-hover:from-emerald-700 group-hover:to-teal-700'
               }`}>
                 <span className="text-white font-bold text-lg">N</span>
               </div>
@@ -133,7 +133,7 @@ export function AppHeader() {
                     <div className={`w-8 h-8 bg-gradient-to-br rounded-full flex items-center justify-center ${
                       isStudent 
                         ? 'from-blue-500 to-purple-600' 
-                        : 'from-red-500 to-orange-600'
+                        : 'from-emerald-500 to-teal-600'
                     }`}>
                       <span className="text-sm font-medium text-white">
                         {session.user.name?.charAt(0) || session.user.email?.charAt(0).toUpperCase()}
