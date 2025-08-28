@@ -835,7 +835,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
             )}
 
             {activeTab === 'schedule' && (
-              <div className="h-[450px] overflow-hidden">
+              <div className="h-[380px] overflow-hidden">
                 <CalendarComponent
                   groupId={group.id}
                   canCreateEvents={session?.user?.role === 'ADMIN' || session?.user?.role === 'TEACHER'}

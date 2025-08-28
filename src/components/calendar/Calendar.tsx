@@ -106,23 +106,23 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
   const getEventTypeColor = (type: Event['type']) => {
     switch (type) {
       case 'LESSON':
-        return 'bg-blue-500'
+        return 'bg-gradient-to-r from-blue-500 to-blue-600'
       case 'EXAM':
-        return 'bg-red-500'
+        return 'bg-gradient-to-r from-red-500 to-red-600'
       case 'DEADLINE':
-        return 'bg-orange-500'
+        return 'bg-gradient-to-r from-orange-500 to-orange-600'
       case 'MEETING':
-        return 'bg-purple-500'
+        return 'bg-gradient-to-r from-purple-500 to-purple-600'
       case 'WORKSHOP':
-        return 'bg-green-500'
+        return 'bg-gradient-to-r from-green-500 to-green-600'
       case 'SEMINAR':
-        return 'bg-indigo-500'
+        return 'bg-gradient-to-r from-indigo-500 to-indigo-600'
       case 'CONSULTATION':
-        return 'bg-yellow-500'
+        return 'bg-gradient-to-r from-yellow-500 to-yellow-600'
       case 'ANNOUNCEMENT':
-        return 'bg-pink-500'
+        return 'bg-gradient-to-r from-pink-500 to-pink-600'
       default:
-        return 'bg-gray-500'
+        return 'bg-gradient-to-r from-gray-500 to-gray-600'
     }
   }
 
@@ -291,25 +291,25 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
   }
 
   return (
-    <div className="bg-white rounded-lg border h-full flex flex-col">
+    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 h-full flex flex-col">
       {/* Заголовок календаря */}
-      <div className="p-3 border-b bg-gray-50 rounded-t-lg flex-shrink-0">
+      <div className="p-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-xl flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateMonth('prev')}
-              className="p-2 hover:bg-gray-200 rounded"
+              className="p-2 hover:bg-white/60 rounded-lg transition-all duration-200 hover:shadow-sm"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-bold text-gray-800 tracking-wide">
               {currentDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
             </h2>
             <button
               onClick={() => navigateMonth('next')}
-              className="p-2 hover:bg-gray-200 rounded"
+              className="p-2 hover:bg-white/60 rounded-lg transition-all duration-200 hover:shadow-sm"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 text-gray-600" />
             </button>
           </div>
           
@@ -317,10 +317,10 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
             {canCreateEvents && (
               <button
                 onClick={onEventCreate}
-                className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 flex items-center gap-1"
+                className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm hover:from-blue-600 hover:to-purple-700 flex items-center gap-1 shadow-md transition-all duration-200 hover:shadow-lg transform hover:scale-105"
               >
                 <Plus className="w-4 h-4" />
-                Создать событие
+                Создать
               </button>
             )}
           </div>
@@ -328,46 +328,46 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
       </div>
 
       {/* Сетка календаря */}
-      <div className="p-2 flex-1 flex flex-col">
+      <div className="p-1 flex-1 flex flex-col">
         {/* Заголовки дней недели */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        <div className="grid grid-cols-7 gap-0.5 mb-1">
           {['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].map(day => (
-            <div key={day} className="p-1 text-center text-sm font-medium text-gray-500">
+            <div key={day} className="py-1 px-0.5 text-center text-xs font-bold text-gray-600 bg-gradient-to-br from-gray-100 to-gray-200 rounded-md">
               {day}
             </div>
           ))}
         </div>
 
         {/* Дни месяца */}
-        <div className="grid grid-cols-7 gap-1 flex-1">
+        <div className="grid grid-cols-7 gap-0.5 flex-1">
           {getDaysInMonth().map((day, index) => (
             <div
               key={index}
-              className={`h-full min-h-[60px] p-1 border border-gray-200 flex flex-col ${
-                day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
+              className={`h-full min-h-[40px] p-0.5 border border-gray-200 flex flex-col rounded-md transition-all duration-200 hover:shadow-sm ${
+                day.isCurrentMonth ? 'bg-white hover:bg-blue-50' : 'bg-gray-50/50'
               }`}
             >
-              <div className={`text-sm ${
-                day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+              <div className={`text-xs font-semibold text-center ${
+                day.isCurrentMonth ? 'text-gray-800' : 'text-gray-400'
               }`}>
                 {day.date}
               </div>
               
               {/* События дня */}
-              <div className="mt-1 space-y-1 flex-1 overflow-hidden">
+              <div className="mt-1 space-y-0.5 flex-1 overflow-hidden">
                 {day.events.slice(0, 2).map(event => (
                   <div
                     key={event.id}
                     onClick={() => setSelectedEvent(event)}
-                    className={`text-xs p-1 rounded cursor-pointer text-white truncate ${getEventTypeColor(event.type)}`}
+                    className={`text-xs p-0.5 rounded-md cursor-pointer text-white truncate shadow-sm hover:shadow-md transition-all duration-200 ${getEventTypeColor(event.type)}`}
                     title={event.title}
                   >
                     {formatTime(event.startDate)} {event.title}
                   </div>
                 ))}
                 {day.events.length > 2 && (
-                  <div className="text-xs text-gray-500 px-1">
-                    +{day.events.length - 2} еще
+                  <div className="text-xs text-gray-500 px-0.5 font-medium">
+                    +{day.events.length - 2}
                   </div>
                 )}
               </div>
