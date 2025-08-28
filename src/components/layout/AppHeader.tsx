@@ -29,110 +29,81 @@ export function AppHeader() {
     <header className="bg-white shadow-sm border-b sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo и навигация назад */}
+          {/* Умный логотип и навигация */}
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2 group">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform ${
-                isStudent ? 'bg-blue-600' : 'bg-red-600'
-              }`}>
-                <span className="text-white font-bold text-sm">N</span>
-              </div>
-              <span className={`text-xl font-bold group-hover:scale-105 transition-transform ${
-                isStudent ? 'text-blue-900' : 'text-red-900'
-              }`}>
-                Neetrino Academy
-              </span>
+            {/* Кнопка на сайт - в самом левом краю */}
+            <Link 
+              href="/"
+              className="flex items-center space-x-1 text-gray-500 hover:text-blue-600 px-2 py-1 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-blue-50"
+              title="Перейти на главную страницу сайта"
+            >
+              <span className="hidden sm:inline text-xs">На сайт</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
             </Link>
-            
+
             {/* Разделитель */}
             <div className="h-6 w-px bg-gray-300"></div>
-            
-            {/* Навигация назад */}
-            <div className="flex items-center space-x-2">
-              <Link 
-                href="/"
-                className="flex items-center space-x-1 text-gray-600 hover:text-blue-600 px-2 py-1 rounded-md text-sm font-medium transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                <span>На сайт</span>
-              </Link>
-            </div>
+
+            {/* Логотип ведет в дашборд/админ в зависимости от роли */}
+            <Link 
+              href={isStudent ? '/dashboard' : '/admin'} 
+              className="flex items-center space-x-3 group" 
+              title={isStudent ? 'Перейти в дашборд' : 'Перейти в админ-панель'}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-sm ${
+                isStudent 
+                  ? 'bg-gradient-to-br from-blue-600 to-indigo-600 group-hover:from-blue-700 group-hover:to-indigo-700' 
+                  : 'bg-gradient-to-br from-red-600 to-pink-600 group-hover:from-red-700 group-hover:to-pink-700'
+              }`}>
+                <span className="text-white font-bold text-lg">N</span>
+              </div>
+              <div>
+                <span className={`text-xl font-bold group-hover:text-opacity-80 transition-all duration-300 ${
+                  isStudent ? 'text-blue-900' : 'text-red-900'
+                }`}>
+                  Neetrino Academy
+                </span>
+                <div className="text-xs text-gray-500 font-medium">
+                  {isStudent ? 'Студент' : 'Администратор'}
+                </div>
+              </div>
+            </Link>
           </div>
 
-          {/* App Navigation with Permissions */}
+          {/* Компактная App Navigation */}
           {session?.user && (
-            <nav className="hidden lg:flex space-x-4">
-              {/* Для студентов */}
-              <StudentOnly>
-                <Link 
-                  href="/app/dashboard" 
-                  className="text-indigo-600 hover:text-indigo-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-indigo-50"
-                >
-                  Дашборд
-                </Link>
-                <Link 
-                  href="/app/assignments" 
-                  className="text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-green-50"
-                >
-                  Задания
-                </Link>
-                <Link 
-                  href="/app/calendar" 
-                  className="text-purple-600 hover:text-purple-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-purple-50"
-                >
-                  Календарь
-                </Link>
-              </StudentOnly>
+            <nav className="hidden lg:flex space-x-3">
+              {/* Для студентов навигация не нужна - логотип ведет в дашборд */}
 
-              {/* Для всех авторизованных */}
-              <CanAccess permission="courses.view">
+              {/* Для преподавателей и админов - только основное */}
+              <StaffOnly>
                 <Link 
-                  href="/courses" 
-                  className="text-blue-600 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-blue-50"
+                  href="/admin/groups" 
+                  className="relative text-emerald-600 hover:text-emerald-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-sm"
+                >
+                  Группы
+                </Link>
+                <Link 
+                  href="/admin/courses" 
+                  className="relative text-blue-600 hover:text-blue-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-sm"
                 >
                   Курсы
                 </Link>
-              </CanAccess>
-
-              {/* Для преподавателей и админов */}
-              <StaffOnly>
-                <CanAccess permission="groups.view">
-                  <Link 
-                    href="/app/admin/groups" 
-                    className="text-emerald-600 hover:text-emerald-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-emerald-50"
-                  >
-                    Группы
-                  </Link>
-                </CanAccess>
-                <CanAccess permission="tests.create">
-                  <Link 
-                    href="/app/admin/tests" 
-                    className="text-purple-600 hover:text-purple-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-purple-50"
-                  >
-                    Тесты
-                  </Link>
-                </CanAccess>
-                <CanAccess permission="courses.create">
-                  <Link 
-                    href="/app/admin/courses" 
-                    className="text-indigo-600 hover:text-indigo-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-indigo-50"
-                  >
-                    Управление курсами
-                  </Link>
-                </CanAccess>
+                <Link 
+                  href="/admin/tests" 
+                  className="relative text-purple-600 hover:text-purple-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:shadow-sm"
+                >
+                  Тесты
+                </Link>
               </StaffOnly>
 
               {/* Только для админов */}
               <AdminOnly>
                 <Link 
-                  href="/app/admin/users" 
-                  className="text-red-600 hover:text-red-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-red-50"
-                >
-                  Пользователи
-                </Link>
-                <Link 
-                  href="/app/admin/analytics" 
-                  className="text-orange-600 hover:text-orange-900 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-orange-50"
+                  href="/admin/analytics" 
+                  className="relative text-orange-600 hover:text-orange-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-sm"
                 >
                   Аналитика
                 </Link>
@@ -146,26 +117,7 @@ export function AppHeader() {
               <div className="text-blue-500 font-medium">Загрузка...</div>
             ) : session?.user ? (
               <div className="flex items-center space-x-4">
-                {/* Быстрые действия для разных ролей */}
-                <div className="hidden md:flex items-center space-x-2">
-                  <CanAccess permission="courses.create">
-                    <Link
-                      href="/app/admin/builder"
-                      className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm"
-                    >
-                      Создать курс
-                    </Link>
-                  </CanAccess>
-                  
-                  <CanAccess permission="tests.create">
-                    <Link
-                      href="/app/admin/tests"
-                      className="bg-gradient-to-r from-purple-600 to-violet-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:from-purple-700 hover:to-violet-700 transition-all duration-200 shadow-sm"
-                    >
-                      Создать тест
-                    </Link>
-                  </CanAccess>
-                </div>
+
 
                 {/* Уведомления */}
                 <CanAccess permission="notifications.view">
