@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
 
     // Строим фильтр
     const where: any = {
-      isActive: true
+      isActive: true,
+      isDraft: false // Показываем только опубликованные курсы (не черновики)
     }
 
     if (direction) {

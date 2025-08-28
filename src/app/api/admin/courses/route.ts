@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
         direction: true,
         level: true,
         isActive: true,
+        isDraft: true, // Добавляем поле isDraft для отображения статуса
         _count: {
           select: {
             enrollments: true

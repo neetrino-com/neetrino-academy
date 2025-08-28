@@ -26,6 +26,7 @@ interface Course {
   direction: string
   level: string
   isActive: boolean
+  isDraft: boolean
   _count: {
     enrollments: number
   }
@@ -68,8 +69,8 @@ export default function AdminDashboard() {
         setStats({
           totalCourses: data.length,
           totalStudents: data.reduce((acc: number, c: Course) => acc + c._count.enrollments, 0),
-          activeCourses: data.filter((c: Course) => c.isActive).length,
-          draftCourses: 0
+          activeCourses: data.filter((c: Course) => c.isActive && !c.isDraft).length,
+          draftCourses: data.filter((c: Course) => c.isDraft).length
         })
       }
     } catch (error) {
@@ -185,9 +186,17 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                                       <div className="flex items-center gap-3">
                     <h3 className="font-bold text-slate-800 text-lg">{course.title}</h3>
-                    {course.isActive && (
+                    {course.isDraft ? (
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">
+                        Черновик
+                      </span>
+                    ) : course.isActive ? (
                       <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
                         Активен
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
+                        Неактивен
                       </span>
                     )}
                   </div>
