@@ -1495,14 +1495,13 @@ export default function CourseBuilderV2() {
         modules: modules.map(module => ({
           ...module,
           lessons: module.lessons,
-          assignments: assignments.filter(a => 
-            module.lessons.some(l => l.id === a.lessonId)
-          ).map(a => ({
-            title: a.title,
-            description: a.description,
-            dueDate: a.dueDate,
-            maxScore: a.maxScore
-          }))
+                     assignments: assignments.filter(a => 
+             module.lessons.some(l => l.id === a.lessonId)
+           ).map(a => ({
+             title: a.title,
+             description: a.description,
+             dueDate: a.dueDate
+           }))
         }))
       }
 

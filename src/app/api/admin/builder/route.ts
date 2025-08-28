@@ -76,17 +76,19 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Создаём задания
-        for (const assignment of module.assignments) {
-          await tx.assignment.create({
-            data: {
-              title: assignment.title,
-              description: assignment.description || '',
-              dueDate: assignment.dueDate ? new Date(assignment.dueDate) : null,
-              moduleId: newModule.id,
-              createdBy: user.id
-            }
-          })
+        // Создаём задания (если есть)
+        if (module.assignments && module.assignments.length > 0) {
+          for (const assignment of module.assignments) {
+            await tx.assignment.create({
+              data: {
+                title: assignment.title,
+                description: assignment.description || '',
+                dueDate: assignment.dueDate ? new Date(assignment.dueDate) : null,
+                moduleId: newModule.id,
+                createdBy: user.id
+              }
+            })
+          }
         }
       }
 
@@ -98,10 +100,17 @@ export async function POST(request: NextRequest) {
     console.error('Builder error:', error)
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown'
     })
+    
+    // Возвращаем более подробную информацию об ошибке
     return NextResponse.json(
-      { error: 'Failed to create course', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Failed to create course', 
+        details: error instanceof Error ? error.message : 'Unknown error',
+        type: error instanceof Error ? error.name : 'Unknown'
+      },
       { status: 500 }
     )
   }
