@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   BookOpen, FileText, Video, ClipboardList, TestTube, 
-  Rocket, ChevronRight, ChevronLeft, Save, Eye,
+  Rocket, ChevronRight, ChevronLeft, Save,
   Plus, Trash2, GripVertical, Upload, Link, Type,
   Image, File, Clock, Users, Settings, Check
 } from 'lucide-react'
@@ -1908,13 +1908,6 @@ export default function CourseBuilder() {
                 {isEditing ? 'Редактирование курса' : 'Конструктор курса'}
               </h1>
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {/* Предпросмотр */}}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium"
-                >
-                  <Eye className="w-4 h-4" />
-                  Предпросмотр
-                </button>
                 <button
                   onClick={() => saveCourse(true)}
                   disabled={saving}
