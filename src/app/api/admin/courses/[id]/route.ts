@@ -66,8 +66,20 @@ export async function GET(
     //   )
     // }
 
+    // Обрабатываем параметры правильно для Next.js 15
+    const resolvedParams = await params
+    const courseId = resolvedParams.id
+    
+    console.log('GET /api/admin/courses/[id] - Course ID:', courseId)
+
+    // Сначала проверим, есть ли курсы в базе вообще
+    const allCourses = await prisma.course.findMany({
+      select: { id: true, title: true }
+    })
+    console.log('Все курсы в базе:', allCourses)
+
     const course = await prisma.course.findUnique({
-      where: { id: (await params).id },
+      where: { id: courseId },
       include: {
         modules: {
           include: {
@@ -99,6 +111,8 @@ export async function GET(
         }
       }
     })
+
+    console.log('Найден курс:', course ? `${course.title} (${course.id})` : 'null')
 
     if (!course) {
       return NextResponse.json(
@@ -141,9 +155,13 @@ export async function PUT(
       )
     }
 
+    // Обрабатываем параметры правильно для Next.js 15
+    const resolvedParams = await params
+    const courseId = resolvedParams.id
+
     // Проверяем существование курса
     const existingCourse = await prisma.course.findUnique({
-      where: { id: (await params).id }
+      where: { id: courseId }
     })
 
     if (!existingCourse) {
@@ -155,7 +173,7 @@ export async function PUT(
 
     const body = await request.json()
     console.log('=== PUT /api/admin/courses/[id] вызван ===')
-    console.log('Course ID:', (await params).id)
+    console.log('Course ID:', courseId)
     console.log('Request body:', JSON.stringify(body, null, 2))
     
     const validatedData = updateCourseSchema.parse(body)
@@ -173,7 +191,7 @@ export async function PUT(
     const existingCourseWithSlug = await prisma.course.findFirst({
       where: { 
         slug: newSlug,
-        id: { not: (await params).id }
+        id: { not: courseId }
       }
     })
 
@@ -202,7 +220,7 @@ export async function PUT(
 
     // Обновляем курс
     const course = await prisma.course.update({
-      where: { id: (await params).id },
+      where: { id: courseId },
       data: updateData
     })
     
@@ -212,7 +230,7 @@ export async function PUT(
     if (validatedData.modules && validatedData.modules.length > 0) {
       // Получаем существующие модули курса
       const existingModules = await prisma.module.findMany({
-        where: { courseId: (await params).id },
+        where: { courseId: courseId },
         include: { lessons: true }
       })
 
@@ -240,7 +258,7 @@ export async function PUT(
               title: moduleData.title,
               description: moduleData.description || '',
               order: moduleData.order,
-              courseId: (await params).id
+              courseId: courseId
             }
           })
         }
@@ -318,7 +336,7 @@ export async function PUT(
       // Удаляем модули, которых больше нет
       await prisma.module.deleteMany({
         where: {
-          courseId: (await params).id,
+          courseId: courseId,
           id: { notIn: updatedModuleIds }
         }
       })

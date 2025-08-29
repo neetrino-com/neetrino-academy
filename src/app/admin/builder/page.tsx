@@ -989,47 +989,45 @@ export default function CourseBuilder() {
 
   // Рендер шага "Задания"
   const renderAssignmentsStep = () => {
-    const lessonsWithAssignments = modules.flatMap(m => 
-      m.lessons.filter(l => l.hasAssignment).map(l => ({
+    const allLessons = modules.flatMap(m => 
+      m.lessons.map(l => ({
         ...l, 
         moduleTitle: m.title, 
         moduleId: m.id
       }))
     )
 
-    if (lessonsWithAssignments.length === 0) {
+    if (allLessons.length === 0) {
       return (
         <div className="text-center py-12">
           <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет заданий</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет уроков</h3>
           <p className="text-gray-500 mb-4">
-            Отметьте уроки, к которым нужно добавить задания, на этапе "Уроки"
+            Сначала создайте структуру курса с модулями и уроками
           </p>
           <button
-            onClick={() => setCurrentStep(2)}
+            onClick={() => setCurrentStep(1)}
             className="text-blue-600 hover:text-blue-700"
           >
-            Перейти к урокам
+            Перейти к структуре
           </button>
         </div>
       )
     }
 
-    const currentAssignment = assignments.find(a => a.lessonId === selectedLesson) || 
-      (selectedLesson ? { 
-        id: `assignment_${Date.now()}`,
-        lessonId: selectedLesson,
-        title: '',
-        description: ''
-      } : null)
+    const currentLesson = selectedLesson 
+      ? allLessons.find(l => l.id === selectedLesson)
+      : allLessons[0]
+
+    const currentAssignment = assignments.find(a => a.lessonId === selectedLesson)
 
     return (
       <div className="flex gap-6">
-        {/* Список уроков с заданиями */}
+        {/* Список уроков */}
         <div className="w-80 bg-gray-50 rounded-lg p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">Уроки с заданиями</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Все уроки</h3>
           <div className="space-y-2">
-            {lessonsWithAssignments.map(lesson => {
+            {allLessons.map(lesson => {
               const hasAssignment = assignments.some(a => a.lessonId === lesson.id)
               return (
                 <button
@@ -1057,83 +1055,121 @@ export default function CourseBuilder() {
         </div>
 
         {/* Редактор задания */}
-        {currentAssignment && selectedLesson && (
+        {currentLesson && (
           <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              Задание для урока: {lessonsWithAssignments.find(l => l.id === selectedLesson)?.title}
-            </h3>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Название задания *
-                </label>
-                <input
-                  type="text"
-                  value={currentAssignment.title}
-                  onChange={(e) => {
-                    const updated = { ...currentAssignment, title: e.target.value }
-                    setAssignments(prev => {
-                      const filtered = prev.filter(a => a.lessonId !== selectedLesson)
-                      return [...filtered, updated]
-                    })
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">
+                Задание для урока: {currentLesson.title}
+              </h3>
+              {currentAssignment && (
+                <button
+                  onClick={() => {
+                    setAssignments(prev => prev.filter(a => a.lessonId !== selectedLesson))
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Например: Создать главную страницу сайта"
-                />
-              </div>
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Удалить задание
+                </button>
+              )}
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Описание задания *
-                </label>
-                <textarea
-                  value={currentAssignment.description}
-                  onChange={(e) => {
-                    const updated = { ...currentAssignment, description: e.target.value }
-                    setAssignments(prev => {
-                      const filtered = prev.filter(a => a.lessonId !== selectedLesson)
-                      return [...filtered, updated]
-                    })
+            {!currentAssignment ? (
+              <div className="text-center py-12">
+                <ClipboardList className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Задание не создано</h4>
+                <p className="text-gray-500 mb-6">
+                  Добавьте задание к этому уроку для проверки знаний студентов
+                </p>
+                <button
+                  onClick={() => {
+                    const newAssignment = {
+                      id: `assignment_${Date.now()}`,
+                      lessonId: selectedLesson!,
+                      title: '',
+                      description: ''
+                    }
+                    setAssignments(prev => [...prev, newAssignment])
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-32"
-                  placeholder="Подробное описание задания, требования, критерии оценки..."
-                />
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 mx-auto"
+                >
+                  <Plus className="w-5 h-5" />
+                  Добавить задание
+                </button>
               </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Название задания *
+                  </label>
+                  <input
+                    type="text"
+                    value={currentAssignment.title}
+                    onChange={(e) => {
+                      const updated = { ...currentAssignment, title: e.target.value }
+                      setAssignments(prev => {
+                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Например: Создать главную страницу сайта"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Срок сдачи (опционально)
-                </label>
-                <input
-                  type="date"
-                  value={currentAssignment.dueDate || ''}
-                  onChange={(e) => {
-                    const updated = { ...currentAssignment, dueDate: e.target.value }
-                    setAssignments(prev => {
-                      const filtered = prev.filter(a => a.lessonId !== selectedLesson)
-                      return [...filtered, updated]
-                    })
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Описание задания *
+                  </label>
+                  <textarea
+                    value={currentAssignment.description}
+                    onChange={(e) => {
+                      const updated = { ...currentAssignment, description: e.target.value }
+                      setAssignments(prev => {
+                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-32"
+                    placeholder="Подробное описание задания, требования, критерии оценки..."
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Файлы и материалы
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">
-                    Загрузите файлы с примерами или шаблонами
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    PDF, DOC, ZIP до 10MB
-                  </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Срок сдачи (опционально)
+                  </label>
+                  <input
+                    type="date"
+                    value={currentAssignment.dueDate || ''}
+                    onChange={(e) => {
+                      const updated = { ...currentAssignment, dueDate: e.target.value }
+                      setAssignments(prev => {
+                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                        return [...filtered, updated]
+                      })
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Файлы и материалы
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">
+                      Загрузите файлы с примерами или шаблонами
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PDF, DOC, ZIP до 10MB
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
@@ -1156,28 +1192,23 @@ export default function CourseBuilder() {
           <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Нет уроков</h3>
           <p className="text-gray-500 mb-4">
-            Сначала добавьте уроки на этапе "Уроки"
+            Сначала создайте структуру курса с модулями и уроками
           </p>
           <button
-            onClick={() => setCurrentStep(2)}
+            onClick={() => setCurrentStep(1)}
             className="text-blue-600 hover:text-blue-700"
           >
-            Перейти к урокам
+            Перейти к структуре
           </button>
         </div>
       )
     }
 
-    const currentQuiz = quizzes.find(q => q.lessonId === selectedLesson) || 
-      (selectedLesson ? { 
-        id: `quiz_${Date.now()}`,
-        lessonId: selectedLesson,
-        title: '',
-        description: '',
-        questions: [],
-        timeLimit: 30,
-        passingScore: 70
-      } : null)
+    const currentLesson = selectedLesson 
+      ? allLessons.find(l => l.id === selectedLesson)
+      : allLessons[0]
+
+    const currentQuiz = quizzes.find(q => q.lessonId === selectedLesson)
 
     return (
       <div className="flex gap-6">
@@ -1219,42 +1250,103 @@ export default function CourseBuilder() {
         </div>
 
         {/* Редактор теста */}
-        {currentQuiz && selectedLesson && (
+        {currentLesson && (
           <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
-              Тест для урока: {allLessons.find(l => l.id === selectedLesson)?.title}
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">
+                Тест для урока: {currentLesson.title}
+              </h3>
+              {currentQuiz && (
+                <button
+                  onClick={() => {
+                    setQuizzes(prev => prev.filter(q => q.lessonId !== selectedLesson))
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Удалить тест
+                </button>
+              )}
+            </div>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Название теста
-                  </label>
-                  <input
-                    type="text"
-                    value={currentQuiz.title}
-                    onChange={(e) => {
-                      const updated = { ...currentQuiz, title: e.target.value }
-                      setQuizzes(prev => {
-                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                        return [...filtered, updated]
-                      })
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Например: Проверка знаний по уроку 1"
-                  />
+            {!currentQuiz ? (
+              <div className="text-center py-12">
+                <TestTube className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Тест не создан</h4>
+                <p className="text-gray-500 mb-6">
+                  Добавьте тест к этому уроку для проверки знаний студентов
+                </p>
+                <button
+                  onClick={() => {
+                    const newQuiz = {
+                      id: `quiz_${Date.now()}`,
+                      lessonId: selectedLesson!,
+                      title: '',
+                      description: '',
+                      questions: [],
+                      timeLimit: 30,
+                      passingScore: 70
+                    }
+                    setQuizzes(prev => [...prev, newQuiz])
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 mx-auto"
+                >
+                  <Plus className="w-5 h-5" />
+                  Добавить тест
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Название теста
+                    </label>
+                    <input
+                      type="text"
+                      value={currentQuiz.title}
+                      onChange={(e) => {
+                        const updated = { ...currentQuiz, title: e.target.value }
+                        setQuizzes(prev => {
+                          const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                          return [...filtered, updated]
+                        })
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Например: Проверка знаний по уроку 1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Проходной балл (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={currentQuiz.passingScore}
+                      onChange={(e) => {
+                        const updated = { ...currentQuiz, passingScore: parseInt(e.target.value) || 70 }
+                        setQuizzes(prev => {
+                          const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                          return [...filtered, updated]
+                        })
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                      max="100"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Проходной балл (%)
+                    Время на выполнение (минут)
                   </label>
                   <input
                     type="number"
-                    value={currentQuiz.passingScore}
+                    value={currentQuiz.timeLimit || 0}
                     onChange={(e) => {
-                      const updated = { ...currentQuiz, passingScore: parseInt(e.target.value) || 70 }
+                      const updated = { ...currentQuiz, timeLimit: parseInt(e.target.value) || 0 }
                       setQuizzes(prev => {
                         const filtered = prev.filter(q => q.lessonId !== selectedLesson)
                         return [...filtered, updated]
@@ -1262,215 +1354,195 @@ export default function CourseBuilder() {
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     min="0"
-                    max="100"
+                    placeholder="0 - без ограничения времени"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Время на выполнение (минут)
-                </label>
-                <input
-                  type="number"
-                  value={currentQuiz.timeLimit || 0}
-                  onChange={(e) => {
-                    const updated = { ...currentQuiz, timeLimit: parseInt(e.target.value) || 0 }
-                    setQuizzes(prev => {
-                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                      return [...filtered, updated]
-                    })
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  placeholder="0 - без ограничения времени"
-                />
-              </div>
+                {/* Вопросы теста */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="font-medium text-gray-900">Вопросы теста</h4>
+                    <button
+                      onClick={() => {
+                        const newQuestion: QuizQuestion = {
+                          id: `question_${Date.now()}`,
+                          question: '',
+                          type: 'SINGLE_CHOICE',
+                          points: 1,
+                          options: [
+                            { id: `opt_${Date.now()}_1`, text: '', isCorrect: false },
+                            { id: `opt_${Date.now()}_2`, text: '', isCorrect: false }
+                          ]
+                        }
+                        const updated = { 
+                          ...currentQuiz, 
+                          questions: [...(currentQuiz.questions || []), newQuestion]
+                        }
+                        setQuizzes(prev => {
+                          const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                          return [...filtered, updated]
+                        })
+                      }}
+                      className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Добавить вопрос
+                    </button>
+                  </div>
 
-              {/* Вопросы теста */}
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-medium text-gray-900">Вопросы теста</h4>
-                  <button
-                    onClick={() => {
-                      const newQuestion: QuizQuestion = {
-                        id: `question_${Date.now()}`,
-                        question: '',
-                        type: 'SINGLE_CHOICE',
-                        points: 1,
-                        options: [
-                          { id: `opt_${Date.now()}_1`, text: '', isCorrect: false },
-                          { id: `opt_${Date.now()}_2`, text: '', isCorrect: false }
-                        ]
-                      }
-                      const updated = { 
-                        ...currentQuiz, 
-                        questions: [...(currentQuiz.questions || []), newQuestion]
-                      }
-                      setQuizzes(prev => {
-                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                        return [...filtered, updated]
-                      })
-                    }}
-                    className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Добавить вопрос
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {(currentQuiz.questions || []).map((question, qIndex) => (
-                    <div key={question.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="cursor-move text-gray-400 hover:text-gray-600 pt-1">
-                          <GripVertical className="w-5 h-5" />
-                        </div>
-                        
-                        <div className="flex-1 space-y-3">
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-2">
-                              <input
-                                type="text"
-                                value={question.question}
+                  <div className="space-y-4">
+                    {(currentQuiz.questions || []).map((question, qIndex) => (
+                      <div key={question.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="cursor-move text-gray-400 hover:text-gray-600 pt-1">
+                            <GripVertical className="w-5 h-5" />
+                          </div>
+                          
+                          <div className="flex-1 space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="col-span-2">
+                                <input
+                                  type="text"
+                                  value={question.question}
+                                  onChange={(e) => {
+                                    const updatedQuestions = [...(currentQuiz.questions || [])]
+                                    updatedQuestions[qIndex] = { ...question, question: e.target.value }
+                                    const updated = { ...currentQuiz, questions: updatedQuestions }
+                                    setQuizzes(prev => {
+                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                      return [...filtered, updated]
+                                    })
+                                  }}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                  placeholder="Текст вопроса"
+                                />
+                              </div>
+                              <select
+                                value={question.type}
                                 onChange={(e) => {
                                   const updatedQuestions = [...(currentQuiz.questions || [])]
-                                  updatedQuestions[qIndex] = { ...question, question: e.target.value }
+                                  updatedQuestions[qIndex] = { 
+                                    ...question, 
+                                    type: e.target.value as 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE'
+                                  }
                                   const updated = { ...currentQuiz, questions: updatedQuestions }
                                   setQuizzes(prev => {
                                     const filtered = prev.filter(q => q.lessonId !== selectedLesson)
                                     return [...filtered, updated]
                                   })
                                 }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Текст вопроса"
-                              />
+                                className="px-3 py-2 border border-gray-300 rounded-lg"
+                              >
+                                <option value="SINGLE_CHOICE">Один ответ</option>
+                                <option value="MULTIPLE_CHOICE">Несколько ответов</option>
+                                <option value="TRUE_FALSE">Да/Нет</option>
+                              </select>
                             </div>
-                            <select
-                              value={question.type}
-                              onChange={(e) => {
-                                const updatedQuestions = [...(currentQuiz.questions || [])]
-                                updatedQuestions[qIndex] = { 
-                                  ...question, 
-                                  type: e.target.value as 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE'
-                                }
-                                const updated = { ...currentQuiz, questions: updatedQuestions }
-                                setQuizzes(prev => {
-                                  const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                                  return [...filtered, updated]
-                                })
-                              }}
-                              className="px-3 py-2 border border-gray-300 rounded-lg"
-                            >
-                              <option value="SINGLE_CHOICE">Один ответ</option>
-                              <option value="MULTIPLE_CHOICE">Несколько ответов</option>
-                              <option value="TRUE_FALSE">Да/Нет</option>
-                            </select>
+
+                            {/* Варианты ответов */}
+                            <div className="ml-4 space-y-2">
+                              {question.options.map((option, oIndex) => (
+                                <div key={option.id} className="flex items-center gap-2">
+                                  <input
+                                    type={question.type === 'SINGLE_CHOICE' ? 'radio' : 'checkbox'}
+                                    checked={option.isCorrect}
+                                    onChange={(e) => {
+                                      const updatedQuestions = [...(currentQuiz.questions || [])]
+                                      const updatedOptions = [...question.options]
+                                      if (question.type === 'SINGLE_CHOICE') {
+                                        // Для single choice сбрасываем все другие
+                                        updatedOptions.forEach(opt => opt.isCorrect = false)
+                                      }
+                                      updatedOptions[oIndex].isCorrect = e.target.checked
+                                      updatedQuestions[qIndex] = { ...question, options: updatedOptions }
+                                      const updated = { ...currentQuiz, questions: updatedQuestions }
+                                      setQuizzes(prev => {
+                                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                        return [...filtered, updated]
+                                      })
+                                    }}
+                                    className="w-4 h-4"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={option.text}
+                                    onChange={(e) => {
+                                      const updatedQuestions = [...(currentQuiz.questions || [])]
+                                      const updatedOptions = [...question.options]
+                                      updatedOptions[oIndex].text = e.target.value
+                                      updatedQuestions[qIndex] = { ...question, options: updatedOptions }
+                                      const updated = { ...currentQuiz, questions: updatedQuestions }
+                                      setQuizzes(prev => {
+                                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                        return [...filtered, updated]
+                                      })
+                                    }}
+                                    className="flex-1 px-3 py-1 border border-gray-200 rounded"
+                                    placeholder={`Вариант ${oIndex + 1}`}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const updatedQuestions = [...(currentQuiz.questions || [])]
+                                      const updatedOptions = question.options.filter((_, i) => i !== oIndex)
+                                      updatedQuestions[qIndex] = { ...question, options: updatedOptions }
+                                      const updated = { ...currentQuiz, questions: updatedQuestions }
+                                      setQuizzes(prev => {
+                                        const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                        return [...filtered, updated]
+                                      })
+                                    }}
+                                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                onClick={() => {
+                                  const updatedQuestions = [...(currentQuiz.questions || [])]
+                                  const newOption = { 
+                                    id: `opt_${Date.now()}`, 
+                                    text: '', 
+                                    isCorrect: false 
+                                  }
+                                  updatedQuestions[qIndex] = { 
+                                    ...question, 
+                                    options: [...question.options, newOption]
+                                  }
+                                  const updated = { ...currentQuiz, questions: updatedQuestions }
+                                  setQuizzes(prev => {
+                                    const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                    return [...filtered, updated]
+                                  })
+                                }}
+                                className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                              >
+                                <Plus className="w-3 h-3" />
+                                Добавить вариант
+                              </button>
+                            </div>
                           </div>
 
-                          {/* Варианты ответов */}
-                          <div className="ml-4 space-y-2">
-                            {question.options.map((option, oIndex) => (
-                              <div key={option.id} className="flex items-center gap-2">
-                                <input
-                                  type={question.type === 'SINGLE_CHOICE' ? 'radio' : 'checkbox'}
-                                  checked={option.isCorrect}
-                                  onChange={(e) => {
-                                    const updatedQuestions = [...(currentQuiz.questions || [])]
-                                    const updatedOptions = [...question.options]
-                                    if (question.type === 'SINGLE_CHOICE') {
-                                      // Для single choice сбрасываем все другие
-                                      updatedOptions.forEach(opt => opt.isCorrect = false)
-                                    }
-                                    updatedOptions[oIndex].isCorrect = e.target.checked
-                                    updatedQuestions[qIndex] = { ...question, options: updatedOptions }
-                                    const updated = { ...currentQuiz, questions: updatedQuestions }
-                                    setQuizzes(prev => {
-                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                                      return [...filtered, updated]
-                                    })
-                                  }}
-                                  className="w-4 h-4"
-                                />
-                                <input
-                                  type="text"
-                                  value={option.text}
-                                  onChange={(e) => {
-                                    const updatedQuestions = [...(currentQuiz.questions || [])]
-                                    const updatedOptions = [...question.options]
-                                    updatedOptions[oIndex].text = e.target.value
-                                    updatedQuestions[qIndex] = { ...question, options: updatedOptions }
-                                    const updated = { ...currentQuiz, questions: updatedQuestions }
-                                    setQuizzes(prev => {
-                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                                      return [...filtered, updated]
-                                    })
-                                  }}
-                                  className="flex-1 px-3 py-1 border border-gray-200 rounded"
-                                  placeholder={`Вариант ${oIndex + 1}`}
-                                />
-                                <button
-                                  onClick={() => {
-                                    const updatedQuestions = [...(currentQuiz.questions || [])]
-                                    const updatedOptions = question.options.filter((_, i) => i !== oIndex)
-                                    updatedQuestions[qIndex] = { ...question, options: updatedOptions }
-                                    const updated = { ...currentQuiz, questions: updatedQuestions }
-                                    setQuizzes(prev => {
-                                      const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                                      return [...filtered, updated]
-                                    })
-                                  }}
-                                  className="p-1 text-red-500 hover:bg-red-50 rounded"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ))}
-                            <button
-                              onClick={() => {
-                                const updatedQuestions = [...(currentQuiz.questions || [])]
-                                const newOption = { 
-                                  id: `opt_${Date.now()}`, 
-                                  text: '', 
-                                  isCorrect: false 
-                                }
-                                updatedQuestions[qIndex] = { 
-                                  ...question, 
-                                  options: [...question.options, newOption]
-                                }
-                                const updated = { ...currentQuiz, questions: updatedQuestions }
-                                setQuizzes(prev => {
-                                  const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                                  return [...filtered, updated]
-                                })
-                              }}
-                              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Добавить вариант
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => {
+                              const updatedQuestions = (currentQuiz.questions || []).filter((_, i) => i !== qIndex)
+                              const updated = { ...currentQuiz, questions: updatedQuestions }
+                              setQuizzes(prev => {
+                                const filtered = prev.filter(q => q.lessonId !== selectedLesson)
+                                return [...filtered, updated]
+                              })
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
                         </div>
-
-                        <button
-                          onClick={() => {
-                            const updatedQuestions = (currentQuiz.questions || []).filter((_, i) => i !== qIndex)
-                            const updated = { ...currentQuiz, questions: updatedQuestions }
-                            setQuizzes(prev => {
-                              const filtered = prev.filter(q => q.lessonId !== selectedLesson)
-                              return [...filtered, updated]
-                            })
-                          }}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
