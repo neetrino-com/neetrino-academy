@@ -413,25 +413,27 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         {/* Правая панель - Контент чеклиста */}
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
-          <div className="mb-6">
-            <div className="relative">
-              <CheckCircle className="absolute left-0 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-600" />
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full pl-8 pr-4 py-3 text-lg font-semibold border-0 border-b-2 border-gray-200 focus:border-amber-500 focus:outline-none bg-transparent placeholder-gray-400 mb-2"
-                placeholder="Название чеклиста"
-                required
-              />
+          <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-l-4 border-amber-500 rounded-r-lg p-4 mb-6 shadow-sm">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-6 h-6 text-amber-600 mt-1 flex-shrink-0" />
+              <div className="flex-1 space-y-3">
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-0 py-1 text-xl font-bold border-0 focus:outline-none bg-transparent placeholder-gray-500"
+                  placeholder="Название чеклиста"
+                  required
+                />
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={1}
+                  className="w-full px-0 py-1 text-sm text-gray-600 border-0 focus:outline-none bg-transparent placeholder-gray-400 resize-none"
+                  placeholder="Добавьте описание..."
+                />
+              </div>
             </div>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              rows={1}
-              className="w-full px-4 py-2 text-sm border-0 border-b border-gray-100 focus:border-gray-300 focus:outline-none bg-transparent placeholder-gray-400 resize-none"
-              placeholder="Краткое описание"
-            />
           </div>
 
           {/* Панель инструментов */}
