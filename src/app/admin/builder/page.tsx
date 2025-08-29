@@ -20,6 +20,8 @@ interface CourseData {
   level: string
   price: number
   duration: number
+  durationUnit: 'days' | 'weeks' | 'months'
+  currency: 'RUB' | 'USD' | 'AMD'
   thumbnail?: string
   tags?: string[]
   prerequisites?: string[]
@@ -114,6 +116,8 @@ export default function CourseBuilder() {
     level: 'BEGINNER',
     price: 0,
     duration: 4,
+    durationUnit: 'weeks',
+    currency: 'RUB',
     tags: [],
     prerequisites: [],
     learningOutcomes: []
@@ -215,6 +219,8 @@ export default function CourseBuilder() {
         level: course.level || 'BEGINNER',
         price: course.price || 0,
         duration: course.duration || 4,
+        durationUnit: course.durationUnit || 'weeks',
+        currency: course.currency || 'RUB',
         tags: course.tags || [],
         prerequisites: course.prerequisites || [],
         learningOutcomes: course.learningOutcomes || []
@@ -403,32 +409,53 @@ export default function CourseBuilder() {
           {/* Длительность */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-3">
-              ⏱️ Длительность (недель)
+              ⏱️ Длительность курса
             </label>
-            <input
-              type="number"
-              value={courseData.duration}
-              onChange={(e) => setCourseData({...courseData, duration: parseInt(e.target.value) || 4})}
-              className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
-              min="1"
-              max="52"
-              placeholder="4"
-            />
+            <div className="flex gap-3">
+              <input
+                type="number"
+                value={courseData.duration}
+                onChange={(e) => setCourseData({...courseData, duration: parseInt(e.target.value) || 1})}
+                className="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
+                min="1"
+                placeholder="4"
+              />
+              <select
+                value={courseData.durationUnit}
+                onChange={(e) => setCourseData({...courseData, durationUnit: e.target.value as 'days' | 'weeks' | 'months'})}
+                className="px-4 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900 min-w-[120px]"
+              >
+                <option value="days">📅 дней</option>
+                <option value="weeks">📆 недель</option>
+                <option value="months">🗓️ месяцев</option>
+              </select>
+            </div>
           </div>
 
           {/* Цена */}
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-3">
-              💰 Цена (₽)
+              💰 Стоимость курса
             </label>
-            <input
-              type="number"
-              value={courseData.price}
-              onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
-              className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
-              min="0"
-              placeholder="0"
-            />
+            <div className="flex gap-3">
+              <input
+                type="number"
+                value={courseData.price}
+                onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
+                className="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
+                min="0"
+                placeholder="0"
+              />
+              <select
+                value={courseData.currency}
+                onChange={(e) => setCourseData({...courseData, currency: e.target.value as 'RUB' | 'USD' | 'AMD'})}
+                className="px-4 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900 min-w-[120px]"
+              >
+                <option value="RUB">₽ рублей</option>
+                <option value="USD">$ долларов</option>
+                <option value="AMD">֏ драмов</option>
+              </select>
+            </div>
           </div>
 
           {/* Описание */}
