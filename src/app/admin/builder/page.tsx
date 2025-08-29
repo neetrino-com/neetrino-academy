@@ -854,7 +854,7 @@ export default function CourseBuilder() {
               {/* Выбор лекции (опционально) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Прикрепить лекцию (опционально)
+                  Прикрепить лекцию
                 </label>
                 <LectureSelector
                   selectedLectureId={currentLesson.lectureId}
@@ -866,15 +866,12 @@ export default function CourseBuilder() {
                     setModules(updatedModules)
                   }}
                 />
-                <div className="mt-2 text-xs text-gray-600">
-                  <p>💡 Выберите готовую лекцию или создайте новую для дополнительного материала</p>
-                </div>
               </div>
 
-              {/* Выбор чеклиста (опционально) */}
+              {/* Выбор чеклиста */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Прикрепить чеклист (опционально)
+                  Прикрепить чеклист
                 </label>
                 <ChecklistSelector
                   selectedChecklistId={currentLesson.checklistId}
@@ -887,9 +884,6 @@ export default function CourseBuilder() {
                   }}
                   direction={courseData.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'}
                 />
-                <div className="mt-2 text-xs text-gray-600">
-                  <p>💡 Выберите готовый чеклист или создайте новый в разделе блоков урока</p>
-                </div>
               </div>
 
               {/* Контент урока */}
