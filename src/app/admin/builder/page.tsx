@@ -582,17 +582,6 @@ export default function CourseBuilder() {
         <p className="text-gray-600 max-w-2xl mx-auto">Разбейте ваш курс на модули и уроки. Логичная структура поможет студентам лучше усваивать материал</p>
       </div>
 
-      {/* Кнопка добавления модуля */}
-      <div className="text-center">
-        <button
-          onClick={addModule}
-          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="font-semibold">Добавить модуль</span>
-        </button>
-      </div>
-
       {errors.modules && (
         <div className="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-2xl flex items-center gap-3">
           <span className="text-red-500 text-xl">⚠️</span>
@@ -714,6 +703,17 @@ export default function CourseBuilder() {
             </div>
           </div>
         ))}
+
+        {/* Кнопка добавления модуля под списком */}
+        <div className="text-center pt-4">
+          <button
+            onClick={addModule}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-semibold">Добавить модуль</span>
+          </button>
+        </div>
       </div>
     </div>
   )
