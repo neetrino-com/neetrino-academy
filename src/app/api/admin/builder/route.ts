@@ -150,8 +150,13 @@ export async function POST(request: NextRequest) {
       return newCourse
     })
 
+    console.log('=== Курс создан успешно ===')
+    console.log('Course ID:', course.id)
+    console.log('Course title:', course.title)
+    
     return NextResponse.json(course)
   } catch (error) {
+    console.error('=== BUILDER ERROR ===')
     console.error('Builder error:', error)
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -159,13 +164,19 @@ export async function POST(request: NextRequest) {
       name: error instanceof Error ? error.name : 'Unknown'
     })
     
+    // Проверяем тип ошибки для лучшей диагностики
+    if (error instanceof Error && error.message.includes('Prisma')) {
+      console.error('Это ошибка Prisma/БД')
+    }
+    
     // Возвращаем более подробную информацию об ошибке
     return NextResponse.json(
       { 
         error: 'Failed to create course', 
         details: error instanceof Error ? error.message : 'Unknown error',
         type: error instanceof Error ? error.name : 'Unknown',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        stack: error instanceof Error ? error.stack : undefined
       },
       { status: 500 }
     )
