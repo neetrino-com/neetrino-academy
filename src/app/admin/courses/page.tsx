@@ -322,40 +322,48 @@ export default function CoursesManagement() {
             {filteredCourses.map(course => {
               const status = getStatusInfo(course)
               return (
-                                <div key={course.id} className="group relative p-6 hover:bg-gradient-to-br hover:from-blue-50/50 hover:to-indigo-50/50 hover:border-l-4 hover:border-indigo-500 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-l-4 border-transparent">
+                                <div key={course.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-indigo-200 relative overflow-hidden">
+                  {/* Декоративный элемент */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors">{course.title}</h3>
-                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${status.color}`}>
-                          {status.label}
-                        </span>
-                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${getLevelColor(course.level)}`}>
-                          {course.level}
-                        </span>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <BookOpen className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors">{course.title}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${status.color}`}>
+                              {status.label}
+                            </span>
+                            <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${getLevelColor(course.level)}`}>
+                              {course.level}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       
                       {course.description && (
-                        <p className="text-gray-600 mb-3 group-hover:text-gray-700 transition-colors">{course.description}</p>
+                        <p className="text-gray-600 mb-4 group-hover:text-gray-700 transition-colors leading-relaxed">{course.description}</p>
                       )}
                       
                       {/* Характеристики курса */}
-                      <div className="flex gap-6 text-sm text-gray-500 mb-3">
-                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 px-3 py-2 rounded-lg group-hover:from-indigo-100 group-hover:to-blue-100 transition-colors">
                           <Target className="w-4 h-4 text-indigo-500" />
-                          <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-medium">
-                            {course.direction}
-                          </span>
+                          <span className="font-medium">{course.direction}</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-lg group-hover:from-green-100 group-hover:to-emerald-100 transition-colors">
                           <Users className="w-4 h-4 text-green-500" />
                           <span className="font-medium">{course._count?.enrollments || 0} студентов</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
-                          <BookOpen className="w-4 h-4 text-purple-500" />
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 rounded-lg group-hover:from-purple-100 group-hover:to-pink-100 transition-colors">
+                          <FileText className="w-4 h-4 text-purple-500" />
                           <span className="font-medium">{course._count?.modules || 0} модулей</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-yellow-50 px-3 py-2 rounded-lg group-hover:from-orange-100 group-hover:to-yellow-100 transition-colors">
                           <Calendar className="w-4 h-4 text-orange-500" />
                           <span className="font-medium">Создан: {formatDate(course.createdAt)}</span>
                         </div>
@@ -363,58 +371,53 @@ export default function CoursesManagement() {
                     </div>
 
                     {/* Действия */}
-                    <div className="flex gap-1 ml-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => router.push(`/admin/builder?edit=${course.id}`)}
-                        className="flex items-center gap-2 px-3 py-2 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-indigo-200 hover:border-indigo-600"
+                        className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
                         title="Редактировать"
                       >
-                        <Edit className="w-4 h-4" />
-                        <span className="text-xs font-medium hidden md:block">Изменить</span>
+                        <Edit className="w-5 h-5" />
                       </button>
                       
                       <button
                         onClick={() => router.push(`/courses/${course.id}`)}
-                        className="flex items-center gap-2 px-3 py-2 text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-emerald-200 hover:border-emerald-600"
+                        className="w-12 h-12 flex items-center justify-center text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-emerald-200 hover:border-emerald-600 backdrop-blur-sm"
                         title="Просмотр курса"
                       >
-                        <Eye className="w-4 h-4" />
-                        <span className="text-xs font-medium hidden md:block">Смотреть</span>
+                        <Eye className="w-5 h-5" />
                       </button>
 
                       {!course.isDraft && (
                         <button
                           onClick={() => toggleCourseStatus(course.id, 'isActive', course.isActive)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border ${
+                          className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 backdrop-blur-sm ${
                             course.isActive 
                               ? 'text-amber-600 hover:text-white hover:bg-amber-600 border-amber-200 hover:border-amber-600' 
                               : 'text-emerald-600 hover:text-white hover:bg-emerald-600 border-emerald-200 hover:border-emerald-600'
                           }`}
                           title={course.isActive ? 'Деактивировать' : 'Активировать'}
                         >
-                          {course.isActive ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                          <span className="text-xs font-medium hidden md:block">{course.isActive ? 'Скрыть' : 'Показать'}</span>
+                          {course.isActive ? <AlertCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
                         </button>
                       )}
 
                       {course.isDraft && (
                         <button
                           onClick={() => toggleCourseStatus(course.id, 'isDraft', course.isDraft)}
-                          className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-blue-200 hover:border-blue-600"
+                          className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
                           title="Опубликовать"
                         >
-                          <BarChart3 className="w-4 h-4" />
-                          <span className="text-xs font-medium hidden md:block">Опубликовать</span>
+                          <BarChart3 className="w-5 h-5" />
                         </button>
                       )}
 
                       <button
                         onClick={() => deleteCourse(course.id)}
-                        className="flex items-center gap-2 px-3 py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-red-200 hover:border-red-600"
+                        className="w-12 h-12 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-red-200 hover:border-red-600 backdrop-blur-sm"
                         title="Удалить"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        <span className="text-xs font-medium hidden md:block">Удалить</span>
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </div>

@@ -365,133 +365,116 @@ export default function UsersManagement() {
           </div>
         </div>
 
-        {/* Таблица пользователей */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="p-4 text-left">
+        {/* Списки пользователей */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">
+              Пользователи ({filteredUsers.length})
+            </h2>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                onChange={selectAllUsers}
+                className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+              />
+              <span className="text-sm text-gray-600">Выбрать всех</span>
+            </div>
+          </div>
+
+            {filteredUsers.map((user) => (
+              <div key={user.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-purple-200 relative overflow-hidden">
+                {/* Декоративный элемент */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4 flex-1">
                     <input
                       type="checkbox"
-                      checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-                      onChange={selectAllUsers}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      checked={selectedUsers.includes(user.id)}
+                      onChange={() => toggleUserSelection(user.id)}
+                      className="rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 transform group-hover:scale-110 transition-transform"
                     />
-                  </th>
-                  <th className="p-4 text-left font-semibold text-gray-900">Пользователь</th>
-                  <th className="p-4 text-left font-semibold text-gray-900">Роль</th>
-                  <th className="p-4 text-left font-semibold text-gray-900">Статус</th>
-                  <th className="p-4 text-left font-semibold text-gray-900">Активность</th>
-                  <th className="p-4 text-left font-semibold text-gray-900">Зарегистрирован</th>
-                  <th className="p-4 text-left font-semibold text-gray-900">Действия</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="group hover:bg-gradient-to-r hover:from-violet-50/50 hover:via-purple-50/30 hover:to-pink-50/50 transition-all duration-300 hover:shadow-md border-l-4 border-transparent hover:border-purple-400">
-                    <td className="p-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.includes(user.id)}
-                        onChange={() => toggleUserSelection(user.id)}
-                        className="rounded-md border-gray-300 text-purple-600 focus:ring-purple-500 transform group-hover:scale-110 transition-transform"
-                      />
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <div className="w-12 h-12 bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                            {user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                            <div className={`w-3 h-3 rounded-full ${user.isActive !== false ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-                          </div>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-gray-900 group-hover:text-purple-700 transition-colors truncate">{user.name || 'Без имени'}</div>
-                          <div className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors truncate">{user.email}</div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium shadow-sm ${getRoleColor(user.role)}`}>
-                              {getRoleLabel(user.role)}
-                            </span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium shadow-sm ${
-                              user.isActive !== false 
-                                ? 'bg-emerald-100 text-emerald-700' 
-                                : 'bg-red-100 text-red-700'
-                            }`}>
-                              {user.isActive !== false ? 'Активен' : 'Неактивен'}
-                            </span>
-                          </div>
-                        </div>
+                    
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 text-lg group-hover:text-purple-700 transition-colors">{user.name || 'Без имени'}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors">{user.email}</span>
+                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${getRoleColor(user.role)}`}>
+                          {getRoleLabel(user.role)}
+                        </span>
+                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${
+                          user.isActive !== false 
+                            ? 'bg-emerald-100 text-emerald-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {user.isActive !== false ? 'Активен' : 'Неактивен'}
+                        </span>
                       </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm">
+                      
+                      {/* Характеристики пользователя */}
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-3">
                         {user._count ? (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-blue-600">
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <>
+                            <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 px-3 py-2 rounded-lg group-hover:from-blue-100 group-hover:to-cyan-100 transition-colors">
+                              <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                               </svg>
                               <span className="font-medium">{user._count.enrollments || 0} курсов</span>
                             </div>
-                            <div className="flex items-center gap-2 text-green-600">
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-lg group-hover:from-green-100 group-hover:to-emerald-100 transition-colors">
+                              <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                               <span className="font-medium">{user._count.submissions || 0} заданий</span>
                             </div>
-                          </div>
+                          </>
                         ) : (
                           <span className="text-gray-400 text-xs">Нет данных</span>
                         )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm text-gray-900 group-hover:text-gray-600 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-yellow-50 px-3 py-2 rounded-lg group-hover:from-orange-100 group-hover:to-yellow-100 transition-colors">
+                          <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          <span className="font-medium">{formatDate(user.createdAt)}</span>
+                          <span className="font-medium">Создан: {formatDate(user.createdAt)}</span>
                         </div>
-                        {user.lastLoginAt && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Последний вход: {formatDate(user.lastLoginAt)}
-                          </div>
-                        )}
                       </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => router.push(`/admin/users/${user.id}`)}
-                          className="p-2.5 text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-sm hover:shadow-md border border-blue-200 hover:border-blue-600"
-                          title="Просмотр"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => router.push(`/admin/users/${user.id}/edit`)}
-                          className="p-2.5 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-sm hover:shadow-md border border-indigo-200 hover:border-indigo-600"
-                          title="Редактировать"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="p-2.5 text-gray-600 hover:text-white hover:bg-gray-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-sm hover:shadow-md border border-gray-200 hover:border-gray-600"
-                          title="Еще действия"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+
+                  {/* Действия */}
+                  <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => router.push(`/admin/users/${user.id}`)}
+                      className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
+                      title="Просмотр"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => router.push(`/admin/users/${user.id}/edit`)}
+                      className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
+                      title="Редактировать"
+                    >
+                      <Edit3 className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="w-12 h-12 flex items-center justify-center text-gray-600 hover:text-white hover:bg-gray-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-gray-200 hover:border-gray-600 backdrop-blur-sm"
+                      title="Еще действия"
+                    >
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
 
           {filteredUsers.length === 0 && (
             <div className="text-center py-12">
