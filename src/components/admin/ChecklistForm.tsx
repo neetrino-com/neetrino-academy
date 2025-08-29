@@ -413,24 +413,25 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         {/* Правая панель - Контент чеклиста */}
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
-          <div className="bg-white/70 backdrop-blur-sm border border-gray-200 rounded-lg shadow-sm p-3 mb-4">
-            <div className="space-y-2">
+          <div className="mb-6">
+            <div className="relative">
+              <CheckCircle className="absolute left-0 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-600" />
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full px-3 py-2.5 text-base font-medium border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                className="w-full pl-8 pr-4 py-3 text-lg font-semibold border-0 border-b-2 border-gray-200 focus:border-amber-500 focus:outline-none bg-transparent placeholder-gray-400 mb-2"
                 placeholder="Название чеклиста"
                 required
               />
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                rows={1}
-                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-amber-500 focus:border-amber-500 resize-none bg-gray-50"
-                placeholder="Описание чеклиста (необязательно)"
-              />
             </div>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              rows={1}
+              className="w-full px-4 py-2 text-sm border-0 border-b border-gray-100 focus:border-gray-300 focus:outline-none bg-transparent placeholder-gray-400 resize-none"
+              placeholder="Краткое описание"
+            />
           </div>
 
           {/* Панель инструментов */}
