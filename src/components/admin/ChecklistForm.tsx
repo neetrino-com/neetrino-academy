@@ -417,26 +417,33 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
           <div className="space-y-1 mb-6">
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 rounded-2xl blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className="relative w-full px-5 py-4 text-xl font-bold bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-400 border-0 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-200 transition-all duration-300 placeholder-amber-800/70 text-amber-900 shadow-xl hover:shadow-2xl transform hover:scale-[1.02] focus:scale-[1.02]"
-                placeholder="✨ Введите название чеклиста"
-                required
-              />
+            <div className="relative">
+              <div className="absolute inset-0 bg-slate-500 rounded-3xl transform rotate-1"></div>
+              <div className="absolute inset-0 bg-gray-600 rounded-3xl transform -rotate-1"></div>
+              <div className="relative bg-gradient-to-r from-slate-400 to-gray-500 p-1 rounded-3xl shadow-2xl">
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-6 py-4 text-xl font-black bg-white border-0 rounded-[20px] focus:outline-none focus:ring-4 focus:ring-slate-300/50 transition-all duration-300 placeholder-gray-600 text-gray-800 shadow-inner"
+                  placeholder="🎯 Название чеклиста"
+                  required
+                />
+              </div>
             </div>
             
-            <div className="ml-8">
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                rows={1}
-                className="w-full px-3 py-2 text-sm border-0 rounded-lg focus:outline-none bg-white/50 backdrop-blur placeholder-gray-400 shadow-md focus:shadow-lg transition-all duration-200 resize-none"
-                placeholder="Небольшое описание"
-              />
+            <div className="ml-8 relative">
+              <div className="absolute inset-0 bg-slate-300 rounded-2xl transform rotate-0.5"></div>
+              <div className="absolute inset-0 bg-gray-400 rounded-2xl transform -rotate-0.5"></div>
+              <div className="relative bg-gradient-to-r from-slate-200 to-gray-300 p-0.5 rounded-2xl shadow-lg">
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={1}
+                  className="w-full px-4 py-2 text-sm font-semibold bg-white border-0 rounded-[14px] focus:outline-none focus:ring-2 focus:ring-slate-200/50 transition-all duration-200 placeholder-gray-500 text-gray-700 shadow-inner resize-none"
+                  placeholder="💭 Краткое описание"
+                />
+              </div>
             </div>
           </div>
 
