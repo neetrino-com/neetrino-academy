@@ -1024,33 +1024,87 @@ export default function CourseBuilder() {
     return (
       <div className="flex gap-6">
         {/* Список уроков */}
-        <div className="w-80 bg-gray-50 rounded-lg p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">Все уроки</h3>
-          <div className="space-y-2">
-            {allLessons.map(lesson => {
-              const hasAssignment = assignments.some(a => a.lessonId === lesson.id)
-              return (
-                <button
-                  key={lesson.id}
-                  onClick={() => setSelectedLesson(lesson.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    selectedLesson === lesson.id 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium">{lesson.title}</div>
-                      <div className="text-xs text-gray-500">{lesson.moduleTitle}</div>
+        <div className="w-96 bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-gray-900">Содержание курса</h3>
+            <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              {allLessons.length} урок{allLessons.length === 1 ? '' : allLessons.length < 5 ? 'а' : 'ов'}
+            </div>
+          </div>
+          
+          <div className="space-y-4 max-h-[700px] overflow-y-auto">
+            {modules.map((module, moduleIndex) => (
+              <div key={module.id} className="space-y-2">
+                {/* Заголовок модуля */}
+                <div className="sticky top-0 bg-white z-10 border-b border-gray-100 pb-2">
+                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                    <div className="w-8 h-8 bg-green-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+                      {moduleIndex + 1}
                     </div>
-                    {hasAssignment && (
-                      <Check className="w-4 h-4 text-green-600" />
-                    )}
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-sm">{module.title}</h4>
+                      <p className="text-xs text-gray-600 mt-1">{module.lessons.length} урок{module.lessons.length === 1 ? '' : module.lessons.length < 5 ? 'а' : 'ов'}</p>
+                    </div>
+                    <div className="text-xs text-green-600 font-medium">
+                      Модуль {moduleIndex + 1}
+                    </div>
                   </div>
-                </button>
-              )
-            })}
+                </div>
+                
+                {/* Уроки модуля */}
+                <div className="ml-4 space-y-1">
+                  {module.lessons.map((lesson, lessonIndex) => {
+                    const hasAssignment = assignments.some(a => a.lessonId === lesson.id)
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => setSelectedLesson(lesson.id)}
+                        className={`group w-full text-left p-3 rounded-lg transition-all duration-200 border ${
+                          selectedLesson === lesson.id 
+                            ? 'bg-green-50 border-green-200 text-green-900 shadow-sm' 
+                            : 'hover:bg-gray-50 border-transparent hover:border-gray-200 hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                              selectedLesson === lesson.id 
+                                ? 'bg-green-600 text-white' 
+                                : 'bg-gray-200 text-gray-600 group-hover:bg-gray-300'
+                            }`}>
+                              {lessonIndex + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h5 className={`text-sm font-medium leading-tight ${
+                                selectedLesson === lesson.id ? 'text-green-900' : 'text-gray-900'
+                              }`}>
+                                {lesson.title}
+                              </h5>
+                              {lesson.description && (
+                                <p className={`text-xs mt-1 line-clamp-2 ${
+                                  selectedLesson === lesson.id ? 'text-green-700' : 'text-gray-500'
+                                }`}>
+                                  {lesson.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Статус задания */}
+                          <div className="flex items-center gap-1 ml-2">
+                            {hasAssignment && (
+                              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center" title="Есть задание">
+                                <ClipboardList className="w-3 h-3 text-green-600" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -1213,39 +1267,93 @@ export default function CourseBuilder() {
     return (
       <div className="flex gap-6">
         {/* Список уроков */}
-        <div className="w-80 bg-gray-50 rounded-lg p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">Все уроки</h3>
-          <div className="space-y-2">
-            {allLessons.map(lesson => {
-              const hasQuiz = quizzes.some(q => q.lessonId === lesson.id)
-              const existingQuiz = quizzes.find(q => q.lessonId === lesson.id)
-              return (
-                <button
-                  key={lesson.id}
-                  onClick={() => setSelectedLesson(lesson.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                    selectedLesson === lesson.id 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium">{lesson.title}</div>
-                      <div className="text-xs text-gray-500">{lesson.moduleTitle}</div>
-                      {existingQuiz && (
-                        <div className="text-xs text-green-600 mt-1">
-                          Тест: {existingQuiz.title}
-                        </div>
-                      )}
+        <div className="w-96 bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-gray-900">Содержание курса</h3>
+            <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              {allLessons.length} урок{allLessons.length === 1 ? '' : allLessons.length < 5 ? 'а' : 'ов'}
+            </div>
+          </div>
+          
+          <div className="space-y-4 max-h-[700px] overflow-y-auto">
+            {modules.map((module, moduleIndex) => (
+              <div key={module.id} className="space-y-2">
+                {/* Заголовок модуля */}
+                <div className="sticky top-0 bg-white z-10 border-b border-gray-100 pb-2">
+                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
+                    <div className="w-8 h-8 bg-purple-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+                      {moduleIndex + 1}
                     </div>
-                    {hasQuiz && (
-                      <Check className="w-4 h-4 text-green-600" />
-                    )}
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-sm">{module.title}</h4>
+                      <p className="text-xs text-gray-600 mt-1">{module.lessons.length} урок{module.lessons.length === 1 ? '' : module.lessons.length < 5 ? 'а' : 'ов'}</p>
+                    </div>
+                    <div className="text-xs text-purple-600 font-medium">
+                      Модуль {moduleIndex + 1}
+                    </div>
                   </div>
-                </button>
-              )
-            })}
+                </div>
+                
+                {/* Уроки модуля */}
+                <div className="ml-4 space-y-1">
+                  {module.lessons.map((lesson, lessonIndex) => {
+                    const hasQuiz = quizzes.some(q => q.lessonId === lesson.id)
+                    const existingQuiz = quizzes.find(q => q.lessonId === lesson.id)
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => setSelectedLesson(lesson.id)}
+                        className={`group w-full text-left p-3 rounded-lg transition-all duration-200 border ${
+                          selectedLesson === lesson.id 
+                            ? 'bg-purple-50 border-purple-200 text-purple-900 shadow-sm' 
+                            : 'hover:bg-gray-50 border-transparent hover:border-gray-200 hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                              selectedLesson === lesson.id 
+                                ? 'bg-purple-600 text-white' 
+                                : 'bg-gray-200 text-gray-600 group-hover:bg-gray-300'
+                            }`}>
+                              {lessonIndex + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h5 className={`text-sm font-medium leading-tight ${
+                                selectedLesson === lesson.id ? 'text-purple-900' : 'text-gray-900'
+                              }`}>
+                                {lesson.title}
+                              </h5>
+                              {lesson.description && (
+                                <p className={`text-xs mt-1 line-clamp-2 ${
+                                  selectedLesson === lesson.id ? 'text-purple-700' : 'text-gray-500'
+                                }`}>
+                                  {lesson.description}
+                                </p>
+                              )}
+                              {existingQuiz && (
+                                <div className="text-xs text-purple-600 mt-1 font-medium">
+                                  📝 {existingQuiz.title}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Статус теста */}
+                          <div className="flex items-center gap-1 ml-2">
+                            {hasQuiz && (
+                              <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center" title="Есть тест">
+                                <TestTube className="w-3 h-3 text-purple-600" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -1591,7 +1699,7 @@ export default function CourseBuilder() {
               {courseData.title && courseData.description ? (
                 <Check className="w-5 h-5 text-green-600" />
               ) : (
-                <X className="w-5 h-5 text-red-600" />
+                <span className="w-5 h-5 text-red-600 flex items-center justify-center">✗</span>
               )}
               <span className={courseData.title && courseData.description ? 'text-gray-700' : 'text-red-600'}>
                 Основная информация заполнена
@@ -1602,7 +1710,7 @@ export default function CourseBuilder() {
               {modules.length > 0 ? (
                 <Check className="w-5 h-5 text-green-600" />
               ) : (
-                <X className="w-5 h-5 text-red-600" />
+                <span className="w-5 h-5 text-red-600 flex items-center justify-center">✗</span>
               )}
               <span className={modules.length > 0 ? 'text-gray-700' : 'text-red-600'}>
                 Создана структура курса
@@ -1613,7 +1721,7 @@ export default function CourseBuilder() {
               {lessonsWithContent.length === totalLessons ? (
                 <Check className="w-5 h-5 text-green-600" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
+                <span className="w-5 h-5 text-yellow-600 flex items-center justify-center">⚠</span>
               )}
               <span className={lessonsWithContent.length === totalLessons ? 'text-gray-700' : 'text-yellow-600'}>
                 Контент добавлен для всех уроков ({lessonsWithContent.length}/{totalLessons})
@@ -1624,7 +1732,7 @@ export default function CourseBuilder() {
               {assignmentsCount > 0 || quizzesCount > 0 ? (
                 <Check className="w-5 h-5 text-green-600" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
+                <span className="w-5 h-5 text-yellow-600 flex items-center justify-center">⚠</span>
               )}
               <span className="text-gray-700">
                 Добавлены задания или тесты
@@ -1777,10 +1885,6 @@ export default function CourseBuilder() {
       setSaving(false)
     }
   }
-
-  // Импортируем недостающие иконки
-  const X = ({ className }: { className?: string }) => <span className={className}>✗</span>
-  const AlertCircle = ({ className }: { className?: string }) => <span className={className}>⚠</span>
 
   // Рендер текущего шага
   const renderCurrentStep = () => {
