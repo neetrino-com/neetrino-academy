@@ -308,99 +308,104 @@ export default function ChecklistsPage() {
                 : { label: 'Неактивен', color: 'bg-red-100 text-red-800' };
               
               return (
-                <div key={checklist.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={checklist.id} className="group relative p-6 hover:bg-amber-50/30 border-r-4 border-transparent hover:border-amber-500 transition-all duration-300 hover:shadow-md hover:scale-[1.02] hover:bg-gradient-to-l hover:from-amber-50/20 hover:to-transparent">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-gray-900 text-lg">{checklist.title}</h3>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${statusInfo.color}`}>
+                        <DirectionIcon className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform" />
+                        <h3 className="font-bold text-gray-900 text-lg group-hover:text-amber-700 transition-colors">{checklist.title}</h3>
+                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${statusInfo.color}`}>
                           {statusInfo.label}
                         </span>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${directionColors[checklist.direction]}`}>
-                          <DirectionIcon size={12} className="inline mr-1" />
+                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${directionColors[checklist.direction]}`}>
                           {directionLabels[checklist.direction]}
                         </span>
                       </div>
                       
                       {checklist.description && (
-                        <p className="text-gray-600 mb-3">{checklist.description}</p>
+                        <p className="text-gray-600 mb-3 group-hover:text-gray-700 transition-colors pl-8">{checklist.description}</p>
                       )}
                       
                       {/* Характеристики чеклиста */}
-                      <div className="flex gap-6 text-sm text-gray-500 mb-3">
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="grid grid-cols-2 xl:grid-cols-5 gap-3 text-sm text-gray-500 mb-3 pl-8">
+                        <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg group-hover:bg-white/80 transition-all">
+                          <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
-                          <span>{checklist.creator.name}</span>
+                          <span className="font-medium">{checklist.creator.name}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg group-hover:bg-white/80 transition-all">
+                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
-                          <span>{checklist.groups.length} групп</span>
+                          <span className="font-medium">{checklist.groups.length} групп</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg group-hover:bg-white/80 transition-all">
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                           </svg>
-                          <span>{getTotalItems(checklist.groups)} пунктов</span>
+                          <span className="font-medium">{getTotalItems(checklist.groups)} пунктов</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg group-hover:bg-white/80 transition-all">
+                          <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
-                          <span>{checklist._count.lessons} уроков</span>
+                          <span className="font-medium">{checklist._count.lessons} уроков</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg group-hover:bg-white/80 transition-all">
+                          <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          <span>Создан: {formatDate(checklist.createdAt)}</span>
+                          <span className="font-medium">Создан: {formatDate(checklist.createdAt)}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Действия */}
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex flex-col gap-2 ml-4 opacity-70 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => window.location.href = `/admin/checklists/${checklist.id}`}
-                        className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-4 py-2 text-amber-600 hover:text-white hover:bg-amber-600 rounded-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-amber-200 hover:border-amber-600 text-sm"
                         title="Просмотр"
                       >
                         <Eye className="w-4 h-4" />
+                        <span className="hidden lg:block font-medium">Просмотр</span>
                       </button>
                       
                       <button
                         onClick={() => window.location.href = `/admin/checklists/${checklist.id}/analytics`}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-blue-200 hover:border-blue-600 text-sm"
                         title="Аналитика"
                       >
                         <BarChart3 className="w-4 h-4" />
+                        <span className="hidden lg:block font-medium">Аналитика</span>
                       </button>
 
                       <button
                         onClick={() => window.location.href = `/admin/checklists/${checklist.id}/notifications`}
-                        className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-4 py-2 text-green-600 hover:text-white hover:bg-green-600 rounded-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-green-200 hover:border-green-600 text-sm"
                         title="Уведомления"
                       >
                         <Bell className="w-4 h-4" />
+                        <span className="hidden lg:block font-medium">Уведомления</span>
                       </button>
                       
                       <button
                         onClick={() => window.location.href = `/admin/checklists/${checklist.id}/edit`}
-                        className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-indigo-200 hover:border-indigo-600 text-sm"
                         title="Редактировать"
                       >
                         <Edit className="w-4 h-4" />
+                        <span className="hidden lg:block font-medium">Изменить</span>
                       </button>
                       
                       <button
                         onClick={() => handleDelete(checklist.id)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-red-200 hover:border-red-600 text-sm"
                         title="Удалить"
                       >
                         <Trash2 className="w-4 h-4" />
+                        <span className="hidden lg:block font-medium">Удалить</span>
                       </button>
                     </div>
                   </div>

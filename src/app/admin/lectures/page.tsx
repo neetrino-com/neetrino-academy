@@ -264,70 +264,82 @@ export default function LecturesPage() {
                 : { label: 'Неактивна', color: 'bg-red-100 text-red-800' };
               
               return (
-                <div key={lecture.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={lecture.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-cyan-200 relative overflow-hidden">
+                  {/* Декоративный элемент */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-gray-900 text-lg">{lecture.title}</h3>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${statusInfo.color}`}>
-                          {statusInfo.label}
-                        </span>
-                        <span className="px-2 py-1 text-xs rounded-full font-medium bg-cyan-100 text-cyan-800">
-                          {lecture._count.lessons} уроков
-                        </span>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900 text-lg group-hover:text-cyan-700 transition-colors">{lecture.title}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${statusInfo.color}`}>
+                              {statusInfo.label}
+                            </span>
+                            <span className="px-3 py-1 text-xs rounded-full font-medium bg-cyan-100 text-cyan-800 shadow-sm">
+                              {lecture._count.lessons} уроков
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       
                       {lecture.description && (
-                        <p className="text-gray-600 mb-3">{lecture.description}</p>
+                        <p className="text-gray-600 mb-4 group-hover:text-gray-700 transition-colors leading-relaxed">{lecture.description}</p>
                       )}
                       
                       {/* Характеристики лекции */}
-                      <div className="flex gap-6 text-sm text-gray-500 mb-3">
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 rounded-lg group-hover:from-purple-100 group-hover:to-pink-100 transition-colors">
+                          <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
-                          <span>{lecture.creator.name}</span>
+                          <span className="font-medium">{lecture.creator.name}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 px-3 py-2 rounded-lg group-hover:from-blue-100 group-hover:to-cyan-100 transition-colors">
+                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
-                          <span>{lecture._count.lessons} использований в уроках</span>
+                          <span className="font-medium">{lecture._count.lessons} использований</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-yellow-50 px-3 py-2 rounded-lg group-hover:from-orange-100 group-hover:to-yellow-100 transition-colors">
+                          <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          <span>Создана: {formatDate(lecture.createdAt)}</span>
+                          <span className="font-medium">Создана: {formatDate(lecture.createdAt)}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Действия */}
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => window.location.href = `/admin/lectures/${lecture.id}`}
-                        className="p-2 text-cyan-600 hover:bg-cyan-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="w-12 h-12 flex items-center justify-center text-cyan-600 hover:text-white hover:bg-cyan-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-cyan-200 hover:border-cyan-600 backdrop-blur-sm"
                         title="Просмотр"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-5 h-5" />
                       </button>
                       
                       <button
                         onClick={() => window.location.href = `/admin/lectures/${lecture.id}/edit`}
-                        className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
                         title="Редактировать"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="w-5 h-5" />
                       </button>
                       
                       <button
                         onClick={() => handleDelete(lecture.id)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="w-12 h-12 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-red-200 hover:border-red-600 backdrop-blur-sm"
                         title="Удалить"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
