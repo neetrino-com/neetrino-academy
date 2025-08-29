@@ -307,6 +307,7 @@ export default function GroupsManagement() {
             </h2>
           </div>
 
+          <div className="divide-y divide-gray-100">
             {filteredGroups.map(group => (
               <div key={group.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-emerald-200 relative overflow-hidden">
                 {/* Декоративный элемент */}
