@@ -74,6 +74,7 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
   const [showPreview, setShowPreview] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
   const [formData, setFormData] = useState<ChecklistFormData>({
     title: '',
     description: '',
@@ -88,6 +89,8 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
       setFormData(initialData);
     }
   }, [initialData]);
+
+
 
   // Функции для фильтрации и поиска
   const filteredGroups = formData.groups.filter(group => {
@@ -413,37 +416,27 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         {/* Правая панель - Контент чеклиста */}
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-6">
-            <div className="bg-gradient-to-r from-amber-500 to-yellow-500 h-1"></div>
-            <div className="p-6">
-              <div className="space-y-5">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-4 py-3 text-lg font-semibold border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all bg-gray-50 focus:bg-white"
-                    placeholder="Название чеклиста"
-                    required
-                  />
-                  <div className="absolute top-0 right-3 -mt-2">
-                    <span className="bg-white px-2 text-xs text-amber-600 font-medium">ОБЯЗАТЕЛЬНО</span>
-                  </div>
-                </div>
-                
-                <div className="relative">
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                    className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:ring-4 focus:ring-gray-100 transition-all bg-gray-50 focus:bg-white resize-none"
-                    placeholder="Описание чеклиста"
-                  />
-                  <div className="absolute top-0 right-3 -mt-2">
-                    <span className="bg-white px-2 text-xs text-gray-500">ОПЦИОНАЛЬНО</span>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-1 mb-6">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 rounded-2xl blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                className="relative w-full px-5 py-4 text-xl font-bold bg-gradient-to-br from-yellow-300 via-yellow-400 to-amber-400 border-0 rounded-xl focus:outline-none focus:ring-4 focus:ring-yellow-200 transition-all duration-300 placeholder-amber-800/70 text-amber-900 shadow-xl hover:shadow-2xl transform hover:scale-[1.02] focus:scale-[1.02]"
+                placeholder="✨ Введите название чеклиста"
+                required
+              />
+            </div>
+            
+            <div className="ml-8">
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                rows={1}
+                className="w-full px-3 py-2 text-sm border-0 rounded-lg focus:outline-none bg-white/50 backdrop-blur placeholder-gray-400 shadow-md focus:shadow-lg transition-all duration-200 resize-none"
+                placeholder="Небольшое описание"
+              />
             </div>
           </div>
 
