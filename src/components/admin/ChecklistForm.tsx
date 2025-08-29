@@ -12,7 +12,21 @@ import {
   X,
   Globe,
   Monitor,
-  ShoppingBag
+  ShoppingBag,
+  Search,
+  Filter,
+  Copy,
+  FolderPlus,
+  Edit3,
+  MoreHorizontal,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  EyeOff,
+  BarChart3,
+  List,
+  Grid,
+  CheckCircle
 } from 'lucide-react';
 
 interface ChecklistItem {
@@ -56,6 +70,10 @@ const directionOptions = [
 export default function ChecklistForm({ mode, initialData, checklistId }: ChecklistFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [formData, setFormData] = useState<ChecklistFormData>({
     title: '',
     description: '',
@@ -71,6 +89,28 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
     }
   }, [initialData]);
 
+  // Функции для фильтрации и поиска
+  const filteredGroups = formData.groups.filter(group => {
+    if (!searchTerm) return true;
+    return group.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           group.items.some(item => 
+             item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+           );
+  });
+
+  const getTotalItems = () => {
+    return formData.groups.reduce((sum, group) => sum + group.items.length, 0);
+  };
+
+  const getCompletedGroups = () => {
+    return formData.groups.filter(group => 
+      group.title.trim() && group.items.length > 0 && 
+      group.items.every(item => item.title.trim())
+    ).length;
+  };
+
   const addGroup = () => {
     const newGroup: ChecklistGroup = {
       id: `temp-${Date.now()}`,
@@ -80,6 +120,29 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
       isCollapsed: false,
       items: []
     };
+    setFormData(prev => ({
+      ...prev,
+      groups: [...prev.groups, newGroup]
+    }));
+    setSelectedGroup(newGroup.id);
+  };
+
+  const duplicateGroup = (groupId: string) => {
+    const group = formData.groups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const newGroup: ChecklistGroup = {
+      ...group,
+      id: `temp-${Date.now()}`,
+      title: `${group.title} (копия)`,
+      order: formData.groups.length,
+      items: group.items.map(item => ({
+        ...item,
+        id: `temp-${Date.now()}-${Math.random()}`,
+        order: item.order
+      }))
+    };
+    
     setFormData(prev => ({
       ...prev,
       groups: [...prev.groups, newGroup]
@@ -170,31 +233,6 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
     });
   };
 
-  const moveItem = (groupId: string, itemId: string, direction: 'up' | 'down') => {
-    setFormData(prev => {
-      const groups = prev.groups.map(g => {
-        if (g.id !== groupId) return g;
-        
-        const items = [...g.items];
-        const index = items.findIndex(i => i.id === itemId);
-        
-        if (direction === 'up' && index > 0) {
-          [items[index], items[index - 1]] = [items[index - 1], items[index]];
-          items[index].order = index;
-          items[index - 1].order = index - 1;
-        } else if (direction === 'down' && index < items.length - 1) {
-          [items[index], items[index + 1]] = [items[index + 1], items[index]];
-          items[index].order = index;
-          items[index + 1].order = index + 1;
-        }
-        
-        return { ...g, items };
-      });
-      
-      return { ...prev, groups };
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -255,290 +293,429 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Основная информация */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Основная информация</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Название чеклиста *
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              placeholder="Введите название чеклиста"
-              required
-            />
+    <form onSubmit={handleSubmit} className="min-h-screen">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        {/* Левая панель - Настройки и информация */}
+        <div className="xl:col-span-1 space-y-6">
+          {/* Основная информация */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6 sticky top-24">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Edit3 className="w-5 h-5 text-amber-600" />
+              Основная информация
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Название чеклиста *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  placeholder="Введите название"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Направление *
+                </label>
+                <select
+                  value={formData.direction}
+                  onChange={(e) => setFormData(prev => ({ ...prev, direction: e.target.value as any }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                >
+                  {directionOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Описание
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  placeholder="Опишите назначение"
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                  className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
+                  Активен
+                </label>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Направление *
-            </label>
-            <select
-              value={formData.direction}
-              onChange={(e) => setFormData(prev => ({ ...prev, direction: e.target.value as any }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          {/* Статистика */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-amber-600" />
+              Статистика
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Всего групп:</span>
+                <span className="font-semibold text-amber-600">{formData.groups.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Всего пунктов:</span>
+                <span className="font-semibold text-amber-600">{getTotalItems()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Завершенных групп:</span>
+                <span className="font-semibold text-emerald-600">{getCompletedGroups()}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${formData.groups.length > 0 ? (getCompletedGroups() / formData.groups.length) * 100 : 0}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Кнопка сохранения */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {directionOptions.map(option => {
-                const Icon = option.icon;
-                return (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Описание
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              placeholder="Опишите назначение чеклиста"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              URL изображения
-            </label>
-            <input
-              type="url"
-              value={formData.thumbnail}
-              onChange={(e) => setFormData(prev => ({ ...prev, thumbnail: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-              className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
-              Активен
-            </label>
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <Save size={20} />
+              )}
+              {mode === 'create' ? 'Создать чеклист' : 'Сохранить изменения'}
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Группы и пункты */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Группы и пункты</h3>
-          <button
-            type="button"
-            onClick={addGroup}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <Plus size={16} />
-            Добавить группу
-          </button>
-        </div>
-
-        {formData.groups.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <p>Добавьте первую группу для начала работы</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {formData.groups.map((group, groupIndex) => (
-              <div key={group.id} className="border border-gray-200 rounded-lg">
-                {/* Заголовок группы */}
-                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <button
-                        type="button"
-                        onClick={() => updateGroup(group.id, { isCollapsed: !group.isCollapsed })}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        {group.isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-                      </button>
-                      
-                      <input
-                        type="text"
-                        value={group.title}
-                        onChange={(e) => updateGroup(group.id, { title: e.target.value })}
-                        className="flex-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                        placeholder="Название группы"
-                        required
-                      />
-                      
-                      <button
-                        type="button"
-                        onClick={() => addItem(group.id)}
-                        className="text-green-600 hover:text-green-700 p-1"
-                        title="Добавить пункт"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => moveGroup(group.id, 'up')}
-                        disabled={groupIndex === 0}
-                        className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-1"
-                        title="Переместить вверх"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveGroup(group.id, 'down')}
-                        disabled={groupIndex === formData.groups.length - 1}
-                        className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-1"
-                        title="Переместить вниз"
-                      >
-                        ↓
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeGroup(group.id)}
-                        className="text-red-600 hover:text-red-700 p-1"
-                        title="Удалить группу"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      value={group.description}
-                      onChange={(e) => updateGroup(group.id, { description: e.target.value })}
-                      className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                      placeholder="Описание группы (необязательно)"
-                    />
-                  </div>
+        {/* Правая панель - Контент чеклиста */}
+        <div className="xl:col-span-3">
+          {/* Панель инструментов */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-4 mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Поиск групп и пунктов..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
                 </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  >
+                    <List className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
 
-                {/* Пункты группы */}
-                {!group.isCollapsed && (
-                  <div className="p-4">
-                    {group.items.length === 0 ? (
-                      <div className="text-center py-4 text-gray-500">
-                        <p>Добавьте первый пункт в группу</p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPreview ? 'Скрыть превью' : 'Показать превью'}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={addGroup}
+                  className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-lg hover:shadow-xl"
+                >
+                  <Plus className="w-4 h-4" />
+                  Добавить группу
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Список групп */}
+          {filteredGroups.length === 0 ? (
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-12 text-center">
+              <FolderPlus className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                {searchTerm ? 'Ничего не найдено' : 'Начните создавать чеклист'}
+              </h3>
+              <p className="text-gray-500 mb-6">
+                {searchTerm 
+                  ? 'Попробуйте изменить поисковый запрос'
+                  : 'Добавьте первую группу для организации пунктов чеклиста'
+                }
+              </p>
+              {!searchTerm && (
+                <button
+                  type="button"
+                  onClick={addGroup}
+                  className="px-6 py-3 border-2 border-dashed border-amber-300 text-amber-600 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-colors"
+                >
+                  <Plus className="w-5 h-5 inline mr-2" />
+                  Создать первую группу
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'space-y-6'}>
+              {filteredGroups.map((group, groupIndex) => (
+                <div 
+                  key={group.id} 
+                  className={`bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 transition-all duration-200 ${selectedGroup === group.id ? 'ring-2 ring-amber-500 border-amber-300' : 'hover:shadow-lg'}`}
+                >
+                  {/* Заголовок группы */}
+                  <div className="p-4 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <button
+                          type="button"
+                          onClick={() => updateGroup(group.id, { isCollapsed: !group.isCollapsed })}
+                          className="text-gray-500 hover:text-gray-700 p-1 rounded transition-colors"
+                        >
+                          {group.isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+                        
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={group.title}
+                            onChange={(e) => updateGroup(group.id, { title: e.target.value })}
+                            onFocus={() => setSelectedGroup(group.id)}
+                            className="w-full text-lg font-semibold bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-gray-900"
+                            placeholder="Название группы"
+                            required
+                          />
+                          <input
+                            type="text"
+                            value={group.description || ''}
+                            onChange={(e) => updateGroup(group.id, { description: e.target.value })}
+                            className="w-full text-sm bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-gray-600"
+                            placeholder="Описание группы (необязательно)"
+                          />
+                        </div>
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {group.items.map((item, itemIndex) => (
-                          <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                            <GripVertical className="text-gray-400" size={16} />
-                            
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="text"
-                                  value={item.title}
-                                  onChange={(e) => updateItem(group.id, item.id, { title: e.target.value })}
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                                  placeholder="Название пункта"
-                                  required
-                                />
-                                
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    id={`required-${item.id}`}
-                                    checked={item.isRequired}
-                                    onChange={(e) => updateItem(group.id, item.id, { isRequired: e.target.checked })}
-                                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                                  />
-                                  <label htmlFor={`required-${item.id}`} className="text-sm text-gray-700">
-                                    Обязательный
-                                  </label>
-                                </div>
+                      
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+                          {group.items.length} пунктов
+                        </span>
+                        
+                        <div className="flex items-center gap-1 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => addItem(group.id)}
+                            className="p-1 text-green-600 hover:bg-green-100 rounded transition-colors"
+                            title="Добавить пункт"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => duplicateGroup(group.id)}
+                            className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Дублировать группу"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => moveGroup(group.id, 'up')}
+                            disabled={groupIndex === 0}
+                            className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Переместить вверх"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => moveGroup(group.id, 'down')}
+                            disabled={groupIndex === filteredGroups.length - 1}
+                            className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Переместить вниз"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => removeGroup(group.id)}
+                            className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Удалить группу"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Пункты группы */}
+                  {!group.isCollapsed && (
+                    <div className="p-4">
+                      {group.items.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <List className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm">Добавьте первый пункт в группу</p>
+                          <button
+                            type="button"
+                            onClick={() => addItem(group.id)}
+                            className="mt-3 px-4 py-2 text-sm border border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-amber-400 hover:text-amber-600 transition-colors"
+                          >
+                            <Plus className="w-4 h-4 inline mr-1" />
+                            Добавить пункт
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {group.items.map((item, itemIndex) => (
+                            <div 
+                              key={item.id} 
+                              className="flex items-start gap-3 p-3 bg-gray-50/50 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="flex items-center gap-2 mt-2">
+                                <GripVertical className="text-gray-400 cursor-move" size={16} />
+                                <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                                  {itemIndex + 1}
+                                </span>
                               </div>
                               
-                              <input
-                                type="text"
-                                value={item.description || ''}
-                                onChange={(e) => updateItem(group.id, item.id, { description: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                                placeholder="Описание пункта (необязательно)"
-                              />
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="text"
+                                    value={item.title}
+                                    onChange={(e) => updateItem(group.id, item.id, { title: e.target.value })}
+                                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                    placeholder="Название пункта"
+                                    required
+                                  />
+                                  
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`required-${item.id}`}
+                                      checked={item.isRequired}
+                                      onChange={(e) => updateItem(group.id, item.id, { isRequired: e.target.checked })}
+                                      className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor={`required-${item.id}`} className="text-sm text-gray-700 whitespace-nowrap">
+                                      Обязательный
+                                    </label>
+                                  </div>
+                                </div>
+                                
+                                <input
+                                  type="text"
+                                  value={item.description || ''}
+                                  onChange={(e) => updateItem(group.id, item.id, { description: e.target.value })}
+                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                  placeholder="Описание пункта (необязательно)"
+                                />
+                              </div>
+                              
+                              <div className="flex items-center gap-1 mt-2">
+                                <button
+                                  type="button"
+                                  onClick={() => removeItem(group.id, item.id)}
+                                  className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                  title="Удалить пункт"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                            
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => moveItem(group.id, item.id, 'up')}
-                                disabled={itemIndex === 0}
-                                className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-1"
-                                title="Переместить вверх"
-                              >
-                                ↑
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => moveItem(group.id, item.id, 'down')}
-                                disabled={itemIndex === group.items.length - 1}
-                                className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed p-1"
-                                title="Переместить вниз"
-                              >
-                                ↓
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeItem(group.id, item.id)}
-                                className="text-red-600 hover:text-red-700 p-1"
-                                title="Удалить пункт"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Превью чеклиста */}
+          {showPreview && formData.groups.length > 0 && (
+            <div className="mt-6 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Eye className="w-5 h-5 text-amber-600" />
+                Превью чеклиста
+              </h3>
+              
+              <div className="bg-white rounded-lg border p-4">
+                <h4 className="text-xl font-bold text-gray-900 mb-2">{formData.title || 'Название чеклиста'}</h4>
+                {formData.description && (
+                  <p className="text-gray-600 mb-4">{formData.description}</p>
+                )}
+                
+                <div className="space-y-4">
+                  {formData.groups.map((group) => (
+                    <div key={group.id} className="border-l-4 border-amber-500 pl-4">
+                      <h5 className="font-semibold text-gray-900 mb-2">{group.title || 'Название группы'}</h5>
+                      {group.description && (
+                        <p className="text-sm text-gray-600 mb-3">{group.description}</p>
+                      )}
+                      
+                      <div className="space-y-2">
+                        {group.items.map((item) => (
+                          <div key={item.id} className="flex items-center gap-3">
+                            <CheckCircle className="w-4 h-4 text-gray-300" />
+                            <span className="text-gray-900">{item.title || 'Название пункта'}</span>
+                            {item.isRequired && (
+                              <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                                Обязательный
+                              </span>
+                            )}
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Кнопки действий */}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          Отмена
-        </button>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white px-8 py-3 rounded-lg flex items-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-          ) : (
-            <Save size={20} />
+            </div>
           )}
-          {mode === 'create' ? 'Создать чеклист' : 'Сохранить изменения'}
-        </button>
+        </div>
       </div>
     </form>
   );
