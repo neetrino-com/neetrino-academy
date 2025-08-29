@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
         level: courseData.level,
         price: new Decimal(courseData.price || 0),
         duration: courseData.duration || 4,
+        durationUnit: courseData.durationUnit || 'weeks',
+        currency: courseData.currency || 'RUB',
         isDraft: courseData.isDraft || false,
         isActive: courseData.isActive !== undefined ? courseData.isActive : !courseData.isDraft,
         createdBy: user.id

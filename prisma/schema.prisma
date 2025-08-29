@@ -40,25 +40,27 @@ model User {
 }
 
 model Course {
-  id          String       @id @default(cuid())
-  title       String
-  description String?
-  slug        String       @unique
-  direction   Direction
-  level       Level
-  price       Decimal?
-  isActive    Boolean      @default(true)
-  isDraft     Boolean      @default(true)
-  thumbnail   String?
-  duration    Int?         // в неделях
-  createdBy   String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  creator     User?        @relation(fields: [createdBy], references: [id])
-  enrollments Enrollment[]
-  messages    Message[]
-  modules     Module[]
-  events      Event[]
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  slug         String       @unique
+  direction    Direction
+  level        Level
+  price        Decimal?
+  isActive     Boolean      @default(true)
+  isDraft      Boolean      @default(true)
+  thumbnail    String?
+  duration     Int?         // количество единиц
+  durationUnit String?      @default("weeks") // days, weeks, months
+  currency     String?      @default("RUB")   // RUB, USD, AMD
+  createdBy    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  creator      User?        @relation(fields: [createdBy], references: [id])
+  enrollments  Enrollment[]
+  messages     Message[]
+  modules      Module[]
+  events       Event[]
 
   groupCourses GroupCourse[]
 }
