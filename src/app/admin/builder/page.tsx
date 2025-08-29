@@ -684,10 +684,10 @@ export default function CourseBuilder() {
                   
                   <button
                     onClick={() => addLesson(module.id)}
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 ml-6"
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg font-medium text-sm"
                   >
-                    <Plus className="w-3 h-3" />
-                    Добавить урок
+                    <Plus className="w-4 h-4" />
+                    <span>Добавить урок</span>
                   </button>
                 </div>
               </div>
