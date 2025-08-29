@@ -8,6 +8,7 @@ import {
   Plus, Trash2, GripVertical, Upload, Link, Type,
   Image, File, Clock, Users, Settings, Check
 } from 'lucide-react'
+import ChecklistSelector from '@/components/admin/ChecklistSelector'
 
 // Типы для курса
 interface CourseData {
@@ -36,7 +37,7 @@ interface Lesson {
   title: string
   description: string
   content: string
-  type: 'video' | 'text' | 'mixed'
+  type: 'video' | 'text' | 'mixed' | 'checklist'
   videoUrl?: string
   duration?: number
   order: number
@@ -44,6 +45,7 @@ interface Lesson {
   hasAssignment?: boolean
   hasQuiz?: boolean
   lectureId?: string
+  checklistId?: string
 }
 
 interface FileAttachment {
@@ -318,7 +320,8 @@ export default function CourseBuilder() {
       description: '',
       content: '',
       type: 'text',
-      order: modules[moduleIndex].lessons.length
+      order: modules[moduleIndex].lessons.length,
+      checklistId: undefined
     }
 
     const updatedModules = [...modules]
@@ -735,6 +738,11 @@ export default function CourseBuilder() {
                               <FileText className="w-3 h-3 text-cyan-600" />
                             </div>
                           )}
+                          {lesson.checklistId && (
+                            <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center" title="Прикреплен чеклист">
+                              <ClipboardList className="w-3 h-3 text-amber-600" />
+                            </div>
+                          )}
                           {lesson.hasAssignment && (
                             <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center" title="Есть задание">
                               <ClipboardList className="w-3 h-3 text-green-600" />
@@ -784,10 +792,13 @@ export default function CourseBuilder() {
                 <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                   currentLesson.type === 'video' ? 'bg-red-100 text-red-700' :
                   currentLesson.type === 'mixed' ? 'bg-purple-100 text-purple-700' :
+                  currentLesson.type === 'checklist' ? 'bg-amber-100 text-amber-700' :
                   'bg-gray-100 text-gray-700'
                 }`}>
                   {currentLesson.type === 'video' ? 'Видео урок' :
-                   currentLesson.type === 'mixed' ? 'Смешанный' : 'Текстовый'}
+                   currentLesson.type === 'mixed' ? 'Смешанный' :
+                   currentLesson.type === 'checklist' ? 'Чеклист' :
+                   'Текстовый'}
                 </div>
               </div>
             </div>
@@ -823,7 +834,7 @@ export default function CourseBuilder() {
                       const updatedModules = [...modules]
                       const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
                       const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed'
+                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed' | 'checklist'
                       setModules(updatedModules)
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -831,6 +842,7 @@ export default function CourseBuilder() {
                     <option value="text">Текстовый</option>
                     <option value="video">Видео</option>
                     <option value="mixed">Смешанный</option>
+                    <option value="checklist">Чеклист</option>
                   </select>
                 </div>
               </div>
@@ -919,6 +931,31 @@ export default function CourseBuilder() {
                   </div>
                 )}
               </div>
+
+              {/* Выбор чеклиста для уроков типа checklist */}
+              {currentLesson.type === 'checklist' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Выбрать чеклист *
+                  </label>
+                  <ChecklistSelector
+                    selectedChecklistId={currentLesson.checklistId}
+                    onChecklistSelect={(checklistId) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].checklistId = checklistId || undefined
+                      setModules(updatedModules)
+                    }}
+                    direction={courseData.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'}
+                  />
+                  {!currentLesson.checklistId && (
+                    <p className="mt-2 text-sm text-amber-600">
+                      Для урока типа "Чеклист" необходимо выбрать чеклист
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Контент урока */}
               {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && (

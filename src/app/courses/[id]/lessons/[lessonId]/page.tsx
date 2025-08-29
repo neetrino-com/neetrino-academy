@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import VideoPlayer from '@/components/ui/VideoPlayer'
 import Quiz from '@/components/ui/Quiz'
+import ChecklistLesson from '@/components/lessons/ChecklistLesson'
 
 interface Assignment {
   id: string
@@ -19,13 +20,21 @@ interface Lesson {
   content: string
   duration: number
   order: number
+  type?: 'LECTURE' | 'CHECKLIST' | 'ASSIGNMENT' | 'TEST'
   videoUrl?: string
   lectureId?: string | null
+  checklistId?: string | null
   lecture?: {
     id: string
     title: string
     description?: string | null
     content: any[]
+  } | null
+  checklist?: {
+    id: string
+    title: string
+    description?: string | null
+    direction: string
   } | null
   module: {
     id: string
@@ -389,6 +398,68 @@ export default function LessonStudyPage() {
               </div>
             )}
 
+            {/* Чеклист */}
+            {lesson.checklist && (
+              <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="bg-amber-100 text-amber-800 p-3 rounded-lg mr-4">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        {lesson.checklist.title}
+                      </h2>
+                      {lesson.checklist.description && (
+                        <p className="text-gray-600 mt-1">{lesson.checklist.description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/checklist/${lesson.checklist.id}`}
+                    className="inline-flex items-center px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Открыть чеклист
+                  </Link>
+                </div>
+                
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-amber-800">
+                        Чеклист доступен для выполнения
+                      </h3>
+                      <div className="text-sm text-amber-700">
+                        <p>
+                          К этому уроку прикреплен чеклист с практическими заданиями. 
+                          Выполните все пункты для закрепления материала.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Встроенный чеклист */}
+                <div className="mt-6">
+                  <ChecklistLesson 
+                    checklistId={lesson.checklist.id} 
+                    lessonId={lesson.id} 
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Контент урока */}
             <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -582,6 +653,15 @@ export default function LessonStudyPage() {
                     <span className="text-sm text-gray-600">Прогресс видео:</span>
                     <span className="text-sm font-medium text-gray-900">
                       {Math.round(videoProgress)}%
+                    </span>
+                  </div>
+                )}
+
+                {lesson.checklist && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Тип урока:</span>
+                    <span className="text-sm font-medium text-amber-600">
+                      Чеклист
                     </span>
                   </div>
                 )}

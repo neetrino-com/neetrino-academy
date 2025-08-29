@@ -119,7 +119,9 @@ export async function POST(request: NextRequest) {
                 duration: lesson.duration || null,
                 order: lesson.order,
                 moduleId: newModule.id,
-                lectureId: lesson.lectureId || null
+                lectureId: lesson.lectureId || null,
+                checklistId: lesson.checklistId || null,
+                type: lesson.type || 'LECTURE'
               }
             })
           }

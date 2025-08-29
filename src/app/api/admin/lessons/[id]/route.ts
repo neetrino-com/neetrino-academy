@@ -9,7 +9,9 @@ const updateLessonSchema = z.object({
   videoUrl: z.string().url().optional().or(z.literal('')),
   duration: z.number().min(0, 'Длительность не может быть отрицательной'),
   order: z.number().min(1, 'Порядок должен быть больше 0'),
-  lectureId: z.string().optional()
+  lectureId: z.string().optional(),
+  checklistId: z.string().optional(),
+  type: z.enum(['LECTURE', 'CHECKLIST', 'ASSIGNMENT', 'TEST']).optional()
 })
 
 // GET /api/admin/lessons/[id] - получение урока
@@ -55,6 +57,14 @@ export async function GET(
             id: true,
             title: true,
             description: true
+          }
+        },
+        checklist: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            direction: true
           }
         }
       }
@@ -125,7 +135,9 @@ export async function PUT(
         videoUrl: validatedData.videoUrl || null,
         duration: validatedData.duration,
         order: validatedData.order,
-        lectureId: validatedData.lectureId || null
+        lectureId: validatedData.lectureId || null,
+        checklistId: validatedData.checklistId || null,
+        type: validatedData.type || 'LECTURE'
       },
       include: {
         module: {
@@ -144,6 +156,14 @@ export async function PUT(
             id: true,
             title: true,
             description: true
+          }
+        },
+        checklist: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            direction: true
           }
         }
       }
