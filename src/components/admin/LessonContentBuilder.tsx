@@ -14,18 +14,21 @@ import {
   Code,
   CheckSquare,
   Copy,
-  X
+  X,
+  File
 } from 'lucide-react';
 
 interface LessonBlock {
   id: string;
-  type: 'text' | 'image' | 'video' | 'link' | 'code' | 'checklist';
+  type: 'text' | 'image' | 'video' | 'link' | 'code' | 'checklist' | 'file';
   content: string;
   metadata?: {
     url?: string;
     alt?: string;
     language?: string;
     description?: string;
+    filename?: string;
+    fileSize?: number;
   };
 }
 
@@ -42,7 +45,7 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       return [];
     }
   });
-  const [showBlockSelector, setShowBlockSelector] = useState(false);
+
 
   const blockTypes = [
     { 
@@ -81,6 +84,13 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       color: 'text-yellow-600 bg-yellow-50 border-yellow-200'
     },
     { 
+      type: 'file', 
+      icon: File, 
+      title: 'Файл', 
+      description: 'Прикрепить файл',
+      color: 'text-indigo-600 bg-indigo-50 border-indigo-200'
+    },
+    { 
       type: 'checklist', 
       icon: CheckSquare, 
       title: 'Чеклист', 
@@ -102,7 +112,6 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       metadata: {}
     };
     updateBlocks([...blocks, newBlock]);
-    setShowBlockSelector(false);
   };
 
   const duplicateBlock = (blockId: string) => {
@@ -262,6 +271,36 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
           </div>
         );
 
+      case 'file':
+        return (
+          <div className="space-y-3">
+            <input
+              type="url"
+              value={block.metadata?.url || ''}
+              onChange={(e) => updateBlock(block.id, { 
+                metadata: { ...block.metadata, url: e.target.value }
+              })}
+              placeholder="URL файла"
+              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <input
+              type="text"
+              value={block.metadata?.filename || ''}
+              onChange={(e) => updateBlock(block.id, { 
+                metadata: { ...block.metadata, filename: e.target.value }
+              })}
+              placeholder="Название файла"
+              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <textarea
+              value={block.content}
+              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+              placeholder="Описание файла"
+              className="w-full h-20 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+            />
+          </div>
+        );
+
       case 'checklist':
         return (
           <div className="space-y-3">
@@ -292,22 +331,39 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
     <div className="space-y-4">
       {/* Блоки контента */}
       {blocks.length === 0 ? (
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Добавьте блоки контента
-          </h3>
-          <p className="text-gray-500 mb-4">
-            Создайте интерактивный урок с разными типами контента
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowBlockSelector(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5 inline mr-2" />
-            Добавить первый блок
-          </button>
+        <div className="space-y-4">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Добавьте блоки контента
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Создайте интерактивный урок с разными типами контента
+            </p>
+          </div>
+          
+          {/* Варианты блоков сразу видны */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {blockTypes.map((blockType) => {
+              const IconComponent = blockType.icon;
+              return (
+                <button
+                  key={blockType.type}
+                  type="button"
+                  onClick={() => addBlock(blockType.type)}
+                  className={`p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 ${blockType.color}`}
+                >
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <IconComponent size={24} />
+                    <div>
+                      <h4 className="font-semibold text-sm">{blockType.title}</h4>
+                      <p className="text-xs opacity-80">{blockType.description}</p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -382,34 +438,10 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
             );
           })}
 
-          {/* Кнопка добавления блока */}
-          <button
-            type="button"
-            onClick={() => setShowBlockSelector(true)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
-          >
-            <Plus size={16} />
-            Добавить блок
-          </button>
-        </div>
-      )}
-
-      {/* Селектор типа блока */}
-      {showBlockSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Выберите тип блока:</h3>
-              <button
-                type="button"
-                onClick={() => setShowBlockSelector(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Варианты блоков для добавления */}
+          <div className="pt-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Добавить новый блок:</h4>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
               {blockTypes.map((blockType) => {
                 const IconComponent = blockType.icon;
                 return (
@@ -417,14 +449,12 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                     key={blockType.type}
                     type="button"
                     onClick={() => addBlock(blockType.type)}
-                    className={`p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 ${blockType.color}`}
+                    className={`p-3 border-2 rounded-lg transition-all duration-200 hover:shadow-md hover:scale-105 ${blockType.color}`}
+                    title={blockType.description}
                   >
-                    <div className="flex flex-col items-center text-center space-y-3">
-                      <IconComponent size={32} />
-                      <div>
-                        <h4 className="font-semibold text-lg">{blockType.title}</h4>
-                        <p className="text-sm opacity-80">{blockType.description}</p>
-                      </div>
+                    <div className="flex flex-col items-center space-y-1">
+                      <IconComponent size={16} />
+                      <span className="text-xs font-medium">{blockType.title}</span>
                     </div>
                   </button>
                 );
@@ -433,6 +463,8 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
           </div>
         </div>
       )}
+
+
     </div>
   );
 }

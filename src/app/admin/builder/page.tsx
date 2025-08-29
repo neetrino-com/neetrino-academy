@@ -796,11 +796,11 @@ export default function CourseBuilder() {
             </div>
 
             <div className="space-y-6">
-              {/* Основная информация */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Название урока
+              {/* Название урока - особое выделение */}
+              <div className="border-2 border-dashed border-blue-300 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300">
+                <div className="text-center">
+                  <label className="block text-lg font-semibold text-blue-700 mb-3">
+                    📚 Название урока
                   </label>
                   <input
                     type="text"
@@ -812,53 +812,58 @@ export default function CourseBuilder() {
                       updatedModules[moduleIndex].lessons[lessonIndex].title = e.target.value
                       setModules(updatedModules)
                     }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-center px-6 py-4 text-xl font-bold border-0 border-b-2 border-blue-300 focus:border-blue-500 focus:outline-none bg-transparent placeholder-blue-400/70 text-gray-900"
+                    placeholder="Введите название урока..."
+                  />
+                  <p className="text-sm text-blue-600/80 mt-2">
+                    Дайте уроку понятное и привлекательное название
+                  </p>
+                </div>
+              </div>
+
+              {/* Описание и настройки урока */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Описание */}
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Описание урока
+                  </label>
+                  <textarea
+                    value={currentLesson.description}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].description = e.target.value
+                      setModules(updatedModules)
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-24 resize-none"
+                    placeholder="Краткое описание урока..."
                   />
                 </div>
 
-
-              </div>
-
-              {/* Описание */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Описание урока
-                </label>
-                <textarea
-                  value={currentLesson.description}
-                  onChange={(e) => {
-                    const updatedModules = [...modules]
-                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].description = e.target.value
-                    setModules(updatedModules)
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-24"
-                  placeholder="Краткое описание урока..."
-                />
-              </div>
-
-              {/* Дополнительные настройки урока */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Длительность урока (минуты)
-                </label>
-                <input
-                  type="number"
-                  value={currentLesson.duration || ''}
-                  onChange={(e) => {
-                    const updatedModules = [...modules]
-                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].duration = parseInt(e.target.value) || undefined
-                    setModules(updatedModules)
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Автоматически определится"
-                  min="1"
-                />
-                <div className="mt-2 text-xs text-gray-600">
-                  <p>💡 Если не указать, длительность будет определена автоматически по содержимому</p>
+                {/* Длительность */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ⏱️ Длительность (минуты)
+                  </label>
+                  <input
+                    type="number"
+                    value={currentLesson.duration || ''}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].duration = parseInt(e.target.value) || undefined
+                      setModules(updatedModules)
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-center font-semibold"
+                    placeholder="Авто"
+                    min="1"
+                  />
+                  <div className="mt-2 text-xs text-gray-600 text-center">
+                    <p>💡 Авто-определение по контенту</p>
+                  </div>
                 </div>
               </div>
 
@@ -920,21 +925,7 @@ export default function CourseBuilder() {
                 />
               </div>
 
-              {/* Файлы урока */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Прикрепленные файлы
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">
-                    Перетащите файлы сюда или нажмите для выбора
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    PDF, DOC, ZIP до 10MB
-                  </p>
-                </div>
-              </div>
+
             </div>
           </div>
         )}
