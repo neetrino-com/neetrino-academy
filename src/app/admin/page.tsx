@@ -72,7 +72,8 @@ export default function AdminDashboard() {
         fetch('/api/admin/lectures')
       ])
       
-      const coursesData = coursesRes.ok ? await coursesRes.json() : []
+      const coursesResponse = coursesRes.ok ? await coursesRes.json() : { courses: [] }
+      const coursesData = coursesResponse.courses || coursesResponse // Поддержка старого и нового формата
       const testsData = testsRes.ok ? await testsRes.json() : []
       const groupsData = groupsRes.ok ? await groupsRes.json() : []
       const lecturesData = lecturesRes.ok ? await lecturesRes.json() : { lectures: [] }

@@ -45,9 +45,14 @@ export async function GET(
       )
     }
 
-    // Получаем модули курса
+    // Получаем модули курса с заданиями
     const modules = await prisma.module.findMany({
       where: { courseId: (await params).id },
+      include: {
+        assignments: {
+          orderBy: { createdAt: 'asc' }
+        }
+      },
       orderBy: { order: 'asc' }
     })
 

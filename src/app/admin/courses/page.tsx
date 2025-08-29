@@ -81,15 +81,16 @@ export default function CoursesManagement() {
       const response = await fetch('/api/admin/courses')
       if (response.ok) {
         const data = await response.json()
-        setCourses(data)
+        const coursesData = data.courses || data // Поддержка старого и нового формата
+        setCourses(coursesData)
         
         // Подсчёт статистики
         setStats({
-          total: data.length,
-          active: data.filter((c: Course) => c.isActive && !c.isDraft).length,
-          draft: data.filter((c: Course) => c.isDraft).length,
-          inactive: data.filter((c: Course) => !c.isActive && !c.isDraft).length,
-          totalStudents: data.reduce((acc: number, c: Course) => acc + (c._count?.enrollments || 0), 0)
+          total: coursesData.length,
+          active: coursesData.filter((c: Course) => c.isActive && !c.isDraft).length,
+          draft: coursesData.filter((c: Course) => c.isDraft).length,
+          inactive: coursesData.filter((c: Course) => !c.isActive && !c.isDraft).length,
+          totalStudents: coursesData.reduce((acc: number, c: Course) => acc + (c._count?.enrollments || 0), 0)
         })
       }
     } catch (error) {

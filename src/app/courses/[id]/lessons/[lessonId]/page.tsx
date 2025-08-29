@@ -6,6 +6,13 @@ import Link from 'next/link'
 import VideoPlayer from '@/components/ui/VideoPlayer'
 import Quiz from '@/components/ui/Quiz'
 
+interface Assignment {
+  id: string
+  title: string
+  description: string
+  dueDate: string
+}
+
 interface Lesson {
   id: string
   title: string
@@ -28,6 +35,7 @@ interface Lesson {
       id: string
       title: string
     }
+    assignments: Assignment[]
   }
 }
 
@@ -48,6 +56,7 @@ export default function LessonStudyPage() {
   const [userAttempt, setUserAttempt] = useState<any>(null)
   const [showQuiz, setShowQuiz] = useState(false)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
+
 
   const courseId = params.id as string
   const lessonId = params.lessonId as string
@@ -132,6 +141,8 @@ export default function LessonStudyPage() {
       console.error('Ошибка при получении теста:', error)
     }
   }
+
+
 
   const handleQuizComplete = async (score: number, maxScore: number, passed: boolean) => {
     const percentage = (score / maxScore) * 100
@@ -406,6 +417,118 @@ export default function LessonStudyPage() {
               </div>
             </div>
 
+            {/* Задания к уроку */}
+            {lesson.module.assignments && lesson.module.assignments.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="bg-orange-100 text-orange-800 p-3 rounded-lg mr-4">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Задания к уроку
+                      </h2>
+                      <p className="text-gray-600 mt-1">
+                        Практические задания для закрепления материала
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {lesson.module.assignments.map((assignment) => (
+                    <div key={assignment.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            {assignment.title}
+                          </h3>
+                          {assignment.description && (
+                            <p className="text-gray-600 mb-3">
+                              {assignment.description}
+                            </p>
+                          )}
+                          {assignment.dueDate && (
+                            <div className="flex items-center text-sm text-orange-600">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Срок выполнения: {new Date(assignment.dueDate).toLocaleDateString('ru-RU')}
+                            </div>
+                          )}
+                        </div>
+                        <Link
+                          href={`/assignments/${assignment.id}`}
+                          className="ml-4 inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm font-medium"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          Выполнить
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Тест к уроку */}
+            {quiz && (
+              <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="bg-purple-100 text-purple-800 p-3 rounded-lg mr-4">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Тест по уроку
+                      </h2>
+                      <p className="text-gray-600 mt-1">
+                        Проверьте свои знания по пройденному материалу
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-medium text-purple-800 mb-2">
+                        {quiz.title}
+                      </h3>
+                      <div className="text-sm text-purple-700 mb-4">
+                        <p>
+                          Пройдите тест, чтобы проверить понимание материала урока. 
+                          Тест содержит {quiz.questions?.length || 0} вопросов.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowQuiz(true)}
+                        className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-medium"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        Начать тест
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
 
 
             {/* Модальное окно с тестом */}
@@ -546,6 +669,8 @@ export default function LessonStudyPage() {
                     )}
                   </div>
                 )}
+
+
 
                 <div className="border-t pt-4">
                   <h4 className="text-sm font-medium text-gray-900 mb-3">

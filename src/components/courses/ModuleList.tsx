@@ -2,6 +2,14 @@
 
 import Link from 'next/link'
 
+interface Quiz {
+  id: string
+  title: string
+  description?: string | null
+  timeLimit?: number | null
+  passingScore: number
+}
+
 interface Lesson {
   id: string
   title: string
@@ -13,6 +21,7 @@ interface Lesson {
     title: string
     description?: string | null
   } | null
+  quiz?: Quiz | null
 }
 
 interface Module {
@@ -23,7 +32,6 @@ interface Module {
   lessons: Lesson[]
   _count: {
     lessons: number
-    assignments: number
   }
 }
 
@@ -81,11 +89,18 @@ export function ModuleList({ modules, courseId, isEnrolled }: ModuleListProps) {
                           <span className="text-sm text-gray-900">
                             {lesson.title}
                           </span>
-                          {lesson.lecture && (
-                            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800" title={`Лекция: ${lesson.lecture.title}`}>
-                              📄 Лекция
-                            </span>
-                          )}
+                          <div className="ml-2 flex items-center space-x-1">
+                            {lesson.lecture && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800" title={`Лекция: ${lesson.lecture.title}`}>
+                                📄 Лекция
+                              </span>
+                            )}
+                            {lesson.quiz && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800" title={`Тест: ${lesson.quiz.title}`}>
+                                🧪 Тест
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center space-x-3">
                           <span className="text-xs text-gray-500">
@@ -105,6 +120,9 @@ export function ModuleList({ modules, courseId, isEnrolled }: ModuleListProps) {
                   </div>
                 </div>
               )}
+
+              {/* Список заданий */}
+              
 
               <div className="flex items-center space-x-4 text-sm text-gray-500 mt-4">
                 <span className="flex items-center">

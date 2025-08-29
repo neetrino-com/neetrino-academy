@@ -127,7 +127,9 @@ export async function POST(request: NextRequest) {
 
         // Создаём задания (если есть)
         if (module.assignments && module.assignments.length > 0) {
+          console.log(`Создаём ${module.assignments.length} заданий для модуля ${module.title}`)
           for (const assignment of module.assignments) {
+            console.log('Создаём задание:', assignment.title)
             await tx.assignment.create({
               data: {
                 title: assignment.title,

@@ -17,7 +17,20 @@ export async function POST(
     }
 
     const { id: courseId } = await params
-    const userId = session.user.id
+    
+    // Получаем пользователя по email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! }
+    })
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: "Пользователь не найден" },
+        { status: 404 }
+      )
+    }
+    
+    const userId = user.id
 
     // Проверяем, существует ли курс
     const course = await prisma.course.findUnique({

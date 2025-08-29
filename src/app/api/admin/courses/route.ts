@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
         isDraft: true, // Добавляем поле isDraft для отображения статуса
         _count: {
           select: {
-            enrollments: true
+            enrollments: true,
+            modules: true
           }
         }
       },
@@ -56,7 +57,10 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(courses);
+    console.log('Найдено курсов:', courses.length);
+    console.log('Первый курс:', courses[0]);
+
+    return NextResponse.json({ courses });
   } catch (error) {
     console.error('Ошибка получения курсов:', error);
     return NextResponse.json(

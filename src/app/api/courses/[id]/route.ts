@@ -29,9 +29,19 @@ export async function GET(
                     title: true,
                     description: true
                   }
+                },
+                quiz: {
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    timeLimit: true,
+                    passingScore: true
+                  }
                 }
               }
             },
+            
             _count: {
               select: {
                 lessons: true,

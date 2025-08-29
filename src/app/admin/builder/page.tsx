@@ -61,7 +61,6 @@ interface Assignment {
   title: string
   description: string
   dueDate?: string
-  maxScore?: number
   files?: FileAttachment[]
 }
 
@@ -168,18 +167,39 @@ export default function CourseBuilder() {
       const modulesResponse = await fetch(`/api/admin/courses/${editCourseId}/modules`)
       const modulesData = modulesResponse.ok ? await modulesResponse.json() : []
       
-      // Загружаем уроки для каждого модуля
+      // Загружаем уроки для каждого модуля (модули уже содержат задания)
       const modulesWithLessons = await Promise.all(
         modulesData.map(async (module: any) => {
           const lessonsResponse = await fetch(`/api/admin/modules/${module.id}/lessons`)
           const lessons = lessonsResponse.ok ? await lessonsResponse.json() : []
+          
+          // Модули уже содержат задания из API /api/admin/courses/[id]/modules
+          const moduleAssignments = module.assignments || []
+          
+          // Загружаем тесты для каждого урока
+          const lessonsWithQuizzes = await Promise.all(
+            lessons.map(async (lesson: any) => {
+              const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
+              const quiz = quizResponse.ok ? await quizResponse.json() : null
+              
+              // Проверяем, есть ли задания для этого урока (по связи с модулем)
+              const hasAssignment = moduleAssignments.length > 0
+              
+              return {
+                ...lesson,
+                type: lesson.videoUrl ? 'video' : 'text',
+                files: [],
+                hasQuiz: !!quiz,
+                hasAssignment: hasAssignment,
+                quiz: quiz
+              }
+            })
+          )
+          
           return {
             ...module,
-            lessons: lessons.map((lesson: any) => ({
-              ...lesson,
-              type: lesson.videoUrl ? 'video' : 'text',
-              files: []
-            }))
+            lessons: lessonsWithQuizzes,
+            assignments: moduleAssignments
           }
         })
       )
@@ -198,6 +218,35 @@ export default function CourseBuilder() {
       })
       
       setModules(modulesWithLessons)
+      
+      // Инициализируем тесты из загруженных данных
+      const allQuizzes = modulesWithLessons.flatMap(module => 
+        module.lessons
+          .filter(lesson => lesson.quiz)
+          .map(lesson => lesson.quiz)
+      )
+      setQuizzes(allQuizzes)
+      
+      // Инициализируем задания из загруженных данных
+      const allAssignments = modulesWithLessons.flatMap(module => 
+        module.assignments ? module.assignments.map((assignment: any) => ({
+          id: assignment.id,
+          lessonId: module.lessons[0]?.id || '', // Привязываем к первому уроку модуля
+          moduleId: module.id,
+          title: assignment.title,
+          description: assignment.description || '',
+          dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().split('T')[0] : ''
+        })) : []
+      )
+      console.log('=== DEBUG: loadExistingCourse ===')
+      console.log('Модули с заданиями:', modulesWithLessons.map(m => ({
+        id: m.id,
+        title: m.title,
+        assignmentsCount: m.assignments?.length || 0,
+        assignments: m.assignments
+      })))
+      console.log('Извлеченные задания для состояния:', allAssignments)
+      setAssignments(allAssignments)
       
     } catch (error) {
       console.error('Ошибка загрузки курса:', error)
@@ -924,8 +973,7 @@ export default function CourseBuilder() {
         id: `assignment_${Date.now()}`,
         lessonId: selectedLesson,
         title: '',
-        description: '',
-        maxScore: 100
+        description: ''
       } : null)
 
     return (
@@ -1006,44 +1054,22 @@ export default function CourseBuilder() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Максимальный балл
-                  </label>
-                  <input
-                    type="number"
-                    value={currentAssignment.maxScore || 100}
-                    onChange={(e) => {
-                      const updated = { ...currentAssignment, maxScore: parseInt(e.target.value) || 100 }
-                      setAssignments(prev => {
-                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
-                        return [...filtered, updated]
-                      })
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    min="1"
-                    max="1000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Срок сдачи (опционально)
-                  </label>
-                  <input
-                    type="date"
-                    value={currentAssignment.dueDate || ''}
-                    onChange={(e) => {
-                      const updated = { ...currentAssignment, dueDate: e.target.value }
-                      setAssignments(prev => {
-                        const filtered = prev.filter(a => a.lessonId !== selectedLesson)
-                        return [...filtered, updated]
-                      })
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Срок сдачи (опционально)
+                </label>
+                <input
+                  type="date"
+                  value={currentAssignment.dueDate || ''}
+                  onChange={(e) => {
+                    const updated = { ...currentAssignment, dueDate: e.target.value }
+                    setAssignments(prev => {
+                      const filtered = prev.filter(a => a.lessonId !== selectedLesson)
+                      return [...filtered, updated]
+                    })
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
               </div>
 
               <div>
@@ -1069,21 +1095,21 @@ export default function CourseBuilder() {
 
   // Рендер шага "Тесты"
   const renderTestsStep = () => {
-    const lessonsWithQuizzes = modules.flatMap(m => 
-      m.lessons.filter(l => l.hasQuiz).map(l => ({
+    const allLessons = modules.flatMap(m => 
+      m.lessons.map(l => ({
         ...l, 
         moduleTitle: m.title, 
         moduleId: m.id
       }))
     )
 
-    if (lessonsWithQuizzes.length === 0) {
+    if (allLessons.length === 0) {
       return (
         <div className="text-center py-12">
           <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет тестов</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Нет уроков</h3>
           <p className="text-gray-500 mb-4">
-            Отметьте уроки, к которым нужно добавить тесты, на этапе "Уроки"
+            Сначала добавьте уроки на этапе "Уроки"
           </p>
           <button
             onClick={() => setCurrentStep(2)}
@@ -1108,12 +1134,13 @@ export default function CourseBuilder() {
 
     return (
       <div className="flex gap-6">
-        {/* Список уроков с тестами */}
+        {/* Список уроков */}
         <div className="w-80 bg-gray-50 rounded-lg p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">Уроки с тестами</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">Все уроки</h3>
           <div className="space-y-2">
-            {lessonsWithQuizzes.map(lesson => {
+            {allLessons.map(lesson => {
               const hasQuiz = quizzes.some(q => q.lessonId === lesson.id)
+              const existingQuiz = quizzes.find(q => q.lessonId === lesson.id)
               return (
                 <button
                   key={lesson.id}
@@ -1128,6 +1155,11 @@ export default function CourseBuilder() {
                     <div>
                       <div className="text-sm font-medium">{lesson.title}</div>
                       <div className="text-xs text-gray-500">{lesson.moduleTitle}</div>
+                      {existingQuiz && (
+                        <div className="text-xs text-green-600 mt-1">
+                          Тест: {existingQuiz.title}
+                        </div>
+                      )}
                     </div>
                     {hasQuiz && (
                       <Check className="w-4 h-4 text-green-600" />
@@ -1143,7 +1175,7 @@ export default function CourseBuilder() {
         {currentQuiz && selectedLesson && (
           <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-6">
-              Тест для урока: {lessonsWithQuizzes.find(l => l.id === selectedLesson)?.title}
+              Тест для урока: {allLessons.find(l => l.id === selectedLesson)?.title}
             </h3>
 
             <div className="space-y-6">
@@ -1566,12 +1598,24 @@ export default function CourseBuilder() {
             title: a.title,
             description: a.description,
             dueDate: a.dueDate
+            // maxScore убрано - поля нет в схеме базы данных
           }))
         }))
       }
 
       // Логируем данные для отладки
+      console.log('=== DEBUG: saveCourse ===')
+      console.log('assignments state:', assignments)
+      console.log('modules:', modules.map(m => ({ id: m.id, title: m.title, lessonsCount: m.lessons.length })))
       console.log('Отправляемые данные:', JSON.stringify(requestData, null, 2))
+      
+      // Проверим, есть ли задания в модулях
+      requestData.modules.forEach((module, index) => {
+        console.log(`Модуль ${index + 1} (${module.title}): ${module.assignments.length} заданий`)
+        module.assignments.forEach(assignment => {
+          console.log(`  - Задание: ${assignment.title}`)
+        })
+      })
       
       const response = await fetch(url, {
         method,
