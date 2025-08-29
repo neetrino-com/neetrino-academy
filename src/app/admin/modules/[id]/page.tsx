@@ -143,15 +143,39 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Форма создания урока */}
+            {/* Панель управления */}
             <div className="lg:col-span-1">
-              <LessonForm 
-                moduleId={params.id}
-                onSuccess={() => {
-                  // Перезагружаем страницу после создания
-                  window.location.reload()
-                }}
-              />
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Управление уроками</h2>
+                
+                <div className="space-y-4">
+                  <Link
+                    href={`/admin/modules/${(await params).id}/lessons/create`}
+                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Создать новый урок
+                  </Link>
+
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Статистика модуля</h3>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Всего уроков:</span>
+                        <span className="font-semibold">{module.lessons.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Активных уроков:</span>
+                        <span className="font-semibold text-green-600">
+                          {module.lessons.filter(l => l.isActive !== false).length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

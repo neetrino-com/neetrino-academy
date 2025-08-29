@@ -93,13 +93,15 @@ model Lecture {
 model Lesson {
   id          String           @id @default(cuid())
   title       String
-  content     String?
-  videoUrl    String?
-  duration    Int?
+  description String?          // Краткое описание урока
+  content     String?          // JSON с блоками контента (как в лекциях)
+  thumbnail   String?          // Обложка урока
+  duration    Int?             // Длительность в минутах
   order       Int
+  isActive    Boolean          @default(true)
   moduleId    String
-  lectureId   String?          // Связь с лекцией
-  checklistId String?          // Связь с чеклистом
+  lectureId   String?          // Связь с лекцией (опционально)
+  checklistId String?          // Связь с чеклистом (опционально)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   module      Module           @relation(fields: [moduleId], references: [id])

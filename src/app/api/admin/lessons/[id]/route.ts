@@ -5,19 +5,20 @@ import { z } from 'zod'
 
 const updateLessonSchema = z.object({
   title: z.string().min(1, 'Название урока обязательно'),
-  content: z.string().optional(),
-  videoUrl: z.string().url().optional().or(z.literal('')),
-  duration: z.number().min(0, 'Длительность не может быть отрицательной'),
-  order: z.number().min(1, 'Порядок должен быть больше 0'),
-  lectureId: z.string().optional(),
-  checklistId: z.string().optional(),
-  type: z.enum(['LECTURE', 'CHECKLIST', 'ASSIGNMENT', 'TEST']).optional()
+  description: z.string().optional().nullable(),
+  content: z.string().optional().nullable(), // JSON блоки контента
+  thumbnail: z.string().optional().nullable(),
+  duration: z.number().optional().nullable(),
+  isActive: z.boolean().default(true),
+  order: z.number().optional(),
+  lectureId: z.string().optional().nullable(),
+  checklistId: z.string().optional().nullable()
 })
 
 // GET /api/admin/lessons/[id] - получение урока
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -33,13 +34,13 @@ export async function GET(
 
     if (!user || (user.role !== 'TEACHER' && user.role !== 'ADMIN')) {
       return NextResponse.json(
-        { error: 'Недостаточно прав для просмотра уроков' },
+        { error: 'Недостаточно прав' },
         { status: 403 }
       )
     }
 
     const lesson = await prisma.lesson.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         module: {
           include: {
@@ -52,21 +53,8 @@ export async function GET(
             }
           }
         },
-        lecture: {
-          select: {
-            id: true,
-            title: true,
-            description: true
-          }
-        },
-        checklist: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            direction: true
-          }
-        }
+        lecture: true,
+        checklist: true
       }
     })
 
@@ -90,7 +78,7 @@ export async function GET(
 // PUT /api/admin/lessons/[id] - обновление урока
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -113,7 +101,7 @@ export async function PUT(
 
     // Проверяем существование урока
     const existingLesson = await prisma.lesson.findUnique({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     if (!existingLesson) {
@@ -128,16 +116,17 @@ export async function PUT(
 
     // Обновляем урок
     const lesson = await prisma.lesson.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         title: validatedData.title,
+        description: validatedData.description,
         content: validatedData.content,
-        videoUrl: validatedData.videoUrl || null,
+        thumbnail: validatedData.thumbnail,
         duration: validatedData.duration,
+        isActive: validatedData.isActive,
         order: validatedData.order,
-        lectureId: validatedData.lectureId || null,
-        checklistId: validatedData.checklistId || null,
-        type: validatedData.type || 'LECTURE'
+        lectureId: validatedData.lectureId,
+        checklistId: validatedData.checklistId
       },
       include: {
         module: {
@@ -151,21 +140,8 @@ export async function PUT(
             }
           }
         },
-        lecture: {
-          select: {
-            id: true,
-            title: true,
-            description: true
-          }
-        },
-        checklist: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            direction: true
-          }
-        }
+        lecture: true,
+        checklist: true
       }
     })
 
@@ -190,7 +166,7 @@ export async function PUT(
 // DELETE /api/admin/lessons/[id] - удаление урока
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -213,7 +189,7 @@ export async function DELETE(
 
     // Проверяем существование урока
     const existingLesson = await prisma.lesson.findUnique({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     if (!existingLesson) {
@@ -223,9 +199,9 @@ export async function DELETE(
       )
     }
 
-    // Удаляем урок (каскадно удалятся и все связанные данные)
+    // Удаляем урок
     await prisma.lesson.delete({
-      where: { id: params.id }
+      where: { id: (await params).id }
     })
 
     return NextResponse.json({ message: 'Урок успешно удален' })

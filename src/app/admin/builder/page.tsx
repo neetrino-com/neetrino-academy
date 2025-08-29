@@ -8,6 +8,7 @@ import {
   Plus, Trash2, GripVertical, Upload, Link, Type,
   Image, File, Clock, Users, Settings, Check
 } from 'lucide-react'
+import LessonContentBuilder from '@/components/admin/LessonContentBuilder'
 import ChecklistSelector from '@/components/admin/ChecklistSelector'
 
 // Типы для курса
@@ -37,7 +38,6 @@ interface Lesson {
   title: string
   description: string
   content: string
-  type: 'video' | 'text' | 'mixed' | 'checklist'
   videoUrl?: string
   duration?: number
   order: number
@@ -319,7 +319,6 @@ export default function CourseBuilder() {
       title: `Урок ${modules[moduleIndex].lessons.length + 1}`,
       description: '',
       content: '',
-      type: 'text',
       order: modules[moduleIndex].lessons.length,
       checklistId: undefined
     }
@@ -753,8 +752,8 @@ export default function CourseBuilder() {
                               <TestTube className="w-3 h-3 text-purple-600" />
                             </div>
                           )}
-                          {lesson.type === 'video' && (
-                            <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center" title="Видео урок">
+                          {lesson.videoUrl && (
+                            <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center" title="Содержит видео">
                               <Video className="w-3 h-3 text-red-600" />
                             </div>
                           )}
@@ -789,16 +788,8 @@ export default function CourseBuilder() {
                     Модуль: {modules.find(m => m.id === currentLesson.moduleId)?.title || 'Неизвестный модуль'}
                   </p>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  currentLesson.type === 'video' ? 'bg-red-100 text-red-700' :
-                  currentLesson.type === 'mixed' ? 'bg-purple-100 text-purple-700' :
-                  currentLesson.type === 'checklist' ? 'bg-amber-100 text-amber-700' :
-                  'bg-gray-100 text-gray-700'
-                }`}>
-                  {currentLesson.type === 'video' ? 'Видео урок' :
-                   currentLesson.type === 'mixed' ? 'Смешанный' :
-                   currentLesson.type === 'checklist' ? 'Чеклист' :
-                   'Текстовый'}
+                <div className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Многоформатный урок
                 </div>
               </div>
             </div>
@@ -826,24 +817,14 @@ export default function CourseBuilder() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Тип урока
+                    Информация об уроке
                   </label>
-                  <select
-                    value={currentLesson.type}
-                    onChange={(e) => {
-                      const updatedModules = [...modules]
-                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed' | 'checklist'
-                      setModules(updatedModules)
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="text">Текстовый</option>
-                    <option value="video">Видео</option>
-                    <option value="mixed">Смешанный</option>
-                    <option value="checklist">Чеклист</option>
-                  </select>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      💡 Урок поддерживает все типы контента: текст, видео, изображения, код, чеклисты и файлы. 
+                      Выберите нужные блоки при создании урока.
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -866,27 +847,29 @@ export default function CourseBuilder() {
                 />
               </div>
 
-              {/* Видео URL если тип video или mixed */}
-              {(currentLesson.type === 'video' || currentLesson.type === 'mixed') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    URL видео
-                  </label>
-                  <input
-                    type="text"
-                    value={currentLesson.videoUrl || ''}
-                    onChange={(e) => {
-                      const updatedModules = [...modules]
-                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].videoUrl = e.target.value
-                      setModules(updatedModules)
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://youtube.com/watch?v=..."
-                  />
+              {/* Дополнительные настройки урока */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Длительность урока (минуты)
+                </label>
+                <input
+                  type="number"
+                  value={currentLesson.duration || ''}
+                  onChange={(e) => {
+                    const updatedModules = [...modules]
+                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                    updatedModules[moduleIndex].lessons[lessonIndex].duration = parseInt(e.target.value) || null
+                    setModules(updatedModules)
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Автоматически определится"
+                  min="1"
+                />
+                <div className="mt-2 text-xs text-gray-600">
+                  <p>💡 Если не указать, длительность будет определена автоматически по содержимому</p>
                 </div>
-              )}
+              </div>
 
               {/* Выбор лекции для любого типа урока */}
               <div>
@@ -932,75 +915,43 @@ export default function CourseBuilder() {
                 )}
               </div>
 
-              {/* Выбор чеклиста для уроков типа checklist */}
-              {currentLesson.type === 'checklist' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Выбрать чеклист *
-                  </label>
-                  <ChecklistSelector
-                    selectedChecklistId={currentLesson.checklistId}
-                    onChecklistSelect={(checklistId) => {
-                      const updatedModules = [...modules]
-                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].checklistId = checklistId || undefined
-                      setModules(updatedModules)
-                    }}
-                    direction={courseData.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'}
-                  />
-                  {!currentLesson.checklistId && (
-                    <p className="mt-2 text-sm text-amber-600">
-                      Для урока типа "Чеклист" необходимо выбрать чеклист
-                    </p>
-                  )}
+              {/* Выбор чеклиста (опционально) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Прикрепить чеклист (опционально)
+                </label>
+                <ChecklistSelector
+                  selectedChecklistId={currentLesson.checklistId}
+                  onChecklistSelect={(checklistId) => {
+                    const updatedModules = [...modules]
+                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                    updatedModules[moduleIndex].lessons[lessonIndex].checklistId = checklistId || undefined
+                    setModules(updatedModules)
+                  }}
+                  direction={courseData.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'}
+                />
+                <div className="mt-2 text-xs text-gray-600">
+                  <p>💡 Выберите готовый чеклист или создайте новый в разделе блоков урока</p>
                 </div>
-              )}
+              </div>
 
               {/* Контент урока */}
-              {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Содержание урока
-                  </label>
-                  <div className="border border-gray-300 rounded-lg">
-                    {/* Панель инструментов редактора */}
-                    <div className="border-b border-gray-200 p-2 flex items-center gap-2 bg-gray-50">
-                      <button className="p-2 hover:bg-gray-200 rounded" title="Жирный">
-                        <strong>B</strong>
-                      </button>
-                      <button className="p-2 hover:bg-gray-200 rounded" title="Курсив">
-                        <em>I</em>
-                      </button>
-                      <div className="w-px h-6 bg-gray-300" />
-                      <button className="p-2 hover:bg-gray-200 rounded" title="Заголовок">
-                        <Type className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-200 rounded" title="Ссылка">
-                        <Link className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-200 rounded" title="Изображение">
-                        <Image className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-200 rounded" title="Файл">
-                        <File className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      value={currentLesson.content}
-                      onChange={(e) => {
-                        const updatedModules = [...modules]
-                        const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                        const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                        updatedModules[moduleIndex].lessons[lessonIndex].content = e.target.value
-                        setModules(updatedModules)
-                      }}
-                      className="w-full px-4 py-3 min-h-[300px] focus:outline-none"
-                      placeholder="Введите содержание урока..."
-                    />
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                  Содержание урока
+                </label>
+                <LessonContentBuilder
+                  content={currentLesson.content}
+                  onChange={(content) => {
+                    const updatedModules = [...modules]
+                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                    updatedModules[moduleIndex].lessons[lessonIndex].content = content
+                    setModules(updatedModules)
+                  }}
+                />
+              </div>
 
               {/* Файлы урока */}
               <div>

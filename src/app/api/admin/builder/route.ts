@@ -114,14 +114,14 @@ export async function POST(request: NextRequest) {
             await tx.lesson.create({
               data: {
                 title: lesson.title,
-                content: lesson.content || '',
+                description: lesson.description || '',
+                content: lesson.content || null,
                 videoUrl: lesson.videoUrl || null,
                 duration: lesson.duration || null,
                 order: lesson.order,
                 moduleId: newModule.id,
                 lectureId: lesson.lectureId || null,
-                checklistId: lesson.checklistId || null,
-                type: lesson.type || 'LECTURE'
+                checklistId: lesson.checklistId || null
               }
             })
           }

@@ -5,11 +5,14 @@ import { z } from 'zod'
 
 const createLessonSchema = z.object({
   title: z.string().min(1, 'Название урока обязательно'),
-  content: z.string().optional(),
-  videoUrl: z.string().url().optional().or(z.literal('')),
-  duration: z.number().min(0, 'Длительность не может быть отрицательной'),
-  order: z.number().min(1, 'Порядок должен быть больше 0'),
-  lectureId: z.string().optional()
+  description: z.string().optional(),
+  content: z.string().optional(), // JSON блоки контента
+  thumbnail: z.string().optional(),
+  duration: z.number().optional().nullable(),
+  isActive: z.boolean().default(true),
+  order: z.number().optional(),
+  lectureId: z.string().optional(),
+  checklistId: z.string().optional()
 })
 
 // GET /api/admin/modules/[id]/lessons - получение уроков модуля
@@ -121,16 +124,29 @@ export async function POST(
     const body = await request.json()
     const validatedData = createLessonSchema.parse(body)
 
+    // Автоматически определяем порядок урока если не указан
+    let order = validatedData.order
+    if (!order) {
+      const lastLesson = await prisma.lesson.findFirst({
+        where: { moduleId: (await params).id },
+        orderBy: { order: 'desc' }
+      })
+      order = (lastLesson?.order || 0) + 1
+    }
+
     // Создаем урок
     const lesson = await prisma.lesson.create({
       data: {
         title: validatedData.title,
-        content: validatedData.content,
-        videoUrl: validatedData.videoUrl || null,
+        description: validatedData.description || null,
+        content: validatedData.content || null,
+        thumbnail: validatedData.thumbnail || null,
         duration: validatedData.duration,
-        order: validatedData.order,
+        isActive: validatedData.isActive,
+        order: order,
         moduleId: (await params).id,
-        lectureId: validatedData.lectureId || null
+        lectureId: validatedData.lectureId || null,
+        checklistId: validatedData.checklistId || null
       },
       include: {
         module: {

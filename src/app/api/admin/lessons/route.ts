@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, order, moduleId, lectureId, checklistId, type } = body
+    const { title, description, content, thumbnail, duration, isActive, order, moduleId, lectureId, checklistId } = body
 
     // Валидация обязательных полей
-    if (!title || !moduleId || order === undefined) {
+    if (!title || !moduleId) {
       return NextResponse.json({ 
-        error: 'Missing required fields: title, moduleId, order' 
+        error: 'Missing required fields: title, moduleId' 
       }, { status: 400 })
     }
 
@@ -38,16 +38,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 
+    // Автоматически определяем порядок урока если не указан
+    let lessonOrder = order
+    if (!lessonOrder) {
+      const lastLesson = await prisma.lesson.findFirst({
+        where: { moduleId },
+        orderBy: { order: 'desc' }
+      })
+      lessonOrder = (lastLesson?.order || 0) + 1
+    }
+
     // Создаем урок
     const lesson = await prisma.lesson.create({
       data: {
         title,
-        description: description || '',
-        order,
+        description: description || null,
+        content: content || null,
+        thumbnail: thumbnail || null,
+        duration: duration || null,
+        isActive: isActive !== undefined ? isActive : true,
+        order: lessonOrder,
         moduleId,
         lectureId: lectureId || null,
-        checklistId: checklistId || null,
-        type: type || 'LECTURE'
+        checklistId: checklistId || null
       },
       include: {
         module: {
