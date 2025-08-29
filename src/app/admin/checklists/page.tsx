@@ -144,35 +144,102 @@ export default function ChecklistsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent">
-            Управление чеклистами
-          </h1>
-          <p className="text-gray-600 mt-2">Создание и управление чеклистами для студентов</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Хедер */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => window.location.href = '/admin'}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent">
+                  Управление чеклистами
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Создание и управление чеклистами для студентов
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.href = '/admin/checklists/create'}
+              className="px-4 py-2 bg-gradient-to-r from-amber-600 to-yellow-600 text-white rounded-lg hover:from-amber-700 hover:to-yellow-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-4 h-4" />
+              Создать чеклист
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => window.location.href = '/admin/checklists/create'}
-          className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-lg hover:shadow-xl"
-        >
-          <Plus size={20} />
-          Создать чеклист
-        </button>
       </div>
 
-      {/* Фильтры */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Статистика */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-amber-600 font-semibold">Всего чеклистов</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{pagination?.total || 0}</p>
+              </div>
+              <ClipboardCheck className="w-8 h-8 text-amber-600" />
+            </div>
+          </div>
+
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-emerald-600 font-semibold">Активных</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{checklists.filter(c => c.isActive).length}</p>
+              </div>
+              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-blue-600 font-semibold">Уроков</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{checklists.reduce((sum, c) => sum + c._count.lessons, 0)}</p>
+              </div>
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-purple-600 font-semibold">Студентов</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{checklists.reduce((sum, c) => sum + c._count.progress, 0)}</p>
+              </div>
+              <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Поиск и фильтры */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Поиск по названию или описанию..."
+                placeholder="Поиск чеклистов по названию, описанию или направлению..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -180,7 +247,7 @@ export default function ChecklistsPage() {
             <select
               value={directionFilter}
               onChange={(e) => setDirectionFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             >
               <option value="">Все направления</option>
               <option value="WORDPRESS">WordPress</option>
@@ -190,7 +257,7 @@ export default function ChecklistsPage() {
             <select
               value={isActiveFilter}
               onChange={(e) => setIsActiveFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             >
               <option value="true">Активные</option>
               <option value="false">Неактивные</option>
@@ -200,193 +267,178 @@ export default function ChecklistsPage() {
         </div>
       </div>
 
-      {/* Список чеклистов */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        {/* Список чеклистов */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900">
+              Чеклисты ({checklists.length})
+            </h2>
+          </div>
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
           </div>
         ) : checklists.length === 0 ? (
-          <div className="text-center py-12">
-            <ClipboardCheck className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Чеклисты не найдены</h3>
-            <p className="mt-1 text-sm text-gray-500">
+          <div className="p-12 text-center">
+            <ClipboardCheck className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {search || directionFilter || isActiveFilter !== 'true' ? 'Чеклисты не найдены' : 'Пока нет чеклистов'}
+            </h3>
+            <p className="text-gray-500 mb-4">
               {search || directionFilter || isActiveFilter !== 'true' 
-                ? 'Попробуйте изменить фильтры поиска'
-                : 'Создайте первый чеклист для начала работы'
+                ? 'Попробуйте изменить критерии поиска или фильтрации'
+                : 'Создайте свой первый чеклист для начала работы'
               }
             </p>
+            {!search && !directionFilter && isActiveFilter === 'true' && (
+              <button
+                onClick={() => window.location.href = '/admin/checklists/create'}
+                className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-colors"
+              >
+                Создать первый чеклист
+              </button>
+            )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Чеклист
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Направление
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Автор
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Структура
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Использований
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Статус
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Дата создания
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Действия
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {checklists.map((checklist) => {
-                  const DirectionIcon = directionIcons[checklist.direction];
-                  return (
-                    <tr key={checklist.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {checklist.thumbnail && (
-                            <img
-                              src={checklist.thumbnail}
-                              alt={checklist.title}
-                              className="h-10 w-10 rounded-lg object-cover mr-3"
-                            />
-                          )}
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {checklist.title}
-                            </div>
-                            {checklist.description && (
-                              <div className="text-sm text-gray-500 truncate max-w-xs">
-                                {checklist.description}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${directionColors[checklist.direction]}`}>
-                          <DirectionIcon size={12} className="mr-1" />
+          <div className="divide-y divide-gray-100">
+            {checklists.map((checklist) => {
+              const DirectionIcon = directionIcons[checklist.direction];
+              const statusInfo = checklist.isActive 
+                ? { label: 'Активен', color: 'bg-emerald-100 text-emerald-800' }
+                : { label: 'Неактивен', color: 'bg-red-100 text-red-800' };
+              
+              return (
+                <div key={checklist.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-bold text-gray-900 text-lg">{checklist.title}</h3>
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${statusInfo.color}`}>
+                          {statusInfo.label}
+                        </span>
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${directionColors[checklist.direction]}`}>
+                          <DirectionIcon size={12} className="inline mr-1" />
                           {directionLabels[checklist.direction]}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{checklist.creator.name}</div>
-                        <div className="text-sm text-gray-500">{checklist.creator.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {checklist.groups.length} групп
+                      </div>
+                      
+                      {checklist.description && (
+                        <p className="text-gray-600 mb-3">{checklist.description}</p>
+                      )}
+                      
+                      {/* Характеристики чеклиста */}
+                      <div className="flex gap-6 text-sm text-gray-500 mb-3">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span>{checklist.creator.name}</span>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {getTotalItems(checklist.groups)} пунктов
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                          <span>{checklist.groups.length} групп</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {checklist._count.lessons} уроков
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                          </svg>
+                          <span>{getTotalItems(checklist.groups)} пунктов</span>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {checklist._count.progress} студентов
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          <span>{checklist._count.lessons} уроков</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          checklist.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {checklist.isActive ? 'Активен' : 'Неактивен'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(checklist.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => window.location.href = `/admin/checklists/${checklist.id}`}
-                            className="text-amber-600 hover:text-amber-900 p-1"
-                            title="Просмотр"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => window.location.href = `/admin/checklists/${checklist.id}/analytics`}
-                            className="text-blue-600 hover:text-blue-900 p-1"
-                            title="Аналитика"
-                          >
-                            <BarChart3 size={16} />
-                          </button>
-                          <button
-                            onClick={() => window.location.href = `/admin/checklists/${checklist.id}/notifications`}
-                            className="text-green-600 hover:text-green-900 p-1"
-                            title="Уведомления"
-                          >
-                            <Bell size={16} />
-                          </button>
-                          <button
-                            onClick={() => window.location.href = `/admin/checklists/${checklist.id}/edit`}
-                            className="text-indigo-600 hover:text-indigo-900 p-1"
-                            title="Редактировать"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(checklist.id)}
-                            className="text-red-600 hover:text-red-900 p-1"
-                            title="Удалить"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>Создан: {formatDate(checklist.createdAt)}</span>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+                    </div>
+
+                    {/* Действия */}
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => window.location.href = `/admin/checklists/${checklist.id}`}
+                        className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        title="Просмотр"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => window.location.href = `/admin/checklists/${checklist.id}/analytics`}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        title="Аналитика"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() => window.location.href = `/admin/checklists/${checklist.id}/notifications`}
+                        className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        title="Уведомления"
+                      >
+                        <Bell className="w-4 h-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => window.location.href = `/admin/checklists/${checklist.id}/edit`}
+                        className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        title="Редактировать"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      
+                      <button
+                        onClick={() => handleDelete(checklist.id)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        title="Удалить"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Пагинация */}
-      {pagination && pagination.pages > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <div className="text-sm text-gray-700">
-            Показано {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} из {pagination.total} чеклистов
+        {/* Пагинация */}
+        {pagination && pagination.pages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <div className="text-sm text-gray-700">
+              Показано {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} из {pagination.total} чеклистов
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+              >
+                Назад
+              </button>
+              <span className="px-3 py-2 text-sm text-gray-700">
+                Страница {currentPage} из {pagination.pages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === pagination.pages}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+              >
+                Вперед
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Назад
-            </button>
-            <span className="px-3 py-2 text-sm text-gray-700">
-              Страница {currentPage} из {pagination.pages}
-            </span>
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === pagination.pages}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Вперед
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
