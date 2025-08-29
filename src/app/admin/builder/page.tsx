@@ -782,33 +782,22 @@ export default function CourseBuilder() {
                   })()}
                 </div>
                 <div className="flex-1">
-                  <div className="group cursor-text">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">📚</span>
-                      <input
-                        type="text"
-                        value={currentLesson.title}
-                        onChange={(e) => {
-                          const updatedModules = [...modules]
-                          const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                          const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                          updatedModules[moduleIndex].lessons[lessonIndex].title = e.target.value
-                          setModules(updatedModules)
-                        }}
-                        className="text-2xl font-bold text-gray-900 leading-tight bg-transparent border-0 border-b-2 border-transparent hover:border-blue-300 focus:border-blue-500 focus:outline-none flex-1 transition-all duration-200 group-hover:border-gray-200 px-2 py-1 rounded-lg hover:bg-blue-50/30"
-                        placeholder="Введите название урока..."
-                      />
-                    </div>
-                    <div className="text-xs text-blue-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-8">
-                      ✏️ Кликните для редактирования названия
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2 ml-8">
+                  <input
+                    type="text"
+                    value={currentLesson.title}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].title = e.target.value
+                      setModules(updatedModules)
+                    }}
+                    className="text-2xl font-bold text-gray-900 leading-tight bg-transparent border-0 border-b-2 border-transparent hover:border-blue-300 focus:border-blue-500 focus:outline-none w-full transition-colors duration-200"
+                    placeholder="Введите название урока..."
+                  />
+                  <p className="text-sm text-gray-600 mt-1">
                     Модуль: {modules.find(m => m.id === currentLesson.moduleId)?.title || 'Неизвестный модуль'}
                   </p>
-                </div>
-                <div className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                  Многоформатный урок
                 </div>
               </div>
             </div>
