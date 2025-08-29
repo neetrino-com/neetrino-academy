@@ -413,31 +413,26 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         {/* Правая панель - Контент чеклиста */}
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-yellow-100/30 rounded-xl"></div>
-            <div className="relative border border-amber-200/60 rounded-xl p-5 backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-amber-500 rounded-lg shadow-sm">
-                  <CheckCircle className="w-5 h-5 text-white" />
-                </div>
-                <div className="h-px flex-1 bg-gradient-to-r from-amber-300 to-transparent"></div>
-              </div>
-              
-              <div className="space-y-3">
+          <div className="border-2 border-dashed border-amber-300 rounded-2xl p-6 mb-6 bg-amber-50/30 hover:border-amber-400 hover:bg-amber-50/50 transition-all duration-300">
+            <div className="space-y-4">
+              <div className="text-center">
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 text-lg font-semibold border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white/80 placeholder-gray-500 shadow-sm"
-                  placeholder="Введите название чеклиста"
+                  className="w-full text-center px-4 py-3 text-2xl font-bold border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:outline-none bg-transparent placeholder-amber-400/70"
+                  placeholder="Название чеклиста"
                   required
                 />
+              </div>
+              
+              <div className="text-center">
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   rows={2}
-                  className="w-full px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg focus:ring-1 focus:ring-amber-300 focus:border-amber-300 bg-white/60 placeholder-gray-400 resize-none"
-                  placeholder="Опишите назначение чеклиста (необязательно)"
+                  className="w-full text-center px-4 py-2 text-sm text-gray-600 border-0 focus:outline-none bg-transparent placeholder-amber-300/60 resize-none"
+                  placeholder="Добавьте описание чеклиста"
                 />
               </div>
             </div>
