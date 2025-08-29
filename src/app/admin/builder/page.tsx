@@ -331,101 +331,127 @@ export default function CourseBuilder() {
 
   // Рендер шага "Обзор"
   const renderOverviewStep = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Основная информация о курсе</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Название курса *
-          </label>
-          <input
-            type="text"
-            value={courseData.title}
-            onChange={(e) => setCourseData({...courseData, title: e.target.value})}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              errors.title ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="Например: WordPress для начинающих"
-          />
-          {errors.title && (
-            <p className="mt-1 text-sm text-red-500">{errors.title}</p>
-          )}
+    <div className="space-y-8">
+      {/* Красивый заголовок */}
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
+          <BookOpen className="w-8 h-8 text-white" />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Направление
-          </label>
-          <select
-            value={courseData.direction}
-            onChange={(e) => setCourseData({...courseData, direction: e.target.value})}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="WORDPRESS">WordPress</option>
-            <option value="VIBE_CODING">Vibe Coding</option>
-            <option value="SHOPIFY">Shopify</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Уровень
-          </label>
-          <select
-            value={courseData.level}
-            onChange={(e) => setCourseData({...courseData, level: e.target.value})}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="BEGINNER">Начальный</option>
-            <option value="INTERMEDIATE">Средний</option>
-            <option value="ADVANCED">Продвинутый</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Длительность (недель)
-          </label>
-          <input
-            type="number"
-            value={courseData.duration}
-            onChange={(e) => setCourseData({...courseData, duration: parseInt(e.target.value) || 4})}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            min="1"
-            max="52"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Цена (₽)
-          </label>
-          <input
-            type="number"
-            value={courseData.price}
-            onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            min="0"
-          />
-        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Создайте свой курс</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">Заполните основную информацию о вашем курсе. Это поможет студентам понять, что их ждет</p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Описание курса *
-        </label>
-        <textarea
-          value={courseData.description}
-          onChange={(e) => setCourseData({...courseData, description: e.target.value})}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 h-32 ${
-            errors.description ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Подробное описание курса..."
-        />
-        {errors.description && (
-          <p className="mt-1 text-sm text-red-500">{errors.description}</p>
-        )}
+      {/* Основная форма */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Название курса */}
+          <div className="lg:col-span-2">
+            <div className="relative">
+              <label className="block text-sm font-semibold text-gray-800 mb-3">
+                📚 Название курса *
+              </label>
+              <input
+                type="text"
+                value={courseData.title}
+                onChange={(e) => setCourseData({...courseData, title: e.target.value})}
+                className={`w-full px-6 py-4 text-lg border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 ${
+                  errors.title ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+                placeholder="Например: WordPress для начинающих"
+              />
+              {errors.title && (
+                <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                  <span className="text-red-500">⚠️</span>
+                  {errors.title}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Направление */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              🎯 Направление
+            </label>
+            <select
+              value={courseData.direction}
+              onChange={(e) => setCourseData({...courseData, direction: e.target.value})}
+              className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900"
+            >
+              <option value="WORDPRESS">🌐 WordPress</option>
+              <option value="VIBE_CODING">💻 Vibe Coding</option>
+              <option value="SHOPIFY">🛍️ Shopify</option>
+            </select>
+          </div>
+
+          {/* Уровень */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              📈 Уровень сложности
+            </label>
+            <select
+              value={courseData.level}
+              onChange={(e) => setCourseData({...courseData, level: e.target.value})}
+              className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900"
+            >
+              <option value="BEGINNER">🌱 Начальный</option>
+              <option value="INTERMEDIATE">🔥 Средний</option>
+              <option value="ADVANCED">⚡ Продвинутый</option>
+            </select>
+          </div>
+
+          {/* Длительность */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              ⏱️ Длительность (недель)
+            </label>
+            <input
+              type="number"
+              value={courseData.duration}
+              onChange={(e) => setCourseData({...courseData, duration: parseInt(e.target.value) || 4})}
+              className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
+              min="1"
+              max="52"
+              placeholder="4"
+            />
+          </div>
+
+          {/* Цена */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              💰 Цена (₽)
+            </label>
+            <input
+              type="number"
+              value={courseData.price}
+              onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
+              className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
+              min="0"
+              placeholder="0"
+            />
+          </div>
+
+          {/* Описание */}
+          <div className="lg:col-span-2">
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
+              📝 Описание курса *
+            </label>
+            <textarea
+              value={courseData.description}
+              onChange={(e) => setCourseData({...courseData, description: e.target.value})}
+              className={`w-full px-6 py-4 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 h-32 resize-none ${
+                errors.description ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+              }`}
+              placeholder="Расскажите подробно о курсе, что изучат студенты, какие навыки получат..."
+            />
+            {errors.description && (
+              <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
+                <span className="text-red-500">⚠️</span>
+                {errors.description}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Дополнительные поля */}
@@ -519,56 +545,83 @@ export default function CourseBuilder() {
 
   // Рендер шага "Структура"
   const renderStructureStep = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Структура курса</h2>
+    <div className="space-y-8">
+      {/* Красивый заголовок */}
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4">
+          <FileText className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Структура курса</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">Разбейте ваш курс на модули и уроки. Логичная структура поможет студентам лучше усваивать материал</p>
+      </div>
+
+      {/* Кнопка добавления модуля */}
+      <div className="text-center">
         <button
           onClick={addModule}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
-          <Plus className="w-4 h-4" />
-          Добавить модуль
+          <Plus className="w-5 h-5" />
+          <span className="font-semibold">Добавить модуль</span>
         </button>
       </div>
 
       {errors.modules && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {errors.modules}
+        <div className="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-2xl flex items-center gap-3">
+          <span className="text-red-500 text-xl">⚠️</span>
+          <span className="font-medium">{errors.modules}</span>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {modules.map((module, moduleIndex) => (
-          <div key={module.id} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start gap-4">
-              <div className="cursor-move text-gray-400 hover:text-gray-600 pt-1">
-                <GripVertical className="w-5 h-5" />
+          <div key={module.id} className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200">
+            <div className="flex items-start gap-6">
+              {/* Номер модуля и перетаскивание */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                  {moduleIndex + 1}
+                </div>
+                <div className="cursor-move text-gray-400 hover:text-gray-600">
+                  <GripVertical className="w-5 h-5" />
+                </div>
               </div>
               
-              <div className="flex-1 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    value={module.title}
-                    onChange={(e) => {
-                      const updatedModules = [...modules]
-                      updatedModules[moduleIndex].title = e.target.value
-                      setModules(updatedModules)
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Название модуля"
-                  />
-                  <input
-                    type="text"
-                    value={module.description}
-                    onChange={(e) => {
-                      const updatedModules = [...modules]
-                      updatedModules[moduleIndex].description = e.target.value
-                      setModules(updatedModules)
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Описание модуля"
-                  />
+              <div className="flex-1 space-y-6">
+                {/* Заголовок и описание модуля */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      📚 Название модуля
+                    </label>
+                    <input
+                      type="text"
+                      value={module.title}
+                      onChange={(e) => {
+                        const updatedModules = [...modules]
+                        updatedModules[moduleIndex].title = e.target.value
+                        setModules(updatedModules)
+                      }}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-gray-300 transition-all duration-200"
+                      placeholder="Например: Основы WordPress"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      📝 Описание модуля
+                    </label>
+                    <input
+                      type="text"
+                      value={module.description}
+                      onChange={(e) => {
+                        const updatedModules = [...modules]
+                        updatedModules[moduleIndex].description = e.target.value
+                        setModules(updatedModules)
+                      }}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 hover:border-gray-300 transition-all duration-200"
+                      placeholder="Краткое описание содержания"
+                    />
+                  </div>
                 </div>
 
                 {errors[`module_${module.id}`] && (
@@ -842,9 +895,6 @@ export default function CourseBuilder() {
                     placeholder="Авто"
                     min="1"
                   />
-                  <div className="mt-2 text-xs text-gray-600 text-center">
-                    <p>💡 Авто-определение по контенту</p>
-                  </div>
                 </div>
               </div>
 
