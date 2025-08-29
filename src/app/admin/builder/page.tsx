@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import LessonContentBuilder from '@/components/admin/LessonContentBuilder'
 import ChecklistSelector from '@/components/admin/ChecklistSelector'
+import LectureSelector from '@/components/admin/LectureSelector'
 
 // Типы для курса
 interface CourseData {
@@ -815,17 +816,7 @@ export default function CourseBuilder() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Информация об уроке
-                  </label>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-700">
-                      💡 Урок поддерживает все типы контента: текст, видео, изображения, код, чеклисты и файлы. 
-                      Выберите нужные блоки при создании урока.
-                    </p>
-                  </div>
-                </div>
+
               </div>
 
               {/* Описание */}
@@ -859,7 +850,7 @@ export default function CourseBuilder() {
                     const updatedModules = [...modules]
                     const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
                     const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].duration = parseInt(e.target.value) || null
+                    updatedModules[moduleIndex].lessons[lessonIndex].duration = parseInt(e.target.value) || undefined
                     setModules(updatedModules)
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -871,48 +862,24 @@ export default function CourseBuilder() {
                 </div>
               </div>
 
-              {/* Выбор лекции для любого типа урока */}
+              {/* Выбор лекции (опционально) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Прикрепить лекцию (опционально)
                 </label>
-                <select
-                  value={currentLesson.lectureId || ''}
-                  onChange={(e) => {
+                <LectureSelector
+                  selectedLectureId={currentLesson.lectureId}
+                  onLectureSelect={(lectureId) => {
                     const updatedModules = [...modules]
                     const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
                     const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].lectureId = e.target.value || undefined
+                    updatedModules[moduleIndex].lessons[lessonIndex].lectureId = lectureId || undefined
                     setModules(updatedModules)
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Без лекции</option>
-                  {lectures.map((lecture) => (
-                    <option key={lecture.id} value={lecture.id}>
-                      {lecture.title}
-                    </option>
-                  ))}
-                </select>
-                {currentLesson.lectureId && (
-                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>Прикреплена лекция:</strong> {lectures.find(l => l.id === currentLesson.lectureId)?.title}
-                    </p>
-                    {lectures.find(l => l.id === currentLesson.lectureId)?.description && (
-                      <p className="text-xs text-blue-600 mt-1">
-                        {lectures.find(l => l.id === currentLesson.lectureId)?.description}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {lectures.length === 0 && (
-                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      Лекции не найдены. <a href="/admin/lectures/create" className="text-blue-600 hover:underline">Создать новую лекцию</a>
-                    </p>
-                  </div>
-                )}
+                />
+                <div className="mt-2 text-xs text-gray-600">
+                  <p>💡 Выберите готовую лекцию или создайте новую для дополнительного материала</p>
+                </div>
               </div>
 
               {/* Выбор чеклиста (опционально) */}
