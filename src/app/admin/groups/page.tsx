@@ -307,90 +307,99 @@ export default function GroupsManagement() {
             </h2>
           </div>
 
-          <div className="divide-y divide-gray-100">
             {filteredGroups.map(group => (
-              <div key={group.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={group.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-emerald-200 relative overflow-hidden">
+                {/* Декоративный элемент */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-bold text-gray-900 text-lg">{group.name}</h3>
-                      {group.isActive ? (
-                        <span className="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full font-medium">
-                          Активна
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full font-medium">
-                          Неактивна
-                        </span>
-                      )}
-                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${getTypeColor(group.type)}`}>
-                        {getTypeLabel(group.type)}
-                      </span>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 text-lg group-hover:text-emerald-700 transition-colors">{group.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          {group.isActive ? (
+                            <span className="px-3 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full font-medium shadow-sm">
+                              Активна
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 text-xs bg-amber-100 text-amber-800 rounded-full font-medium shadow-sm">
+                              Неактивна
+                            </span>
+                          )}
+                          <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${getTypeColor(group.type)}`}>
+                            {getTypeLabel(group.type)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                     
                     {group.description && (
-                      <p className="text-gray-600 mb-3">{group.description}</p>
+                      <p className="text-gray-600 mb-4 group-hover:text-gray-700 transition-colors leading-relaxed">{group.description}</p>
                     )}
                     
                     {/* Характеристики группы */}
-                    <div className="flex gap-6 text-sm text-gray-500 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{group._count?.students || 0} / {group.maxStudents} студентов</span>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 px-3 py-2 rounded-lg group-hover:from-blue-100 group-hover:to-cyan-100 transition-colors">
+                        <Users className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium">{group._count?.students || 0} / {group.maxStudents} студентов</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="w-4 h-4" />
-                        <span>{group._count?.courses || 0} курсов</span>
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 rounded-lg group-hover:from-purple-100 group-hover:to-pink-100 transition-colors">
+                        <BookOpen className="w-4 h-4 text-purple-500" />
+                        <span className="font-medium">{group._count?.courses || 0} курсов</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>Начало: {formatDate(group.startDate)}</span>
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-lg group-hover:from-green-100 group-hover:to-emerald-100 transition-colors">
+                        <Calendar className="w-4 h-4 text-green-500" />
+                        <span className="font-medium">Начало: {formatDate(group.startDate)}</span>
                       </div>
                       {group.endDate && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>Конец: {formatDate(group.endDate)}</span>
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-yellow-50 px-3 py-2 rounded-lg group-hover:from-orange-100 group-hover:to-yellow-100 transition-colors">
+                          <Clock className="w-4 h-4 text-orange-500" />
+                          <span className="font-medium">Конец: {formatDate(group.endDate)}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Действия */}
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => router.push(`/admin/groups/${group.id}/edit`)}
-                      className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
+                      className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
                       title="Редактировать"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-5 h-5" />
                     </button>
                     
                     <button
                       onClick={() => router.push(`/admin/groups/${group.id}`)}
-                      className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all duration-200 hover:scale-110"
+                      className="w-12 h-12 flex items-center justify-center text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-emerald-200 hover:border-emerald-600 backdrop-blur-sm"
                       title="Просмотр группы"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-5 h-5" />
                     </button>
 
                     <button
                       onClick={() => toggleGroupStatus(group.id, group.isActive)}
-                      className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
+                      className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 backdrop-blur-sm ${
                         group.isActive 
-                          ? 'text-amber-600 hover:bg-amber-100' 
-                          : 'text-emerald-600 hover:bg-emerald-100'
+                          ? 'text-amber-600 hover:text-white hover:bg-amber-600 border-amber-200 hover:border-amber-600' 
+                          : 'text-emerald-600 hover:text-white hover:bg-emerald-600 border-emerald-200 hover:border-emerald-600'
                       }`}
                       title={group.isActive ? 'Деактивировать' : 'Активировать'}
                     >
-                      {group.isActive ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                      {group.isActive ? <AlertCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
                     </button>
                     
                     <button
                       onClick={() => deleteGroup(group.id)}
-                      className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200 hover:scale-110"
+                      className="w-12 h-12 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-red-200 hover:border-red-600 backdrop-blur-sm"
                       title="Удалить"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
