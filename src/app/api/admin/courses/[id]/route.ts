@@ -452,9 +452,93 @@ export async function DELETE(
       )
     }
 
-    // Удаляем курс (каскадно удалятся и все модули, уроки, задания)
-    await prisma.course.delete({
-      where: { id: (await params).id }
+    // Удаляем курс и все связанные записи вручную
+    const courseId = (await params).id
+    
+    console.log('Начинаем удаление курса:', courseId)
+    
+    await prisma.$transaction(async (tx) => {
+      // 1. Удаляем записи прогресса уроков
+      await tx.lessonProgress.deleteMany({
+        where: {
+          lesson: {
+            module: {
+              courseId: courseId
+            }
+          }
+        }
+      })
+      
+      // 2. Удаляем квизы
+      await tx.quiz.deleteMany({
+        where: {
+          lesson: {
+            module: {
+              courseId: courseId
+            }
+          }
+        }
+      })
+      
+      // 3. Удаляем сабмишены заданий
+      await tx.submission.deleteMany({
+        where: {
+          assignment: {
+            module: {
+              courseId: courseId
+            }
+          }
+        }
+      })
+      
+      // 4. Удаляем задания
+      await tx.assignment.deleteMany({
+        where: {
+          module: {
+            courseId: courseId
+          }
+        }
+      })
+      
+      // 5. Удаляем уроки
+      await tx.lesson.deleteMany({
+        where: {
+          module: {
+            courseId: courseId
+          }
+        }
+      })
+      
+      // 6. Удаляем модули
+      await tx.module.deleteMany({
+        where: {
+          courseId: courseId
+        }
+      })
+      
+      // 7. Удаляем записи о зачислениях
+      await tx.enrollment.deleteMany({
+        where: {
+          courseId: courseId
+        }
+      })
+      
+      // 8. Удаляем сообщения курса
+      await tx.message.deleteMany({
+        where: {
+          courseId: courseId
+        }
+      })
+      
+      // 9. Удаляем связи с группами (уже есть onDelete: Cascade)
+      // GroupCourse и Event удалятся автоматически
+      
+      // 10. Наконец, удаляем сам курс
+      await tx.course.delete({
+        where: { id: courseId }
+      })
+      
+      console.log('Курс успешно удален:', courseId)
     })
 
     return NextResponse.json({ message: 'Курс успешно удален' })
