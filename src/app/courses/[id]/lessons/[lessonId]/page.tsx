@@ -13,6 +13,13 @@ interface Lesson {
   duration: number
   order: number
   videoUrl?: string
+  lectureId?: string | null
+  lecture?: {
+    id: string
+    title: string
+    description?: string | null
+    content: any[]
+  } | null
   module: {
     id: string
     title: string
@@ -177,6 +184,8 @@ export default function LessonStudyPage() {
     return `${mins}м`
   }
 
+
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -312,6 +321,60 @@ export default function LessonStudyPage() {
                   onEnded={handleVideoEnded}
                   className="w-full"
                 />
+              </div>
+            )}
+
+            {/* Лекция */}
+            {lesson.lecture && (
+              <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="bg-cyan-100 text-cyan-800 p-3 rounded-lg mr-4">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        {lesson.lecture.title}
+                      </h2>
+                      {lesson.lecture.description && (
+                        <p className="text-gray-600 mt-1">{lesson.lecture.description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/lectures/${lesson.lecture.id}`}
+                    className="inline-flex items-center px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Открыть лекцию
+                  </Link>
+                </div>
+                
+                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-cyan-800">
+                        Лекция доступна для изучения
+                      </h3>
+                      <div className="mt-2 text-sm text-cyan-700">
+                        <p>
+                          К этому уроку прикреплена лекция с дополнительными материалами. 
+                          Нажмите "Открыть лекцию" для полного изучения контента.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

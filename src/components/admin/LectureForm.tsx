@@ -36,6 +36,7 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
   const [thumbnail, setThumbnail] = useState(lecture?.thumbnail || '');
   const [isActive, setIsActive] = useState(lecture?.isActive ?? true);
   const [blocks, setBlocks] = useState<LectureBlock[]>(lecture?.content || []);
+  const [showBlockSelector, setShowBlockSelector] = useState(false);
 
   const addBlock = (type: LectureBlock['type']) => {
     const newBlock: LectureBlock = {
@@ -44,6 +45,11 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
       content: '',
     };
     setBlocks([...blocks, newBlock]);
+    setShowBlockSelector(false);
+  };
+
+  const showBlockTypeSelector = () => {
+    setShowBlockSelector(true);
   };
 
   const updateBlock = (id: string, updates: Partial<LectureBlock>) => {
@@ -371,18 +377,8 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
 
           {/* Контент лекции */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Контент лекции</h2>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => addBlock('text')}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Plus size={16} />
-                  Добавить блок
-                </button>
-              </div>
             </div>
 
             {blocks.length === 0 ? (
@@ -446,6 +442,47 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
                     {renderBlock(block)}
                   </div>
                 ))}
+
+                {/* Кнопка добавления блока в конце списка */}
+                <div className="pt-4">
+                  <button
+                    type="button"
+                    onClick={showBlockTypeSelector}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  >
+                    <Plus size={20} />
+                    Добавить блок
+                  </button>
+                </div>
+
+                {/* Селектор типа блока */}
+                {showBlockSelector && (
+                  <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-medium text-gray-900">Выберите тип блока:</h3>
+                      <button
+                        type="button"
+                        onClick={() => setShowBlockSelector(false)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(['text', 'image', 'file', 'video', 'link', 'code'] as const).map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => addBlock(type)}
+                          className="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                        >
+                          {getBlockIcon(type)}
+                          {getBlockTitle(type)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

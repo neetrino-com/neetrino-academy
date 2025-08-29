@@ -7,6 +7,12 @@ interface Lesson {
   title: string
   duration: number
   order: number
+  lectureId?: string | null
+  lecture?: {
+    id: string
+    title: string
+    description?: string | null
+  } | null
 }
 
 interface Module {
@@ -75,6 +81,11 @@ export function ModuleList({ modules, courseId, isEnrolled }: ModuleListProps) {
                           <span className="text-sm text-gray-900">
                             {lesson.title}
                           </span>
+                          {lesson.lecture && (
+                            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800" title={`Лекция: ${lesson.lecture.title}`}>
+                              📄 Лекция
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center space-x-3">
                           <span className="text-xs text-gray-500">

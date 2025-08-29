@@ -21,7 +21,15 @@ export async function GET(
                 id: true,
                 title: true,
                 duration: true,
-                order: true
+                order: true,
+                lectureId: true,
+                lecture: {
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true
+                  }
+                }
               }
             },
             _count: {

@@ -36,7 +36,7 @@ interface Lesson {
   title: string
   description: string
   content: string
-  type: 'video' | 'text' | 'mixed' | 'lecture'
+  type: 'video' | 'text' | 'mixed'
   videoUrl?: string
   duration?: number
   order: number
@@ -636,14 +636,14 @@ export default function CourseBuilder() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm">{lesson.title}</span>
                       <div className="flex items-center gap-1">
-                        {lesson.type === 'lecture' && (
-                          <FileText className="w-3 h-3 text-cyan-600" />
+                        {lesson.lectureId && (
+                          <FileText className="w-3 h-3 text-cyan-600" title="Прикреплена лекция" />
                         )}
                         {lesson.hasAssignment && (
-                          <ClipboardList className="w-3 h-3 text-green-600" />
+                          <ClipboardList className="w-3 h-3 text-green-600" title="Есть задание" />
                         )}
                         {lesson.hasQuiz && (
-                          <TestTube className="w-3 h-3 text-purple-600" />
+                          <TestTube className="w-3 h-3 text-purple-600" title="Есть тест" />
                         )}
                       </div>
                     </div>
@@ -692,7 +692,7 @@ export default function CourseBuilder() {
                       const updatedModules = [...modules]
                       const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
                       const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed' | 'lecture'
+                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed'
                       setModules(updatedModules)
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -700,7 +700,6 @@ export default function CourseBuilder() {
                     <option value="text">Текстовый</option>
                     <option value="video">Видео</option>
                     <option value="mixed">Смешанный</option>
-                    <option value="lecture">Лекция</option>
                   </select>
                 </div>
               </div>
@@ -746,54 +745,52 @@ export default function CourseBuilder() {
                 </div>
               )}
 
-              {/* Выбор лекции если тип lecture */}
-              {currentLesson.type === 'lecture' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Выберите лекцию
-                  </label>
-                  <select
-                    value={currentLesson.lectureId || ''}
-                    onChange={(e) => {
-                      const updatedModules = [...modules]
-                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].lectureId = e.target.value || undefined
-                      setModules(updatedModules)
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Выберите лекцию...</option>
-                    {lectures.map((lecture) => (
-                      <option key={lecture.id} value={lecture.id}>
-                        {lecture.title}
-                      </option>
-                    ))}
-                  </select>
-                  {currentLesson.lectureId && (
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        <strong>Выбрана лекция:</strong> {lectures.find(l => l.id === currentLesson.lectureId)?.title}
+              {/* Выбор лекции для любого типа урока */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Прикрепить лекцию (опционально)
+                </label>
+                <select
+                  value={currentLesson.lectureId || ''}
+                  onChange={(e) => {
+                    const updatedModules = [...modules]
+                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                    updatedModules[moduleIndex].lessons[lessonIndex].lectureId = e.target.value || undefined
+                    setModules(updatedModules)
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Без лекции</option>
+                  {lectures.map((lecture) => (
+                    <option key={lecture.id} value={lecture.id}>
+                      {lecture.title}
+                    </option>
+                  ))}
+                </select>
+                {currentLesson.lectureId && (
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>Прикреплена лекция:</strong> {lectures.find(l => l.id === currentLesson.lectureId)?.title}
+                    </p>
+                    {lectures.find(l => l.id === currentLesson.lectureId)?.description && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        {lectures.find(l => l.id === currentLesson.lectureId)?.description}
                       </p>
-                      {lectures.find(l => l.id === currentLesson.lectureId)?.description && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          {lectures.find(l => l.id === currentLesson.lectureId)?.description}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {lectures.length === 0 && (
-                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <p className="text-sm text-yellow-800">
-                        Лекции не найдены. <a href="/admin/lectures/create" className="text-blue-600 hover:underline">Создать новую лекцию</a>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
+                {lectures.length === 0 && (
+                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      Лекции не найдены. <a href="/admin/lectures/create" className="text-blue-600 hover:underline">Создать новую лекцию</a>
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* Контент урока */}
-              {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && currentLesson.type !== 'lecture' && (
+              {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Содержание урока

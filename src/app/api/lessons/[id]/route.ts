@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { id: lessonId } = await params
 
-    // Получаем урок с информацией о модуле и курсе
+    // Получаем урок с информацией о модуле, курсе и лекции
     const lesson = await prisma.lesson.findUnique({
       where: { id: lessonId },
       include: {
@@ -20,6 +20,14 @@ export async function GET(
                 title: true
               }
             }
+          }
+        },
+        lecture: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            content: true
           }
         }
       }
