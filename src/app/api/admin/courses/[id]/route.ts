@@ -11,6 +11,8 @@ const updateCourseSchema = z.object({
     level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
     price: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
     duration: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) || 4 : val).optional(),
+    durationUnit: z.enum(['days', 'weeks', 'months']).optional(),
+    currency: z.enum(['RUB', 'USD', 'AMD']).optional(),
     tags: z.array(z.string()).optional(),
     prerequisites: z.array(z.string()).optional(),
     learningOutcomes: z.array(z.string()).optional(),
@@ -210,6 +212,9 @@ export async function PUT(
       direction: validatedData.courseData.direction,
       level: validatedData.courseData.level,
       price: validatedData.courseData.price || 0,
+      duration: validatedData.courseData.duration || existingCourse.duration,
+      durationUnit: validatedData.courseData.durationUnit || existingCourse.durationUnit || 'weeks',
+      currency: validatedData.courseData.currency || existingCourse.currency || 'RUB',
       isDraft: validatedData.courseData.isDraft !== undefined ? validatedData.courseData.isDraft : existingCourse.isDraft,
       isActive: validatedData.courseData.isActive !== undefined ? validatedData.courseData.isActive : existingCourse.isActive
     }
