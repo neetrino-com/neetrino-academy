@@ -413,27 +413,36 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         {/* Правая панель - Контент чеклиста */}
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
-          <div className="border-2 border-dashed border-amber-300 rounded-2xl p-6 mb-6 bg-amber-50/30 hover:border-amber-400 hover:bg-amber-50/50 transition-all duration-300">
-            <div className="space-y-4">
-              <div className="text-center">
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full text-center px-4 py-3 text-2xl font-bold border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:outline-none bg-transparent placeholder-amber-400/70"
-                  placeholder="Название чеклиста"
-                  required
-                />
-              </div>
-              
-              <div className="text-center">
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={2}
-                  className="w-full text-center px-4 py-2 text-sm text-gray-600 border-0 focus:outline-none bg-transparent placeholder-amber-300/60 resize-none"
-                  placeholder="Добавьте описание чеклиста"
-                />
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-6">
+            <div className="bg-gradient-to-r from-amber-500 to-yellow-500 h-1"></div>
+            <div className="p-6">
+              <div className="space-y-5">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-4 py-3 text-lg font-semibold border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all bg-gray-50 focus:bg-white"
+                    placeholder="Название чеклиста"
+                    required
+                  />
+                  <div className="absolute top-0 right-3 -mt-2">
+                    <span className="bg-white px-2 text-xs text-amber-600 font-medium">ОБЯЗАТЕЛЬНО</span>
+                  </div>
+                </div>
+                
+                <div className="relative">
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                    className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl focus:border-gray-400 focus:ring-4 focus:ring-gray-100 transition-all bg-gray-50 focus:bg-white resize-none"
+                    placeholder="Описание чеклиста"
+                  />
+                  <div className="absolute top-0 right-3 -mt-2">
+                    <span className="bg-white px-2 text-xs text-gray-500">ОПЦИОНАЛЬНО</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
