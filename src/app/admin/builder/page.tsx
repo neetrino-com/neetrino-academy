@@ -1331,11 +1331,7 @@ export default function CourseBuilder() {
                                   {lesson.description}
                                 </p>
                               )}
-                              {existingQuiz && (
-                                <div className="text-xs text-purple-600 mt-1 font-medium">
-                                  📝 {existingQuiz.title}
-                                </div>
-                              )}
+
                             </div>
                           </div>
                           
