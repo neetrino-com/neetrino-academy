@@ -33,7 +33,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const data = await request.json()
+    let data
+    try {
+      data = await request.json()
+    } catch (parseError) {
+      console.error('Ошибка парсинга JSON:', parseError)
+      return NextResponse.json(
+        { error: 'Неверный формат данных JSON' },
+        { status: 400 }
+      )
+    }
+    
     const { courseData, modules } = data
     
     // Подробное логирование входящих данных
@@ -70,7 +80,7 @@ export async function POST(request: NextRequest) {
         slug: courseData.title.toLowerCase().replace(/\s+/g, '-'),
         direction: courseData.direction,
         level: courseData.level,
-        price: new Decimal(courseData.price || 0),
+        price: courseData.price ? new Decimal(courseData.price.toString()) : new Decimal(0),
         duration: courseData.duration || 4,
         durationUnit: courseData.durationUnit || 'weeks',
         currency: courseData.currency || 'RUB',
@@ -79,17 +89,43 @@ export async function POST(request: NextRequest) {
         createdBy: user.id
       }
       
+      // Дополнительная валидация перед созданием
+      if (!courseCreateData.title || courseCreateData.title.length < 3) {
+        throw new Error('Название курса должно содержать минимум 3 символа')
+      }
+      
+      if (!['WORDPRESS', 'VIBE_CODING', 'SHOPIFY'].includes(courseCreateData.direction)) {
+        throw new Error(`Неверное направление курса: ${courseCreateData.direction}`)
+      }
+      
+      if (!['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].includes(courseCreateData.level)) {
+        throw new Error(`Неверный уровень курса: ${courseCreateData.level}`)
+      }
+      
       console.log('Данные для создания курса:', JSON.stringify(courseCreateData, null, 2))
       
-      // Создаём курс
-      const newCourse = await tx.course.create({
-        data: courseCreateData,
-        include: {
-          creator: true
-        }
-      })
+      // Проверяем базу данных перед созданием
+      console.log('Проверяем подключение к БД...')
+      const testConnection = await tx.user.findFirst()
+      console.log('Подключение к БД успешно, найден пользователь:', testConnection ? 'да' : 'нет')
       
-      console.log('Курс создан успешно, ID:', newCourse.id)
+      // Создаём курс
+      console.log('Пытаемся создать курс...')
+      let newCourse
+      try {
+        newCourse = await tx.course.create({
+          data: courseCreateData,
+          include: {
+            creator: true
+          }
+        })
+        console.log('Курс создан успешно, ID:', newCourse.id)
+      } catch (courseError) {
+        console.error('=== ОШИБКА СОЗДАНИЯ КУРСА ===')
+        console.error('Course creation error:', courseError)
+        console.error('Course data that failed:', courseCreateData)
+        throw courseError
+      }
 
       // Создаём модули с уроками
       for (let i = 0; i < modules.length; i++) {
@@ -118,7 +154,6 @@ export async function POST(request: NextRequest) {
                 title: lesson.title,
                 description: lesson.description || '',
                 content: lesson.content || null,
-                videoUrl: lesson.videoUrl || null,
                 duration: lesson.duration || null,
                 order: lesson.order,
                 moduleId: newModule.id,
@@ -165,18 +200,34 @@ export async function POST(request: NextRequest) {
     })
     
     // Проверяем тип ошибки для лучшей диагностики
-    if (error instanceof Error && error.message.includes('Prisma')) {
-      console.error('Это ошибка Prisma/БД')
+    if (error instanceof Error) {
+      if (error.message.includes('Prisma')) {
+        console.error('Это ошибка Prisma/БД')
+      }
+      if (error.message.includes('Unique constraint')) {
+        console.error('Ошибка уникальности - возможно курс с таким названием уже существует')
+        return NextResponse.json(
+          { error: 'Курс с таким названием уже существует' },
+          { status: 400 }
+        )
+      }
+      if (error.message.includes('Foreign key constraint')) {
+        console.error('Ошибка внешнего ключа - возможно связанная запись не найдена')
+        return NextResponse.json(
+          { error: 'Ошибка связи данных. Проверьте корректность выбранных элементов.' },
+          { status: 400 }
+        )
+      }
     }
     
     // Возвращаем более подробную информацию об ошибке
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       { 
-        error: 'Failed to create course', 
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Не удалось создать курс', 
+        details: errorMessage,
         type: error instanceof Error ? error.name : 'Unknown',
-        timestamp: new Date().toISOString(),
-        stack: error instanceof Error ? error.stack : undefined
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     )

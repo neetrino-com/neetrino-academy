@@ -6,7 +6,7 @@ import { z } from 'zod'
 const updateCourseSchema = z.object({
   courseData: z.object({
     title: z.string().min(3, 'Название должно содержать минимум 3 символа'),
-    description: z.string().min(5, 'Описание должно содержать минимум 5 символов'),
+    description: z.string().min(1, 'Описание обязательно'),
     direction: z.enum(['WORDPRESS', 'VIBE_CODING', 'SHOPIFY']),
     level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
     price: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseFloat(val) || 0 : val).optional(),
@@ -27,9 +27,8 @@ const updateCourseSchema = z.object({
     lessons: z.array(z.object({
       id: z.string(),
       title: z.string(),
-      content: z.string().optional().default(''),
+      content: z.string().nullable().optional().default(null),
       type: z.enum(['video', 'text', 'mixed', 'lecture']).optional().default('text'),
-      videoUrl: z.string().nullable().optional().default(null),
       duration: z.number().nullable().optional().default(null),
       order: z.number(),
       lectureId: z.string().nullable().optional().default(null)
@@ -278,8 +277,7 @@ export async function PUT(
               where: { id: lessonData.id },
               data: {
                 title: lessonData.title,
-                content: lessonData.content || '',
-                videoUrl: lessonData.videoUrl || null,
+                content: lessonData.content || null,
                 duration: lessonData.duration || null,
                 order: lessonData.order,
                 lectureId: lessonData.lectureId || null
@@ -290,8 +288,7 @@ export async function PUT(
             await prisma.lesson.create({
               data: {
                 title: lessonData.title,
-                content: lessonData.content || '',
-                videoUrl: lessonData.videoUrl || null,
+                content: lessonData.content || null,
                 duration: lessonData.duration || null,
                 order: lessonData.order,
                 moduleId: module.id,
@@ -372,17 +369,48 @@ export async function PUT(
 
     return NextResponse.json(updatedCourse)
   } catch (error) {
-    console.error('Ошибка обновления курса:', error)
+    console.error('=== PUT COURSE ERROR ===')
+    console.error('Course update error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown'
+    })
     
     if (error instanceof z.ZodError) {
+      console.error('Ошибка валидации Zod:', error.issues)
       return NextResponse.json(
         { error: 'Неверные данные', details: error.issues },
         { status: 400 }
       )
     }
 
+    // Проверяем специфичные ошибки базы данных
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        console.error('Ошибка уникальности - курс с таким названием уже существует')
+        return NextResponse.json(
+          { error: 'Курс с таким названием уже существует' },
+          { status: 400 }
+        )
+      }
+      if (error.message.includes('Foreign key constraint')) {
+        console.error('Ошибка внешнего ключа')
+        return NextResponse.json(
+          { error: 'Ошибка связи данных. Проверьте корректность выбранных элементов.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Внутренняя ошибка сервера' },
+      { 
+        error: 'Не удалось обновить курс',
+        details: errorMessage,
+        type: error instanceof Error ? error.name : 'Unknown',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }

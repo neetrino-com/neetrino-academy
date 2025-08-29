@@ -1853,9 +1853,34 @@ export default function CourseBuilder() {
         )
         router.push('/admin')
       } else {
-        const errorData = await response.json()
-        console.error('Ошибка сервера:', errorData)
-        throw new Error(errorData.error || 'Ошибка сохранения')
+        // Улучшенная обработка ошибок
+        console.error('Ошибка HTTP:', response.status, response.statusText)
+        
+        let errorData: any = {}
+        let errorMessage = 'Ошибка сохранения курса'
+        
+        try {
+          // Проверяем, есть ли content-type
+          const contentType = response.headers.get('content-type')
+          console.log('Content-Type ответа:', contentType)
+          
+          if (contentType && contentType.includes('application/json')) {
+            errorData = await response.json()
+            console.log('Данные ошибки:', errorData)
+            errorMessage = errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`
+          } else {
+            // Если ответ не JSON, получаем текст
+            const errorText = await response.text()
+            console.log('Текст ошибки:', errorText)
+            errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
+          }
+        } catch (parseError) {
+          console.error('Ошибка парсинга ответа сервера:', parseError)
+          errorMessage = `Ошибка сервера (${response.status}): Не удалось обработать ответ`
+        }
+        
+        console.error('Финальная ошибка для пользователя:', errorMessage)
+        throw new Error(errorMessage)
       }
     } catch (error) {
       console.error('Ошибка сохранения:', error)
