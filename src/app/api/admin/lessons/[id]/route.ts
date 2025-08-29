@@ -8,7 +8,8 @@ const updateLessonSchema = z.object({
   content: z.string().optional(),
   videoUrl: z.string().url().optional().or(z.literal('')),
   duration: z.number().min(0, 'Длительность не может быть отрицательной'),
-  order: z.number().min(1, 'Порядок должен быть больше 0')
+  order: z.number().min(1, 'Порядок должен быть больше 0'),
+  lectureId: z.string().optional()
 })
 
 // GET /api/admin/lessons/[id] - получение урока
@@ -47,6 +48,13 @@ export async function GET(
                 slug: true
               }
             }
+          }
+        },
+        lecture: {
+          select: {
+            id: true,
+            title: true,
+            description: true
           }
         }
       }
@@ -116,7 +124,8 @@ export async function PUT(
         content: validatedData.content,
         videoUrl: validatedData.videoUrl || null,
         duration: validatedData.duration,
-        order: validatedData.order
+        order: validatedData.order,
+        lectureId: validatedData.lectureId || null
       },
       include: {
         module: {
@@ -128,6 +137,13 @@ export async function PUT(
                 slug: true
               }
             }
+          }
+        },
+        lecture: {
+          select: {
+            id: true,
+            title: true,
+            description: true
           }
         }
       }

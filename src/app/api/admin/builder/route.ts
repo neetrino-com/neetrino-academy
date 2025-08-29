@@ -118,7 +118,8 @@ export async function POST(request: NextRequest) {
                 videoUrl: lesson.videoUrl || null,
                 duration: lesson.duration || null,
                 order: lesson.order,
-                moduleId: newModule.id
+                moduleId: newModule.id,
+                lectureId: lesson.lectureId || null
               }
             })
           }

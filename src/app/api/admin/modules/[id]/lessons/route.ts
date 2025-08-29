@@ -8,7 +8,8 @@ const createLessonSchema = z.object({
   content: z.string().optional(),
   videoUrl: z.string().url().optional().or(z.literal('')),
   duration: z.number().min(0, 'Длительность не может быть отрицательной'),
-  order: z.number().min(1, 'Порядок должен быть больше 0')
+  order: z.number().min(1, 'Порядок должен быть больше 0'),
+  lectureId: z.string().optional()
 })
 
 // GET /api/admin/modules/[id]/lessons - получение уроков модуля
@@ -50,6 +51,15 @@ export async function GET(
     // Получаем уроки модуля
     const lessons = await prisma.lesson.findMany({
       where: { moduleId: (await params).id },
+      include: {
+        lecture: {
+          select: {
+            id: true,
+            title: true,
+            description: true
+          }
+        }
+      },
       orderBy: { order: 'asc' }
     })
 
@@ -119,7 +129,8 @@ export async function POST(
         videoUrl: validatedData.videoUrl || null,
         duration: validatedData.duration,
         order: validatedData.order,
-        moduleId: (await params).id
+        moduleId: (await params).id,
+        lectureId: validatedData.lectureId || null
       },
       include: {
         module: {

@@ -26,6 +26,7 @@ interface DashboardStats {
   totalStudents: number
   totalTests: number
   totalGroups: number
+  totalLectures: number
   activeCourses: number
   draftCourses: number
   completedTests: number
@@ -41,6 +42,7 @@ export default function AdminDashboard() {
     totalStudents: 0,
     totalTests: 0,
     totalGroups: 0,
+    totalLectures: 0,
     activeCourses: 0,
     draftCourses: 0,
     completedTests: 0,
@@ -63,21 +65,24 @@ export default function AdminDashboard() {
       setLoading(true)
       
       // Загружаем статистику параллельно
-      const [coursesRes, testsRes, groupsRes] = await Promise.all([
+      const [coursesRes, testsRes, groupsRes, lecturesRes] = await Promise.all([
         fetch('/api/admin/courses'),
         fetch('/api/admin/quizzes'),
-        fetch('/api/admin/groups')
+        fetch('/api/admin/groups'),
+        fetch('/api/admin/lectures')
       ])
       
       const coursesData = coursesRes.ok ? await coursesRes.json() : []
       const testsData = testsRes.ok ? await testsRes.json() : []
       const groupsData = groupsRes.ok ? await groupsRes.json() : []
+      const lecturesData = lecturesRes.ok ? await lecturesRes.json() : { lectures: [] }
       
       setStats({
         totalCourses: coursesData.length,
         totalStudents: coursesData.reduce((acc: number, c: any) => acc + (c._count?.enrollments || 0), 0),
         totalTests: testsData.length,
         totalGroups: groupsData.length,
+        totalLectures: lecturesData.lectures?.length || 0,
         activeCourses: coursesData.filter((c: any) => c.isActive && !c.isDraft).length,
         draftCourses: coursesData.filter((c: any) => c.isDraft).length,
         completedTests: testsData.filter((t: any) => t.attempts?.length > 0).length,
@@ -202,6 +207,31 @@ export default function AdminDashboard() {
             <h3 className="text-xl font-bold text-slate-800 mb-3">Курсы</h3>
             <p className="text-slate-600 leading-relaxed">
               Управление образовательным контентом
+            </p>
+          </div>
+
+          {/* Управление лекциями */}
+          <div 
+            onClick={() => router.push('/admin/lectures')}
+            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-cyan-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="w-8 h-8 text-cyan-600" />
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-none">
+                    {stats.totalLectures}
+                  </p>
+                  <p className="text-xs text-cyan-600 font-medium mt-1">всего</p>
+                </div>
+              </div>
+              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-cyan-600 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Лекции</h3>
+            <p className="text-slate-600 leading-relaxed">
+              Создание и управление учебными материалами
             </p>
           </div>
 

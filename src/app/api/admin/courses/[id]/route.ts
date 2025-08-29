@@ -26,10 +26,11 @@ const updateCourseSchema = z.object({
        id: z.string(),
        title: z.string(),
        content: z.string().optional().default(''),
-       type: z.enum(['video', 'text', 'mixed']).optional().default('text'),
+       type: z.enum(['video', 'text', 'mixed', 'lecture']).optional().default('text'),
        videoUrl: z.string().nullable().optional().default(null),
        duration: z.number().nullable().optional().default(null),
-       order: z.number()
+       order: z.number(),
+       lectureId: z.string().nullable().optional().default(null)
      }))
   })).optional()
 })
@@ -223,7 +224,8 @@ export async function PUT(
                videoUrl: lessonData.videoUrl || null,
                duration: lessonData.duration || null,
                order: lessonData.order,
-               moduleId: module.id
+               moduleId: module.id,
+               lectureId: lessonData.lectureId || null
              }
            })
          }

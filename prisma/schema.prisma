@@ -32,6 +32,7 @@ model User {
   groupMessages  GroupMessage[]
   eventAttendees EventAttendee[]
   createdEvents  Event[]         @relation("EventCreator")
+  createdLectures Lecture[]      @relation("LectureCreator")
   auditLogs      AuditLog[]
 }
 
@@ -72,6 +73,20 @@ model Module {
   course      Course       @relation(fields: [courseId], references: [id])
 }
 
+model Lecture {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   // JSON с блоками контента
+  description String?
+  thumbnail   String?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  creator     User     @relation("LectureCreator", fields: [createdBy], references: [id])
+  lessons     Lesson[]
+}
+
 model Lesson {
   id        String           @id @default(cuid())
   title     String
@@ -80,9 +95,11 @@ model Lesson {
   duration  Int?
   order     Int
   moduleId  String
+  lectureId String?          // Связь с лекцией
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   module    Module           @relation(fields: [moduleId], references: [id])
+  lecture   Lecture?         @relation(fields: [lectureId], references: [id])
   progress  LessonProgress[]
   quiz      Quiz?
 }

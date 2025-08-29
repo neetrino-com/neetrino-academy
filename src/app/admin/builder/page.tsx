@@ -36,13 +36,14 @@ interface Lesson {
   title: string
   description: string
   content: string
-  type: 'video' | 'text' | 'mixed'
+  type: 'video' | 'text' | 'mixed' | 'lecture'
   videoUrl?: string
   duration?: number
   order: number
   files?: FileAttachment[]
   hasAssignment?: boolean
   hasQuiz?: boolean
+  lectureId?: string
 }
 
 interface FileAttachment {
@@ -124,6 +125,7 @@ export default function CourseBuilder() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isEditing, setIsEditing] = useState(false)
+  const [lectures, setLectures] = useState<Array<{id: string, title: string, description?: string}>>([])
 
   // Загрузка существующего курса для редактирования
   useEffect(() => {
@@ -131,6 +133,23 @@ export default function CourseBuilder() {
       loadExistingCourse()
     }
   }, [editCourseId])
+
+  // Загрузка лекций
+  useEffect(() => {
+    fetchLectures()
+  }, [])
+
+  const fetchLectures = async () => {
+    try {
+      const response = await fetch('/api/admin/lectures/list')
+      if (response.ok) {
+        const data = await response.json()
+        setLectures(data)
+      }
+    } catch (error) {
+      console.error('Error fetching lectures:', error)
+    }
+  }
 
   const loadExistingCourse = async () => {
     if (!editCourseId) return
@@ -617,6 +636,9 @@ export default function CourseBuilder() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm">{lesson.title}</span>
                       <div className="flex items-center gap-1">
+                        {lesson.type === 'lecture' && (
+                          <FileText className="w-3 h-3 text-cyan-600" />
+                        )}
                         {lesson.hasAssignment && (
                           <ClipboardList className="w-3 h-3 text-green-600" />
                         )}
@@ -670,7 +692,7 @@ export default function CourseBuilder() {
                       const updatedModules = [...modules]
                       const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
                       const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed'
+                      updatedModules[moduleIndex].lessons[lessonIndex].type = e.target.value as 'video' | 'text' | 'mixed' | 'lecture'
                       setModules(updatedModules)
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -678,6 +700,7 @@ export default function CourseBuilder() {
                     <option value="text">Текстовый</option>
                     <option value="video">Видео</option>
                     <option value="mixed">Смешанный</option>
+                    <option value="lecture">Лекция</option>
                   </select>
                 </div>
               </div>
@@ -723,8 +746,54 @@ export default function CourseBuilder() {
                 </div>
               )}
 
+              {/* Выбор лекции если тип lecture */}
+              {currentLesson.type === 'lecture' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Выберите лекцию
+                  </label>
+                  <select
+                    value={currentLesson.lectureId || ''}
+                    onChange={(e) => {
+                      const updatedModules = [...modules]
+                      const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                      const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                      updatedModules[moduleIndex].lessons[lessonIndex].lectureId = e.target.value || undefined
+                      setModules(updatedModules)
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Выберите лекцию...</option>
+                    {lectures.map((lecture) => (
+                      <option key={lecture.id} value={lecture.id}>
+                        {lecture.title}
+                      </option>
+                    ))}
+                  </select>
+                  {currentLesson.lectureId && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Выбрана лекция:</strong> {lectures.find(l => l.id === currentLesson.lectureId)?.title}
+                      </p>
+                      {lectures.find(l => l.id === currentLesson.lectureId)?.description && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          {lectures.find(l => l.id === currentLesson.lectureId)?.description}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {lectures.length === 0 && (
+                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        Лекции не найдены. <a href="/admin/lectures/create" className="text-blue-600 hover:underline">Создать новую лекцию</a>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Контент урока */}
-              {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && (
+              {(currentLesson.type === 'text' || currentLesson.type === 'mixed') && currentLesson.type !== 'lecture' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Содержание урока
