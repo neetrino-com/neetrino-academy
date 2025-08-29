@@ -295,38 +295,129 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
   return (
     <form onSubmit={handleSubmit} className="min-h-screen">
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Левая панель - Настройки и информация */}
-        <div className="xl:col-span-1 space-y-6">
+        {/* Левая панель - Статистика и кнопка */}
+        <div className="xl:col-span-1">
+          <div className="sticky top-24 z-20 space-y-6">
+            {/* Статистика */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-amber-600" />
+                Статистика
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Всего групп:</span>
+                  <span className="font-semibold text-amber-600">{formData.groups.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Всего пунктов:</span>
+                  <span className="font-semibold text-amber-600">
+                    {formData.groups.reduce((total, group) => total + group.items.length, 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Завершенных групп:</span>
+                  <span className="font-semibold text-green-600">{getCompletedGroups()}</span>
+                </div>
+                
+                {/* Прогресс */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Прогресс:</span>
+                    <span className="font-semibold text-amber-600">
+                      {formData.groups.length > 0 ? Math.round((getCompletedGroups() / formData.groups.length) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${formData.groups.length > 0 ? (getCompletedGroups() / formData.groups.length) * 100 : 0}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Кнопка сохранения */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <Save size={20} />
+                )}
+                {mode === 'create' ? 'Создать чеклист' : 'Сохранить изменения'}
+              </button>
+            </div>
+
+            {/* Переключатель активности */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${formData.isActive ? 'bg-green-500' : 'bg-gray-400'} transition-colors`}></div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900">Статус чеклиста</h4>
+                    <p className="text-xs text-gray-600">{formData.isActive ? 'Активен и доступен' : 'Неактивен'}</p>
+                  </div>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${
+                    formData.isActive ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      formData.isActive ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Правая панель - Контент чеклиста */}
+        <div className="xl:col-span-3">
           {/* Основная информация */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6 sticky top-24">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Edit3 className="w-5 h-5 text-amber-600" />
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200/60 p-4 mb-4">
+            <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Edit3 className="w-4 h-4 text-amber-600" />
               Основная информация
             </h3>
             
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Название чеклиста *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-amber-500 focus:border-transparent"
                   placeholder="Введите название"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Направление *
                 </label>
                 <select
                   value={formData.direction}
                   onChange={(e) => setFormData(prev => ({ ...prev, direction: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-amber-500 focus:border-transparent"
                 >
                   {directionOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -336,84 +427,23 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+
+              
+              <div className="md:col-span-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Описание
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  rows={2}
+                  className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-amber-500 focus:border-transparent resize-none"
                   placeholder="Опишите назначение"
                 />
               </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                  className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
-                  Активен
-                </label>
-              </div>
             </div>
           </div>
 
-          {/* Статистика */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-amber-600" />
-              Статистика
-            </h3>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Всего групп:</span>
-                <span className="font-semibold text-amber-600">{formData.groups.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Всего пунктов:</span>
-                <span className="font-semibold text-amber-600">{getTotalItems()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Завершенных групп:</span>
-                <span className="font-semibold text-emerald-600">{getCompletedGroups()}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-amber-500 to-yellow-500 h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${formData.groups.length > 0 ? (getCompletedGroups() / formData.groups.length) * 100 : 0}%` 
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Кнопка сохранения */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              ) : (
-                <Save size={20} />
-              )}
-              {mode === 'create' ? 'Создать чеклист' : 'Сохранить изменения'}
-            </button>
-          </div>
-        </div>
-
-        {/* Правая панель - Контент чеклиста */}
-        <div className="xl:col-span-3">
           {/* Панель инструментов */}
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-4 mb-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
