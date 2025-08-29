@@ -322,94 +322,99 @@ export default function CoursesManagement() {
             {filteredCourses.map(course => {
               const status = getStatusInfo(course)
               return (
-                <div key={course.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                <div key={course.id} className="group relative p-6 hover:bg-gradient-to-br hover:from-blue-50/50 hover:to-indigo-50/50 hover:border-l-4 hover:border-indigo-500 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-l-4 border-transparent">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-gray-900 text-lg">{course.title}</h3>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${status.color}`}>
+                        <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors">{course.title}</h3>
+                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${status.color}`}>
                           {status.label}
                         </span>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${getLevelColor(course.level)}`}>
+                        <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${getLevelColor(course.level)}`}>
                           {course.level}
                         </span>
                       </div>
                       
                       {course.description && (
-                        <p className="text-gray-600 mb-3">{course.description}</p>
+                        <p className="text-gray-600 mb-3 group-hover:text-gray-700 transition-colors">{course.description}</p>
                       )}
                       
                       {/* Характеристики курса */}
                       <div className="flex gap-6 text-sm text-gray-500 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Target className="w-4 h-4" />
+                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                          <Target className="w-4 h-4 text-indigo-500" />
                           <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-medium">
                             {course.direction}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          <span>{course._count?.enrollments || 0} студентов</span>
+                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                          <Users className="w-4 h-4 text-green-500" />
+                          <span className="font-medium">{course._count?.enrollments || 0} студентов</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <BookOpen className="w-4 h-4" />
-                          <span>{course._count?.modules || 0} модулей</span>
+                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                          <BookOpen className="w-4 h-4 text-purple-500" />
+                          <span className="font-medium">{course._count?.modules || 0} модулей</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>Создан: {formatDate(course.createdAt)}</span>
+                        <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-lg group-hover:bg-white/90 transition-all">
+                          <Calendar className="w-4 h-4 text-orange-500" />
+                          <span className="font-medium">Создан: {formatDate(course.createdAt)}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Действия */}
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-1 ml-4 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => router.push(`/admin/builder?edit=${course.id}`)}
-                        className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-3 py-2 text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-indigo-200 hover:border-indigo-600"
                         title="Редактировать"
                       >
                         <Edit className="w-4 h-4" />
+                        <span className="text-xs font-medium hidden md:block">Изменить</span>
                       </button>
                       
                       <button
                         onClick={() => router.push(`/courses/${course.id}`)}
-                        className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-3 py-2 text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-emerald-200 hover:border-emerald-600"
                         title="Просмотр курса"
                       >
                         <Eye className="w-4 h-4" />
+                        <span className="text-xs font-medium hidden md:block">Смотреть</span>
                       </button>
 
                       {!course.isDraft && (
                         <button
                           onClick={() => toggleCourseStatus(course.id, 'isActive', course.isActive)}
-                          className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border ${
                             course.isActive 
-                              ? 'text-amber-600 hover:bg-amber-100' 
-                              : 'text-emerald-600 hover:bg-emerald-100'
+                              ? 'text-amber-600 hover:text-white hover:bg-amber-600 border-amber-200 hover:border-amber-600' 
+                              : 'text-emerald-600 hover:text-white hover:bg-emerald-600 border-emerald-200 hover:border-emerald-600'
                           }`}
                           title={course.isActive ? 'Деактивировать' : 'Активировать'}
                         >
                           {course.isActive ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                          <span className="text-xs font-medium hidden md:block">{course.isActive ? 'Скрыть' : 'Показать'}</span>
                         </button>
                       )}
 
                       {course.isDraft && (
                         <button
                           onClick={() => toggleCourseStatus(course.id, 'isDraft', course.isDraft)}
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-200 hover:scale-110"
+                          className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-blue-200 hover:border-blue-600"
                           title="Опубликовать"
                         >
                           <BarChart3 className="w-4 h-4" />
+                          <span className="text-xs font-medium hidden md:block">Опубликовать</span>
                         </button>
                       )}
-                      
+
                       <button
                         onClick={() => deleteCourse(course.id)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200 hover:scale-110"
+                        className="flex items-center gap-2 px-3 py-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-red-200 hover:border-red-600"
                         title="Удалить"
                       >
                         <Trash2 className="w-4 h-4" />
+                        <span className="text-xs font-medium hidden md:block">Удалить</span>
                       </button>
                     </div>
                   </div>

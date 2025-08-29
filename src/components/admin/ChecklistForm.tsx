@@ -417,32 +417,28 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
         <div className="xl:col-span-3">
           {/* Название и описание чеклиста */}
           <div className="space-y-1 mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-slate-500 rounded-3xl transform rotate-1"></div>
-              <div className="absolute inset-0 bg-gray-600 rounded-3xl transform -rotate-1"></div>
-              <div className="relative bg-gradient-to-r from-slate-400 to-gray-500 p-1 rounded-3xl shadow-2xl">
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-6 py-4 text-xl font-black bg-white border-0 rounded-[20px] focus:outline-none focus:ring-4 focus:ring-slate-300/50 transition-all duration-300 placeholder-gray-600 text-gray-800 shadow-inner"
-                  placeholder="🎯 Название чеклиста"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="ml-8 relative">
-              <div className="absolute inset-0 bg-slate-300 rounded-2xl transform rotate-0.5"></div>
-              <div className="absolute inset-0 bg-gray-400 rounded-2xl transform -rotate-0.5"></div>
-              <div className="relative bg-gradient-to-r from-slate-200 to-gray-300 p-0.5 rounded-2xl shadow-lg">
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={1}
-                  className="w-full px-4 py-2 text-sm font-semibold bg-white border-0 rounded-[14px] focus:outline-none focus:ring-2 focus:ring-slate-200/50 transition-all duration-200 placeholder-gray-500 text-gray-700 shadow-inner resize-none"
-                  placeholder="💭 Краткое описание"
-                />
+            <div className="border-2 border-dashed border-amber-300 rounded-2xl p-6 hover:border-amber-400 hover:bg-amber-50/50 transition-all duration-300">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full text-center px-4 py-3 text-2xl font-bold border-0 border-b-2 border-amber-300 focus:border-amber-500 focus:outline-none bg-transparent placeholder-amber-400/70"
+                    placeholder="Название чеклиста"
+                    required
+                  />
+                </div>
+                
+                <div className="text-center">
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={2}
+                    className="w-full text-center px-4 py-2 text-sm text-gray-600 border-0 focus:outline-none bg-transparent placeholder-amber-300/60 resize-none"
+                    placeholder="Добавьте описание чеклиста"
+                  />
+                </div>
               </div>
             </div>
           </div>
