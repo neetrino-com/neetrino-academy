@@ -809,9 +809,6 @@ export default function CourseBuilder() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Описание */}
                 <div className="lg:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Описание урока
-                  </label>
                   <textarea
                     value={currentLesson.description}
                     onChange={(e) => {
@@ -851,57 +848,42 @@ export default function CourseBuilder() {
                 </div>
               </div>
 
-              {/* Выбор лекции (опционально) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Прикрепить лекцию
-                </label>
-                <LectureSelector
-                  selectedLectureId={currentLesson.lectureId}
-                  onLectureSelect={(lectureId) => {
-                    const updatedModules = [...modules]
-                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].lectureId = lectureId || undefined
-                    setModules(updatedModules)
-                  }}
-                />
-              </div>
+              {/* Выбор лекции */}
+              <LectureSelector
+                selectedLectureId={currentLesson.lectureId}
+                onLectureSelect={(lectureId) => {
+                  const updatedModules = [...modules]
+                  const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                  const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                  updatedModules[moduleIndex].lessons[lessonIndex].lectureId = lectureId || undefined
+                  setModules(updatedModules)
+                }}
+              />
 
               {/* Выбор чеклиста */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Прикрепить чеклист
-                </label>
-                <ChecklistSelector
-                  selectedChecklistId={currentLesson.checklistId}
-                  onChecklistSelect={(checklistId) => {
-                    const updatedModules = [...modules]
-                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].checklistId = checklistId || undefined
-                    setModules(updatedModules)
-                  }}
-                  direction={courseData.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'}
-                />
-              </div>
+              <ChecklistSelector
+                selectedChecklistId={currentLesson.checklistId}
+                onChecklistSelect={(checklistId) => {
+                  const updatedModules = [...modules]
+                  const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                  const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                  updatedModules[moduleIndex].lessons[lessonIndex].checklistId = checklistId || undefined
+                  setModules(updatedModules)
+                }}
+                direction={courseData.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'}
+              />
 
               {/* Контент урока */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
-                  Содержание урока
-                </label>
-                <LessonContentBuilder
-                  content={currentLesson.content}
-                  onChange={(content) => {
-                    const updatedModules = [...modules]
-                    const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
-                    const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
-                    updatedModules[moduleIndex].lessons[lessonIndex].content = content
-                    setModules(updatedModules)
-                  }}
-                />
-              </div>
+              <LessonContentBuilder
+                content={currentLesson.content}
+                onChange={(content) => {
+                  const updatedModules = [...modules]
+                  const moduleIndex = updatedModules.findIndex(m => m.id === currentLesson.moduleId)
+                  const lessonIndex = updatedModules[moduleIndex].lessons.findIndex(l => l.id === currentLesson.id)
+                  updatedModules[moduleIndex].lessons[lessonIndex].content = content
+                  setModules(updatedModules)
+                }}
+              />
 
 
             </div>
