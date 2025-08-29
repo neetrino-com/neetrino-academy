@@ -542,7 +542,7 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
                             type="button"
                             onClick={() => addItem(group.id)}
                             className="p-1 text-green-600 hover:bg-green-100 rounded transition-colors"
-                            title="Добавить пункт"
+                            title="Быстро добавить пункт"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -606,7 +606,7 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
                           </button>
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-3 mb-4">
                           {group.items.map((item, itemIndex) => (
                             <div 
                               key={item.id} 
@@ -630,16 +630,30 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
                                     required
                                   />
                                   
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="checkbox"
-                                      id={`required-${item.id}`}
-                                      checked={item.isRequired}
-                                      onChange={(e) => updateItem(group.id, item.id, { isRequired: e.target.checked })}
-                                      className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-                                    />
-                                    <label htmlFor={`required-${item.id}`} className="text-sm text-gray-700 whitespace-nowrap">
-                                      Обязательный
+                                  <div className="flex items-center">
+                                    <label 
+                                      htmlFor={`required-${item.id}`} 
+                                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 ${
+                                        item.isRequired 
+                                          ? 'bg-red-100 text-red-700 border border-red-200 shadow-sm' 
+                                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                                      }`}
+                                      title={item.isRequired ? "Обязательный пункт" : "Сделать обязательным"}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        id={`required-${item.id}`}
+                                        checked={item.isRequired}
+                                        onChange={(e) => updateItem(group.id, item.id, { isRequired: e.target.checked })}
+                                        className="sr-only"
+                                      />
+                                      <svg className={`w-3.5 h-3.5 transition-all duration-200 ${
+                                        item.isRequired ? 'text-red-600' : 'text-gray-400'
+                                      }`} fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                      </svg>
+                                      <span className="hidden sm:inline">Обязательный</span>
+                                      <span className="sm:hidden">!</span>
                                     </label>
                                   </div>
                                 </div>
@@ -665,6 +679,16 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
                               </div>
                             </div>
                           ))}
+                          
+                          {/* Большая кнопка добавления пункта снизу */}
+                          <button
+                            type="button"
+                            onClick={() => addItem(group.id)}
+                            className="w-full py-3 px-4 border-2 border-dashed border-amber-300 text-amber-600 rounded-lg hover:border-amber-400 hover:bg-amber-50 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium"
+                          >
+                            <Plus className="w-5 h-5" />
+                            Добавить новый пункт
+                          </button>
                         </div>
                       )}
                     </div>
