@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import StudentAssignments from '@/components/dashboard/StudentAssignments'
+import StudentSidebar from '@/components/dashboard/StudentSidebar'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -66,18 +67,23 @@ export default async function DashboardPage() {
   const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-blue-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {/* Приветствие */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h1 className="text-3xl font-bold text-blue-900 mb-2">
-              Добро пожаловать, {session.user?.name}! 👋
-            </h1>
-            <p className="text-lg text-blue-600">
-              Продолжайте обучение и достигайте новых высот
-            </p>
-          </div>
+    <div className="min-h-screen bg-blue-50 flex">
+      {/* Боковая панель */}
+      <StudentSidebar />
+      
+      {/* Основной контент */}
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+            {/* Приветствие */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+              <h1 className="text-3xl font-bold text-blue-900 mb-2">
+                Добро пожаловать, {session.user?.name}! 👋
+              </h1>
+              <p className="text-lg text-blue-600">
+                Продолжайте обучение и достигайте новых высот
+              </p>
+            </div>
 
           {/* Статистика */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -320,5 +326,6 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
+  </div>
   )
 }
