@@ -2,7 +2,6 @@
 
 import { ReactNode } from 'react'
 import { withStaffProtection } from '@/components/auth/withRoleProtection'
-import { AppHeader } from '@/components/layout/AppHeader'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -26,8 +25,6 @@ function AdminLayoutComponent({ children, userRole, isLoading }: AdminLayoutProp
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader />
-      
       {/* Информационная панель о роли */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3">
         <div className="container mx-auto px-4">
