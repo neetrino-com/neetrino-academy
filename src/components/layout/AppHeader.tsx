@@ -180,9 +180,9 @@ export function AppHeader() {
                       {/* Пункты меню */}
                       <div className="py-2">
                         <Link
-                          href="/profile"
+                          href="/dashboard/profile"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center space-x-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           <User className="w-4 h-4" />
                           <span>Мой профиль</span>

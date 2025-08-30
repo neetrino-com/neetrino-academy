@@ -322,7 +322,7 @@ export default async function DashboardPage() {
               </Link>
 
               <Link
-                href="/profile"
+                href="/dashboard/profile"
                 className="flex flex-col items-center p-6 border border-gray-200 rounded-2xl hover:border-purple-300 hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100"
               >
                 <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
