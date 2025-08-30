@@ -41,7 +41,10 @@ export async function GET(request: NextRequest) {
             submissions: true,
             lessonProgress: true,
             quizAttempts: true,
-            payments: true
+            payments: true,
+            groupStudents: true,
+            groupTeachers: true,
+            notifications: true
           }
         }
       }

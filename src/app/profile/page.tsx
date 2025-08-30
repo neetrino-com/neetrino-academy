@@ -702,7 +702,7 @@ export default function ProfilePage() {
                     <BookOpen className="w-5 h-5 text-blue-600" />
                     <span className="text-sm text-gray-600">Курсы</span>
                   </div>
-                  <span className="font-medium text-gray-900">{profile._count.enrollments}</span>
+                                      <span className="font-medium text-gray-900">{profile._count.enrollments || 0}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -710,7 +710,7 @@ export default function ProfilePage() {
                     <Target className="w-5 h-5 text-green-600" />
                     <span className="text-sm text-gray-600">Задания</span>
                   </div>
-                  <span className="font-medium text-gray-900">{profile._count.submissions}</span>
+                                      <span className="font-medium text-gray-900">{profile._count.submissions || 0}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -718,7 +718,7 @@ export default function ProfilePage() {
                     <Award className="w-5 h-5 text-yellow-600" />
                     <span className="text-sm text-gray-600">Тесты</span>
                   </div>
-                  <span className="font-medium text-gray-900">{profile._count.quizAttempts}</span>
+                                      <span className="font-medium text-gray-900">{profile._count.quizAttempts || 0}</span>
                 </div>
                 
                 {profile.role !== 'STUDENT' && (
@@ -728,7 +728,7 @@ export default function ProfilePage() {
                       <span className="text-sm text-gray-600">Группы</span>
                     </div>
                     <span className="font-medium text-gray-900">
-                      {profile._count.groupStudents + profile._count.groupTeachers}
+                      {(profile._count.groupStudents || 0) + (profile._count.groupTeachers || 0)}
                     </span>
                   </div>
                 )}
