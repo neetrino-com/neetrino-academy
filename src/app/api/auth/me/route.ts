@@ -7,9 +7,13 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     
+    console.log('Auth session:', session?.user?.email);
+    
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
+
+    console.log('Fetching user data for:', session.user.email);
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -42,6 +46,8 @@ export async function GET(request: NextRequest) {
         }
       }
     });
+
+    console.log('User found:', !!user);
 
     if (!user) {
       return NextResponse.json(
