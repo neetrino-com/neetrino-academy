@@ -466,7 +466,7 @@ export default function CourseBuilder() {
               <button
                 type="button"
                 onClick={() => setCourseData({...courseData, paymentType: 'ONE_TIME'})}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                   courseData.paymentType === 'ONE_TIME'
                     ? 'bg-blue-100 text-blue-700 border border-blue-300'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -478,7 +478,7 @@ export default function CourseBuilder() {
               <button
                 type="button"
                 onClick={() => setCourseData({...courseData, paymentType: 'MONTHLY'})}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                   courseData.paymentType === 'MONTHLY'
                     ? 'bg-purple-100 text-purple-700 border border-purple-300'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -492,7 +492,7 @@ export default function CourseBuilder() {
             <div className="flex gap-3">
               <input
                 type="number"
-                value={courseData.paymentType === 'ONE_TIME' ? courseData.price : courseData.monthlyPrice}
+                value={courseData.paymentType === 'ONE_TIME' ? (courseData.price || 0) : (courseData.monthlyPrice || 0)}
                 onChange={(e) => {
                   if (courseData.paymentType === 'ONE_TIME') {
                     setCourseData({...courseData, price: parseInt(e.target.value) || 0})
