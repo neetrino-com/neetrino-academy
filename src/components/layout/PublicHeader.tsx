@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, User, Settings, LogOut } from 'lucide-react'
+import { ChevronDown, User, Settings, LogOut, CreditCard } from 'lucide-react'
 
 export function PublicHeader() {
   const { data: session, status } = useSession()
@@ -112,7 +112,7 @@ export function PublicHeader() {
                         <Link
                           href="/dashboard"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center space-x-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors font-medium"
+                          className="flex items-center space-x-3 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors font-medium"
                         >
                           <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
                             <span className="text-blue-600 text-xs">⚡</span>
@@ -130,12 +130,12 @@ export function PublicHeader() {
                         </Link>
 
                         <Link
-                          href="/profile/settings"
+                          href="/dashboard/payments"
                           onClick={() => setShowUserMenu(false)}
                           className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
-                          <Settings className="w-4 h-4" />
-                          <span>Настройки</span>
+                          <CreditCard className="w-4 h-4" />
+                          <span>Платежи</span>
                         </Link>
 
                         <hr className="my-2" />
