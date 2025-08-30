@@ -21,6 +21,7 @@ import {
   Plus,
   RefreshCw
 } from 'lucide-react'
+import PaymentNotifications from '@/components/admin/PaymentNotifications'
 
 interface Payment {
   id: string
@@ -437,6 +438,9 @@ export default function AdminPaymentsPage() {
             </button>
           </div>
         </div>
+
+        {/* Уведомления о платежах */}
+        <PaymentNotifications />
 
         {/* Список платежей */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

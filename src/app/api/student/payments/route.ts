@@ -164,6 +164,26 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Создаем уведомление об успешной оплате
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notifications/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'payment_successful',
+          paymentId: payment.id,
+          userId: user.id,
+          courseId: payment.courseId,
+          message: `Платеж за курс "${payment.course.title}" успешно обработан`
+        })
+      })
+    } catch (error) {
+      console.error('Ошибка при создании уведомления об оплате:', error)
+      // Не прерываем процесс, если не удалось создать уведомление
+    }
+
     // Если это ежемесячный курс, создаем следующий платеж
     if (payment.course.paymentType === 'MONTHLY' && payment.monthNumber) {
       try {
@@ -187,6 +207,25 @@ export async function POST(request: NextRequest) {
               nextPaymentDue: nextPayment.dueDate
             }
           })
+
+          // Создаем уведомление о создании следующего платежа
+          try {
+            await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/notifications/payment`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                type: 'next_payment_created',
+                paymentId: nextPayment.id,
+                userId: user.id,
+                courseId: payment.courseId,
+                message: `Для курса "${payment.course.title}" создан следующий ежемесячный платеж`
+              })
+            })
+          } catch (error) {
+            console.error('Ошибка при создании уведомления о следующем платеже:', error)
+          }
         }
       } catch (error) {
         console.error('Ошибка при создании следующего ежемесячного платежа:', error)
