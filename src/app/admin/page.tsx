@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
 import { 
   Users, 
   BookOpen,
@@ -37,9 +37,8 @@ interface DashboardStats {
   totalRevenue: number
 }
 
-export default function AdminDashboard() {
+function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProps) {
   const router = useRouter()
-  const { data: session, status } = useSession()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats>({
     totalCourses: 0,
@@ -58,15 +57,14 @@ export default function AdminDashboard() {
   })
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (isLoading) return
     
-    if (!session) {
-      router.push('/login')
+    if (!userRole) {
       return
     }
 
     fetchDashboardData()
-  }, [session, status, router])
+  }, [userRole, isLoading])
 
   const fetchDashboardData = async () => {
     try {
@@ -140,7 +138,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg px-3 py-2">
                 <p className="text-sm text-emerald-700 font-semibold">
-                  Добро пожаловать, {session?.user?.name || 'Администратор'}!
+                  Добро пожаловать, {userRole === 'ADMIN' ? 'Администратор' : 'Преподаватель'}!
                 </p>
               </div>
             </div>
@@ -591,3 +589,9 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+// Экспортируем защищенный компонент
+export default withStaffProtection(AdminDashboardComponent, {
+  fallback: null,
+  showAccessDenied: true
+})
