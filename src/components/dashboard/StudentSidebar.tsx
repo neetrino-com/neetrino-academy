@@ -39,92 +39,92 @@ export default function StudentSidebar({ isCollapsed = false, onToggle }: Studen
       name: 'Главная',
       href: '/dashboard',
       icon: Home,
-      description: 'Обзор обучения',
-      color: 'from-blue-500 to-indigo-600'
+      color: 'from-blue-500 to-indigo-600',
+      iconColor: 'text-blue-600'
     },
     {
       name: 'Мои курсы',
       href: '/dashboard/courses',
       icon: BookOpen,
-      description: 'Активные курсы',
-      color: 'from-emerald-500 to-teal-600'
+      color: 'from-emerald-500 to-teal-600',
+      iconColor: 'text-emerald-600'
     },
     {
       name: 'Обучение',
       href: '/dashboard/learning',
       icon: GraduationCap,
-      description: 'Продолжить обучение',
-      color: 'from-purple-500 to-pink-600'
+      color: 'from-purple-500 to-pink-600',
+      iconColor: 'text-purple-600'
     },
     {
       name: 'Задания',
       href: '/dashboard/assignments',
       icon: FileText,
-      description: 'Домашние задания',
-      color: 'from-amber-500 to-orange-600'
+      color: 'from-amber-500 to-orange-600',
+      iconColor: 'text-amber-600'
     },
     {
       name: 'Тесты',
       href: '/dashboard/quizzes',
       icon: Star,
-      description: 'Проверка знаний',
-      color: 'from-rose-500 to-red-600'
+      color: 'from-rose-500 to-red-600',
+      iconColor: 'text-rose-600'
     },
     {
       name: 'Мои группы',
       href: '/dashboard/groups',
       icon: Users,
-      description: 'Учебные группы',
-      color: 'from-cyan-500 to-blue-600'
+      color: 'from-cyan-500 to-blue-600',
+      iconColor: 'text-cyan-600'
     },
     {
       name: 'Платежи',
       href: '/dashboard/payments',
       icon: CreditCard,
-      description: 'Управление оплатой',
-      color: 'from-green-500 to-emerald-600'
+      color: 'from-green-500 to-emerald-600',
+      iconColor: 'text-green-600'
     },
     {
       name: 'Календарь',
       href: '/dashboard/calendar',
       icon: Calendar,
-      description: 'Расписание занятий',
-      color: 'from-violet-500 to-purple-600'
+      color: 'from-violet-500 to-purple-600',
+      iconColor: 'text-violet-600'
     },
     {
       name: 'Достижения',
       href: '/dashboard/achievements',
       icon: Trophy,
-      description: 'Ваши успехи',
-      color: 'from-yellow-500 to-amber-600'
+      color: 'from-yellow-500 to-amber-600',
+      iconColor: 'text-yellow-600'
     },
     {
       name: 'Сообщения',
       href: '/dashboard/messages',
       icon: MessageSquare,
-      description: 'Общение с преподавателями',
-      color: 'from-indigo-500 to-blue-600'
+      color: 'from-indigo-500 to-blue-600',
+      iconColor: 'text-indigo-600'
     },
     {
       name: 'Профиль',
       href: '/dashboard/profile',
       icon: User,
-      description: 'Настройки аккаунта',
-      color: 'from-slate-500 to-gray-600'
+      color: 'from-slate-500 to-gray-600',
+      iconColor: 'text-slate-600'
     },
     {
       name: 'Настройки',
       href: '/dashboard/settings',
       icon: Settings,
-      description: 'Персональные настройки',
-      color: 'from-zinc-500 to-neutral-600'
+      color: 'from-zinc-500 to-neutral-600',
+      iconColor: 'text-zinc-600'
     },
     {
       name: 'Поддержка',
       href: '/dashboard/support',
       icon: HelpCircle,
-      description: 'Помощь и контакты',
-      color: 'from-red-500 to-pink-600'
+      color: 'from-red-500 to-pink-600',
+      iconColor: 'text-red-600'
     }
   ]
 
@@ -135,22 +135,22 @@ export default function StudentSidebar({ isCollapsed = false, onToggle }: Studen
     return pathname.startsWith(href)
   }
 
-  const renderIcon = (Icon: any, isActive: boolean, color: string) => (
+  const renderIcon = (Icon: any, isActive: boolean, color: string, iconColor: string) => (
     <div className={`p-2 rounded-lg ${isActive ? `bg-gradient-to-r ${color}` : 'bg-gray-100 group-hover:bg-gray-200'}`}>
-      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
+      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : iconColor}`} />
     </div>
   )
 
-  const renderCollapsedIcon = (Icon: any, isActive: boolean, color: string) => (
+  const renderCollapsedIcon = (Icon: any, isActive: boolean, color: string, iconColor: string) => (
     <div className={`p-2 rounded-lg ${isActive ? `bg-gradient-to-r ${color}` : 'bg-gray-100 group-hover:bg-gray-200'}`}>
-      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
+      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : iconColor}`} />
     </div>
   )
 
   return (
     <div 
       className={`bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-lg transition-all duration-300 ${
-        isCollapsed ? 'w-16' : 'w-72'
+        isCollapsed ? 'w-16' : 'w-68'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -202,21 +202,20 @@ export default function StudentSidebar({ isCollapsed = false, onToggle }: Studen
                       : 'text-gray-700 hover:bg-white hover:text-gray-900 hover:shadow-md hover:transform hover:scale-102'
                   }`}
                 >
-                  {isCollapsed ? (
-                    <div className="flex justify-center w-full">
-                      {renderCollapsedIcon(item.icon, active, item.color)}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mr-3">
-                        {renderIcon(item.icon, active, item.color)}
+                                      {isCollapsed ? (
+                      <div className="flex justify-center w-full">
+                        {renderCollapsedIcon(item.icon, active, item.color, item.iconColor)}
                       </div>
-                      <div className="flex-1">
-                        <span className="text-sm font-semibold">{item.name}</span>
-                        <p className="text-xs text-gray-500 mt-0.5 opacity-80">{item.description}</p>
-                      </div>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <div className="mr-3">
+                          {renderIcon(item.icon, active, item.color, item.iconColor)}
+                        </div>
+                        <div className="flex-1">
+                          <span className="text-sm font-semibold">{item.name}</span>
+                        </div>
+                      </>
+                    )}
                 </Link>
               </li>
             )
