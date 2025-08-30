@@ -1,0 +1,333 @@
+/**
+ * Интеграция с Telegram для уведомлений о безопасности
+ * Отправляет уведомления в Telegram канал/группу при обнаружении угроз
+ */
+
+export interface TelegramConfig {
+  botToken: string
+  chatId: string
+  isEnabled: boolean
+  notificationTypes: {
+    critical: boolean
+    high: boolean
+    medium: boolean
+    low: boolean
+  }
+  testMode: boolean
+}
+
+class TelegramIntegration {
+  private config: TelegramConfig = {
+    botToken: '',
+    chatId: '',
+    isEnabled: false,
+    notificationTypes: {
+      critical: true,
+      high: true,
+      medium: false,
+      low: false
+    },
+    testMode: false
+  }
+
+  constructor() {
+    this.loadConfig()
+  }
+
+  /**
+   * Загружает конфигурацию из localStorage
+   */
+  private loadConfig(): void {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('telegram-security-config')
+      if (saved) {
+        try {
+          this.config = { ...this.config, ...JSON.parse(saved) }
+        } catch (error) {
+          console.error('[TELEGRAM] Error loading config:', error)
+        }
+      }
+    }
+  }
+
+  /**
+   * Сохраняет конфигурацию в localStorage
+   */
+  private saveConfig(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('telegram-security-config', JSON.stringify(this.config))
+    }
+  }
+
+  /**
+   * Обновляет конфигурацию
+   */
+  updateConfig(newConfig: Partial<TelegramConfig>): void {
+    this.config = { ...this.config, ...newConfig }
+    this.saveConfig()
+  }
+
+  /**
+   * Получает текущую конфигурацию
+   */
+  getConfig(): TelegramConfig {
+    return { ...this.config }
+  }
+
+  /**
+   * Проверяет, включены ли уведомления для данного уровня риска
+   */
+  private shouldSendNotification(riskLevel: string): boolean {
+    if (!this.config.isEnabled || !this.config.botToken || !this.config.chatId) {
+      return false
+    }
+
+    switch (riskLevel) {
+      case 'CRITICAL':
+        return this.config.notificationTypes.critical
+      case 'HIGH':
+        return this.config.notificationTypes.high
+      case 'MEDIUM':
+        return this.config.notificationTypes.medium
+      case 'LOW':
+        return this.config.notificationTypes.low
+      default:
+        return false
+    }
+  }
+
+  /**
+   * Отправляет уведомление в Telegram
+   */
+  async sendNotification(
+    title: string,
+    message: string,
+    riskLevel: string,
+    metadata?: Record<string, any>
+  ): Promise<boolean> {
+    if (!this.shouldSendNotification(riskLevel)) {
+      return false
+    }
+
+    try {
+      const formattedMessage = this.formatMessage(title, message, riskLevel, metadata)
+      
+      if (this.config.testMode) {
+        console.log('[TELEGRAM] Test mode - would send:', formattedMessage)
+        return true
+      }
+
+      const response = await fetch(`https://api.telegram.org/bot${this.config.botToken}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: this.config.chatId,
+          text: formattedMessage,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Telegram API error: ${response.status}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.ok) {
+        console.log('[TELEGRAM] Notification sent successfully')
+        return true
+      } else {
+        throw new Error(`Telegram API error: ${result.description}`)
+      }
+    } catch (error) {
+      console.error('[TELEGRAM] Error sending notification:', error)
+      return false
+    }
+  }
+
+  /**
+   * Форматирует сообщение для Telegram
+   */
+  private formatMessage(
+    title: string,
+    message: string,
+    riskLevel: string,
+    metadata?: Record<string, any>
+  ): string {
+    const riskEmoji = this.getRiskEmoji(riskLevel)
+    const timestamp = new Date().toLocaleString('ru-RU')
+    
+    let formattedMessage = `${riskEmoji} <b>${title}</b>\n\n`
+    formattedMessage += `${message}\n\n`
+    formattedMessage += `📊 <b>Уровень риска:</b> ${riskLevel}\n`
+    formattedMessage += `⏰ <b>Время:</b> ${timestamp}\n`
+    
+    if (metadata) {
+      if (metadata.userEmail) {
+        formattedMessage += `👤 <b>Пользователь:</b> ${metadata.userEmail}\n`
+      }
+      if (metadata.ipAddress) {
+        formattedMessage += `🌐 <b>IP адрес:</b> ${metadata.ipAddress}\n`
+      }
+      if (metadata.userRole) {
+        formattedMessage += `🔑 <b>Роль:</b> ${metadata.userRole}\n`
+      }
+      if (metadata.eventType) {
+        formattedMessage += `📝 <b>Тип события:</b> ${metadata.eventType}\n`
+      }
+    }
+    
+    formattedMessage += `\n🔒 <i>Neetrino Academy Security System</i>`
+    
+    return formattedMessage
+  }
+
+  /**
+   * Получает эмодзи для уровня риска
+   */
+  private getRiskEmoji(riskLevel: string): string {
+    switch (riskLevel) {
+      case 'CRITICAL':
+        return '🚨'
+      case 'HIGH':
+        return '⚠️'
+      case 'MEDIUM':
+        return '🔶'
+      case 'LOW':
+        return 'ℹ️'
+      default:
+        return '🔒'
+    }
+  }
+
+  /**
+   * Тестирует подключение к Telegram
+   */
+  async testConnection(): Promise<{ success: boolean; message: string }> {
+    if (!this.config.botToken || !this.config.chatId) {
+      return {
+        success: false,
+        message: 'Не указан токен бота или ID чата'
+      }
+    }
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${this.config.botToken}/getMe`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.ok) {
+        // Отправляем тестовое сообщение
+        const testResult = await this.sendNotification(
+          '🧪 Тест подключения',
+          'Это тестовое уведомление для проверки интеграции с Telegram.',
+          'LOW',
+          { testMode: true }
+        )
+
+        if (testResult) {
+          return {
+            success: true,
+            message: `Бот ${result.result.username} подключен успешно! Тестовое сообщение отправлено.`
+          }
+        } else {
+          return {
+            success: false,
+            message: 'Бот подключен, но не удалось отправить тестовое сообщение'
+          }
+        }
+      } else {
+        throw new Error(result.description)
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: `Ошибка подключения: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`
+      }
+    }
+  }
+
+  /**
+   * Получает информацию о боте
+   */
+  async getBotInfo(): Promise<{ success: boolean; botInfo?: any; message: string }> {
+    if (!this.config.botToken) {
+      return {
+        success: false,
+        message: 'Токен бота не указан'
+      }
+    }
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${this.config.botToken}/getMe`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.ok) {
+        return {
+          success: true,
+          botInfo: result.result,
+          message: 'Информация о боте получена'
+        }
+      } else {
+        throw new Error(result.description)
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: `Ошибка получения информации о боте: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`
+      }
+    }
+  }
+
+  /**
+   * Проверяет валидность токена бота
+   */
+  async validateBotToken(token: string): Promise<boolean> {
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${token}/getMe`)
+      const result = await response.json()
+      return result.ok === true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Проверяет валидность ID чата
+   */
+  async validateChatId(chatId: string): Promise<boolean> {
+    if (!this.config.botToken) {
+      return false
+    }
+
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${this.config.botToken}/getChat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chat_id: chatId })
+      })
+
+      const result = await response.json()
+      return result.ok === true
+    } catch {
+      return false
+    }
+  }
+}
+
+// Экспортируем единственный экземпляр
+export const telegramIntegration = new TelegramIntegration()

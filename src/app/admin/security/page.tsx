@@ -5,9 +5,10 @@ import { withStaffProtection, type WithRoleProtectionProps } from '@/components/
 import SecurityDashboard from '@/components/admin/SecurityDashboard'
 import SecurityLogs from '@/components/admin/SecurityLogs'
 import SecurityNotifications from '@/components/admin/SecurityNotifications'
+import TelegramSettings from '@/components/admin/TelegramSettings'
 
 function SecurityPageComponent({ userRole, isLoading }: WithRoleProtectionProps) {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'notifications'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'logs' | 'notifications' | 'telegram'>('dashboard')
 
   if (isLoading) {
     return (
@@ -78,6 +79,16 @@ function SecurityPageComponent({ userRole, isLoading }: WithRoleProtectionProps)
               >
                 🔔 Уведомления о безопасности
               </button>
+              <button
+                onClick={() => setActiveTab('telegram')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'telegram'
+                    ? 'border-red-500 text-red-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📱 Настройки Telegram
+              </button>
             </nav>
           </div>
         </div>
@@ -87,6 +98,7 @@ function SecurityPageComponent({ userRole, isLoading }: WithRoleProtectionProps)
           {activeTab === 'dashboard' && <SecurityDashboard userRole={userRole} />}
           {activeTab === 'logs' && <SecurityLogs userRole={userRole} />}
           {activeTab === 'notifications' && <SecurityNotifications userRole={userRole} />}
+          {activeTab === 'telegram' && <TelegramSettings userRole={userRole} />}
         </div>
       </div>
     </div>

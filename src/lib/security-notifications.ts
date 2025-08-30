@@ -4,6 +4,7 @@
  */
 
 import { SecurityEvent, SecurityEventType } from './security-logger'
+import { telegramIntegration } from './telegram-integration'
 
 export interface SecurityNotification {
   id: string
@@ -39,6 +40,7 @@ export interface NotificationRule {
     blockUser?: boolean
     blockIP?: boolean
     emailAlert?: boolean
+    telegramAlert?: boolean
     slackWebhook?: string
   }
   isActive: boolean
@@ -72,7 +74,8 @@ class SecurityNotificationManager {
         actions: {
           createNotification: true,
           blockUser: true,
-          emailAlert: true
+          emailAlert: true,
+          telegramAlert: true
         },
         isActive: true,
         priority: 1
@@ -88,7 +91,8 @@ class SecurityNotificationManager {
         },
         actions: {
           createNotification: true,
-          emailAlert: true
+          emailAlert: true,
+          telegramAlert: true
         },
         isActive: true,
         priority: 2
@@ -104,7 +108,8 @@ class SecurityNotificationManager {
         actions: {
           createNotification: true,
           blockIP: true,
-          emailAlert: true
+          emailAlert: true,
+          telegramAlert: true
         },
         isActive: true,
         priority: 1
@@ -121,7 +126,8 @@ class SecurityNotificationManager {
           createNotification: true,
           blockUser: true,
           blockIP: true,
-          emailAlert: true
+          emailAlert: true,
+          telegramAlert: true
         },
         isActive: true,
         priority: 0
@@ -264,7 +270,7 @@ class SecurityNotificationManager {
    * Проверяет, требуется ли действие
    */
   private isActionRequired(rule: NotificationRule): boolean {
-    return rule.actions.blockUser || rule.actions.blockIP || rule.actions.emailAlert
+    return rule.actions.blockUser || rule.actions.blockIP || rule.actions.emailAlert || rule.actions.telegramAlert
   }
 
   /**
@@ -283,9 +289,13 @@ class SecurityNotificationManager {
   /**
    * Выполняет действия правила
    */
-  private executeRuleActions(rule: NotificationRule, event: SecurityEvent) {
+  private async executeRuleActions(rule: NotificationRule, event: SecurityEvent) {
     if (rule.actions.emailAlert) {
       this.sendEmailAlert(rule, event)
+    }
+    
+    if (rule.actions.telegramAlert) {
+      await this.sendTelegramAlert(rule, event)
     }
     
     if (rule.actions.slackWebhook) {
@@ -302,6 +312,33 @@ class SecurityNotificationManager {
   private sendEmailAlert(rule: NotificationRule, event: SecurityEvent) {
     // Здесь будет интеграция с email сервисом
     console.log(`[SECURITY] Email alert sent for rule ${rule.name}: ${event.details}`)
+  }
+
+  /**
+   * Отправляет Telegram уведомление
+   */
+  private async sendTelegramAlert(rule: NotificationRule, event: SecurityEvent) {
+    try {
+      const success = await telegramIntegration.sendNotification(
+        this.generateNotificationTitle(rule, event),
+        this.generateNotificationMessage(rule, event),
+        event.riskLevel,
+        {
+          userEmail: event.userEmail,
+          ipAddress: event.ipAddress,
+          userRole: event.userRole,
+          eventType: event.eventType
+        }
+      )
+      
+      if (success) {
+        console.log(`[SECURITY] Telegram alert sent for rule ${rule.name}: ${event.details}`)
+      } else {
+        console.log(`[SECURITY] Telegram alert failed for rule ${rule.name}: ${event.details}`)
+      }
+    } catch (error) {
+      console.error(`[SECURITY] Error sending Telegram alert:`, error)
+    }
   }
 
   /**
