@@ -392,6 +392,17 @@ export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Тестирование подключения</h3>
         
         <div className="space-y-4">
+          {/* Заметка о low режиме */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+              <div className="text-sm text-amber-800">
+                <p className="font-medium mb-1">⚠️ Важно для тестирования:</p>
+                <p>Для отправки тестового уведомления необходимо включить "ℹ️ Низкий уровень риска" в настройках типов уведомлений выше. Без этого тестовое уведомление не будет отправлено.</p>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={handleTestConnection}
             disabled={!config.botToken || !config.chatId || loading}
