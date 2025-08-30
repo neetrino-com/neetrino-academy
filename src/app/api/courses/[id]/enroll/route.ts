@@ -61,26 +61,74 @@ export async function POST(
       )
     }
 
-    // Записываем пользователя на курс
+    // Создаем запись на курс
     const enrollment = await prisma.enrollment.create({
       data: {
         userId,
         courseId,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        paymentStatus: 'PENDING'
       },
       include: {
         course: {
           select: {
             title: true,
-            description: true
+            description: true,
+            paymentType: true,
+            monthlyPrice: true,
+            totalPrice: true,
+            duration: true,
+            durationUnit: true
           }
         }
       }
     })
 
+    // Автоматически создаем платежи в зависимости от типа оплаты курса
+    if (course.paymentType === 'ONE_TIME') {
+      // Для разовой оплаты - создаем один платеж на полную стоимость
+      await prisma.payment.create({
+        data: {
+          userId,
+          courseId,
+          amount: course.totalPrice || 0,
+          currency: course.currency || 'AMD',
+          status: 'PENDING',
+          paymentType: 'ONE_TIME',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней на оплату
+          notes: 'Разовая оплата за весь курс'
+        }
+      })
+    } else if (course.paymentType === 'MONTHLY') {
+      // Для ежемесячной оплаты - создаем первый платеж
+      const firstPayment = await prisma.payment.create({
+        data: {
+          userId,
+          courseId,
+          amount: course.monthlyPrice || 0,
+          currency: course.currency || 'AMD',
+          status: 'PENDING',
+          paymentType: 'MONTHLY',
+          monthNumber: 1,
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней на оплату
+          notes: `Ежемесячный платеж 1/${course.duration || 1}`
+        }
+      })
+
+      // Обновляем запись на курс с датой следующего платежа
+      await prisma.enrollment.update({
+        where: { id: enrollment.id },
+        data: {
+          nextPaymentDue: firstPayment.dueDate
+        }
+      })
+    }
+
     return NextResponse.json({
       message: "Вы успешно записались на курс",
-      enrollment
+      enrollment,
+      paymentRequired: true,
+      paymentType: course.paymentType
     }, { status: 201 })
   } catch (error) {
     console.error("Error enrolling in course:", error)

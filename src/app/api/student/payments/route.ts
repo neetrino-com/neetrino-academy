@@ -166,37 +166,31 @@ export async function POST(request: NextRequest) {
 
     // Если это ежемесячный курс, создаем следующий платеж
     if (payment.course.paymentType === 'MONTHLY' && payment.monthNumber) {
-      const nextMonthNumber = payment.monthNumber + 1
-      const totalMonths = payment.course.duration || 1
-      
-      if (nextMonthNumber <= totalMonths) {
-        const nextDueDate = new Date()
-        nextDueDate.setMonth(nextDueDate.getMonth() + 1)
+      try {
+        // Импортируем функцию создания следующего платежа
+        const { createNextMonthlyPayment } = await import('@/app/api/admin/payments/route')
         
-        await prisma.payment.create({
-          data: {
-            userId: user.id,
-            courseId: payment.courseId,
-            amount: payment.course.monthlyPrice || payment.amount,
-            currency: payment.currency,
-            status: 'PENDING',
-            paymentType: 'MONTHLY',
-            monthNumber: nextMonthNumber,
-            dueDate: nextDueDate,
-            notes: `Ежемесячный платеж ${nextMonthNumber}/${totalMonths}`
-          }
-        })
+        const nextPayment = await createNextMonthlyPayment(
+          user.id,
+          payment.courseId,
+          payment.monthNumber
+        )
 
-        // Обновляем следующую дату платежа в записи
-        await prisma.enrollment.updateMany({
-          where: {
-            userId: user.id,
-            courseId: payment.courseId
-          },
-          data: {
-            nextPaymentDue: nextDueDate
-          }
-        })
+        if (nextPayment) {
+          // Обновляем следующую дату платежа в записи
+          await prisma.enrollment.updateMany({
+            where: {
+              userId: user.id,
+              courseId: payment.courseId
+            },
+            data: {
+              nextPaymentDue: nextPayment.dueDate
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Ошибка при создании следующего ежемесячного платежа:', error)
+        // Не прерываем процесс, если не удалось создать следующий платеж
       }
     }
 

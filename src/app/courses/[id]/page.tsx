@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ModuleList } from '@/components/courses/ModuleList'
 import { AccessControl } from '@/components/courses/AccessControl'
+import { CreditCard, Calendar, DollarSign, Clock } from 'lucide-react'
 
 interface Module {
   id: string
@@ -25,6 +26,11 @@ interface Course {
   direction: string
   level: string
   price?: number | null
+  paymentType?: 'ONE_TIME' | 'MONTHLY'
+  monthlyPrice?: number | null
+  totalPrice?: number | null
+  duration?: number | null
+  durationUnit?: string | null
   modules: Module[]
   _count: {
     enrollments: number
@@ -44,6 +50,7 @@ export default function CourseDetailPage() {
   const [error, setError] = useState('')
   const [enrolling, setEnrolling] = useState(false)
   const [isEnrolled, setIsEnrolled] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   const courseId = params.id as string
 
@@ -99,7 +106,16 @@ export default function CourseDetailPage() {
       }
 
       setIsEnrolled(true)
-      alert('Вы успешно записались на курс!')
+      
+      if (data.paymentRequired) {
+        setShowPaymentModal(true)
+        // Перенаправляем на страницу платежей
+        setTimeout(() => {
+          router.push('/payments')
+        }, 2000)
+      } else {
+        alert('Вы успешно записались на курс!')
+      }
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Ошибка записи на курс')
     } finally {
@@ -157,6 +173,28 @@ export default function CourseDetailPage() {
       default:
         return level
     }
+  }
+
+  const formatCurrency = (amount: number | null, currency: string = 'AMD') => {
+    if (amount === null || amount === 0) return 'Бесплатно'
+    
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: currency === 'AMD' ? 'RUB' : currency,
+      minimumFractionDigits: 0
+    }).format(amount).replace('₽', currency === 'AMD' ? '֏' : '₽')
+  }
+
+  const getDurationLabel = (duration: number | null, unit: string | null) => {
+    if (!duration) return ''
+    
+    const unitLabels: Record<string, string> = {
+      'days': 'дней',
+      'weeks': 'недель',
+      'months': 'месяцев'
+    }
+    
+    return `${duration} ${unitLabels[unit || 'months'] || unit}`
   }
 
   if (loading) {
@@ -254,18 +292,44 @@ export default function CourseDetailPage() {
                   </svg>
                   {course._count.enrollments} студентов
                 </span>
+                {course.duration && (
+                  <span className="flex items-center">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {getDurationLabel(course.duration, course.durationUnit)}
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="mt-6 lg:mt-0 lg:ml-8">
               <div className="bg-gray-50 rounded-lg p-6">
-                {course.price !== null && (
-                  <div className="text-center mb-4">
-                    <div className="text-3xl font-bold text-gray-900">
-                      {course.price === 0 ? 'Бесплатно' : `${course.price} ₽`}
+                {/* Информация о стоимости */}
+                <div className="text-center mb-6">
+                  {course.paymentType === 'ONE_TIME' ? (
+                    <div>
+                      <div className="text-3xl font-bold text-gray-900 mb-2">
+                        {formatCurrency(course.totalPrice, course.currency)}
+                      </div>
+                      <p className="text-sm text-gray-600">Разовая оплата за весь курс</p>
                     </div>
-                  </div>
-                )}
+                  ) : course.paymentType === 'MONTHLY' ? (
+                    <div>
+                      <div className="text-3xl font-bold text-gray-900 mb-2">
+                        {formatCurrency(course.monthlyPrice, course.currency)}/мес
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Ежемесячная оплата • {course.duration} месяцев
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Итого: {formatCurrency((course.monthlyPrice || 0) * (course.duration || 1), course.currency)}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-3xl font-bold text-gray-900">
+                      {formatCurrency(course.price, course.currency)}
+                    </div>
+                  )}
+                </div>
 
                 {isEnrolled ? (
                   <div className="space-y-3">
@@ -286,9 +350,19 @@ export default function CourseDetailPage() {
                   <button
                     onClick={handleEnroll}
                     disabled={enrolling}
-                    className="w-full bg-green-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-green-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {enrolling ? 'Запись...' : 'Записаться на курс'}
+                    {enrolling ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Запись...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4" />
+                        Записаться на курс
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -324,6 +398,29 @@ export default function CourseDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Модальное окно успешной записи */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+              <div className="text-green-600 mb-4">
+                <CreditCard className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Вы успешно записались на курс!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Теперь необходимо оплатить курс. Вы будете перенаправлены на страницу платежей.
+              </p>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Понятно
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

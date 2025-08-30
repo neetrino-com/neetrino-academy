@@ -32,6 +32,9 @@ interface DashboardStats {
   draftCourses: number
   completedTests: number
   recentActivity: number
+  totalPayments: number
+  pendingPayments: number
+  totalRevenue: number
 }
 
 export default function AdminDashboard() {
@@ -48,7 +51,10 @@ export default function AdminDashboard() {
     activeCourses: 0,
     draftCourses: 0,
     completedTests: 0,
-    recentActivity: 0
+    recentActivity: 0,
+    totalPayments: 0,
+    pendingPayments: 0,
+    totalRevenue: 0
   })
 
   useEffect(() => {
@@ -67,12 +73,13 @@ export default function AdminDashboard() {
       setLoading(true)
       
       // Загружаем статистику параллельно
-      const [coursesRes, testsRes, groupsRes, lecturesRes, checklistsRes] = await Promise.all([
+      const [coursesRes, testsRes, groupsRes, lecturesRes, checklistsRes, paymentsRes] = await Promise.all([
         fetch('/api/admin/courses'),
         fetch('/api/admin/quizzes'),
         fetch('/api/admin/groups'),
         fetch('/api/admin/lectures'),
-        fetch('/api/admin/checklists?limit=1000') // Получаем все чеклисты для подсчета
+        fetch('/api/admin/checklists?limit=1000'), // Получаем все чеклисты для подсчета
+        fetch('/api/admin/payments') // Получаем данные о платежах
       ])
       
       const coursesResponse = coursesRes.ok ? await coursesRes.json() : { courses: [] }
@@ -81,6 +88,7 @@ export default function AdminDashboard() {
       const groupsData = groupsRes.ok ? await groupsRes.json() : []
       const lecturesData = lecturesRes.ok ? await lecturesRes.json() : { lectures: [] }
       const checklistsData = checklistsRes.ok ? await checklistsRes.json() : { checklists: [] }
+      const paymentsData = paymentsRes.ok ? await paymentsRes.json() : { payments: [], stats: {} }
       
       setStats({
         totalCourses: coursesData.length,
@@ -92,7 +100,10 @@ export default function AdminDashboard() {
         activeCourses: coursesData.filter((c: any) => c.isActive && !c.isDraft).length,
         draftCourses: coursesData.filter((c: any) => c.isDraft).length,
         completedTests: testsData.filter((t: any) => t.attempts?.length > 0).length,
-        recentActivity: Math.floor(Math.random() * 50) + 10 // Заглушка для активности
+        recentActivity: Math.floor(Math.random() * 50) + 10, // Заглушка для активности
+        totalPayments: paymentsData.payments?.length || 0,
+        pendingPayments: paymentsData.stats?.PENDING || 0,
+        totalRevenue: 0 // Будет рассчитано ниже
       })
     } catch (error) {
       console.error('Ошибка загрузки дашборда:', error)
@@ -301,9 +312,9 @@ export default function AdminDashboard() {
                   </div>
                   <div className="text-center">
                     <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
-                      💳
+                      {stats.totalPayments}
                     </p>
-                    <p className="text-xs text-green-600 font-medium mt-1">контроль</p>
+                    <p className="text-xs text-green-600 font-medium mt-1">платежей</p>
                   </div>
                 </div>
                 <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
@@ -312,6 +323,11 @@ export default function AdminDashboard() {
               <p className="text-slate-600 leading-relaxed">
                 Управление платежами и финансовая отчетность
               </p>
+              {stats.pendingPayments > 0 && (
+                <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  {stats.pendingPayments} ожидают оплаты
+                </div>
+              )}
             </div>
 
             {/* Уведомления системы */}
