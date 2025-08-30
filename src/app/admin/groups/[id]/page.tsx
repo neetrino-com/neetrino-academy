@@ -119,7 +119,8 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [loading, setLoading] = useState(true)
   const [group, setGroup] = useState<Group | null>(null)
   const [error, setError] = useState<string>('')
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'teachers' | 'courses' | 'assignments' | 'schedule' | 'chat'>('overview')
+  type TabId = 'overview' | 'students' | 'teachers' | 'courses' | 'assignments' | 'schedule' | 'chat'
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false)
   const [showStudentManagementModal, setShowStudentManagementModal] = useState(false)
   const [showTeacherManagementModal, setShowTeacherManagementModal] = useState(false)
@@ -194,7 +195,13 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     setShowEventModal(true)
   }
 
-  const handleEventSubmit = async (eventData: any) => {
+  const handleEventSubmit = async (eventData: {
+    title: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    groupId: string;
+  }) => {
     try {
       const url = editingEventId 
         ? `/api/events/${editingEventId}` 
@@ -365,7 +372,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
       : 'bg-amber-100 text-amber-800'
   }
 
-  const tabs = [
+  const tabs: { id: TabId; label: string; icon: any }[] = [
     { id: 'overview', label: 'Обзор', icon: Activity },
     { id: 'students', label: `Студенты (${group.students.length})`, icon: Users },
     { id: 'teachers', label: `Преподаватели (${group.teachers.length})`, icon: GraduationCap },
@@ -532,7 +539,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors duration-200 ${
                       activeTab === tab.id
                         ? 'border-emerald-500 text-emerald-600'
