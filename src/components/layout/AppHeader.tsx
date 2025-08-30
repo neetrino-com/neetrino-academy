@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, User, Settings, LogOut, Home, ArrowLeft } from 'lucide-react'
+import { ChevronDown, User, Settings, LogOut, Home, ArrowLeft, CreditCard } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
 import { CanAccess, StudentOnly, StaffOnly, AdminOnly } from '@/components/auth/CanAccess'
 import NotificationDropdown from './NotificationDropdown'
@@ -187,6 +187,18 @@ export function AppHeader() {
                           <User className="w-4 h-4" />
                           <span>Мой профиль</span>
                         </Link>
+
+                        {/* Показываем платежи только студентам */}
+                        {session?.user.role === 'STUDENT' && (
+                          <Link
+                            href="/payments"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            <span>Платежи</span>
+                          </Link>
+                        )}
 
                         <Link
                           href="/profile/settings"

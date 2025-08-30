@@ -19,6 +19,15 @@ export async function GET(request: NextRequest) {
         name: true,
         role: true,
         avatar: true,
+        // Расширенная информация профиля
+        age: true,
+        gender: true,
+        phone: true,
+        address: true,
+        city: true,
+        country: true,
+        telegram: true,
+        instagram: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -27,7 +36,8 @@ export async function GET(request: NextRequest) {
             assignments: true,
             submissions: true,
             lessonProgress: true,
-            quizAttempts: true
+            quizAttempts: true,
+            payments: true
           }
         }
       }

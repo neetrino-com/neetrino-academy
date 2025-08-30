@@ -34,6 +34,15 @@ interface UserProfile {
   lastLoginAt: string | null
   createdAt: string
   updatedAt: string
+  // Расширенная информация профиля  
+  age: number | null
+  gender: string | null
+  phone: string | null
+  address: string | null
+  city: string | null
+  country: string | null
+  telegram: string | null
+  instagram: string | null
   _count: {
     enrollments: number
     assignments: number
@@ -41,6 +50,7 @@ interface UserProfile {
     quizAttempts: number
     groupStudents: number
     groupTeachers: number
+    payments: number
   }
 }
 
@@ -58,7 +68,16 @@ export default function ProfilePage() {
     email: '',
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    // Расширенная информация профиля
+    age: '' as string,
+    gender: '',
+    phone: '',
+    address: '',
+    city: '',
+    country: '',
+    telegram: '',
+    instagram: ''
   })
 
   useEffect(() => {
@@ -86,7 +105,15 @@ export default function ProfilePage() {
           email: data.email || '',
           currentPassword: '',
           newPassword: '',
-          confirmPassword: ''
+          confirmPassword: '',
+          age: data.age ? data.age.toString() : '',
+          gender: data.gender || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          city: data.city || '',
+          country: data.country || '',
+          telegram: data.telegram || '',
+          instagram: data.instagram || ''
         })
       }
     } catch (error) {
@@ -122,6 +149,16 @@ export default function ProfilePage() {
         name: editForm.name.trim(),
         email: editForm.email.trim()
       }
+
+      // Добавляем расширенную информацию профиля
+      if (editForm.age) updateData.age = parseInt(editForm.age);
+      if (editForm.gender) updateData.gender = editForm.gender;
+      if (editForm.phone) updateData.phone = editForm.phone.trim();
+      if (editForm.address) updateData.address = editForm.address.trim();
+      if (editForm.city) updateData.city = editForm.city.trim();
+      if (editForm.country) updateData.country = editForm.country.trim();
+      if (editForm.telegram) updateData.telegram = editForm.telegram.trim();
+      if (editForm.instagram) updateData.instagram = editForm.instagram.trim();
 
       if (editForm.newPassword) {
         updateData.currentPassword = editForm.currentPassword
@@ -339,7 +376,15 @@ export default function ProfilePage() {
                           email: profile.email || '',
                           currentPassword: '',
                           newPassword: '',
-                          confirmPassword: ''
+                          confirmPassword: '',
+                          age: profile.age ? profile.age.toString() : '',
+                          gender: profile.gender || '',
+                          phone: profile.phone || '',
+                          address: profile.address || '',
+                          city: profile.city || '',
+                          country: profile.country || '',
+                          telegram: profile.telegram || '',
+                          instagram: profile.instagram || ''
                         })
                         setMessage(null)
                       }}
@@ -430,6 +475,158 @@ export default function ProfilePage() {
                   ) : (
                     <p className="text-gray-900">{profile.email}</p>
                   )}
+                </div>
+
+                {/* Расширенная информация профиля */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Возраст
+                    </label>
+                    {editing ? (
+                      <input
+                        type="number"
+                        min="13"
+                        max="120"
+                        value={editForm.age}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, age: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Ваш возраст"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.age || 'Не указано'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Пол
+                    </label>
+                    {editing ? (
+                      <select
+                        value={editForm.gender}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, gender: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Выберите пол</option>
+                        <option value="male">Мужской</option>
+                        <option value="female">Женский</option>
+                        <option value="other">Другой</option>
+                      </select>
+                    ) : (
+                      <p className="text-gray-900">
+                        {profile.gender === 'male' ? 'Мужской' : 
+                         profile.gender === 'female' ? 'Женский' : 
+                         profile.gender === 'other' ? 'Другой' : 'Не указано'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Телефон
+                  </label>
+                  {editing ? (
+                    <input
+                      type="tel"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="+374 XX XXX XXX"
+                    />
+                  ) : (
+                    <p className="text-gray-900">{profile.phone || 'Не указано'}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Адрес
+                  </label>
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={editForm.address}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Ваш адрес"
+                    />
+                  ) : (
+                    <p className="text-gray-900">{profile.address || 'Не указано'}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Город
+                    </label>
+                    {editing ? (
+                      <input
+                        type="text"
+                        value={editForm.city}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, city: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Ваш город"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.city || 'Не указано'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Страна
+                    </label>
+                    {editing ? (
+                      <input
+                        type="text"
+                        value={editForm.country}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, country: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Страна"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.country || 'Не указано'}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telegram
+                    </label>
+                    {editing ? (
+                      <input
+                        type="text"
+                        value={editForm.telegram}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, telegram: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="@username"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.telegram || 'Не указано'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Instagram
+                    </label>
+                    {editing ? (
+                      <input
+                        type="text"
+                        value={editForm.instagram}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, instagram: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="@username"
+                      />
+                    ) : (
+                      <p className="text-gray-900">{profile.instagram || 'Не указано'}</p>
+                    )}
+                  </div>
                 </div>
 
                 {editing && (

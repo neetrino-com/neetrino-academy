@@ -9,6 +9,15 @@ const updateProfileSchema = z.object({
   email: z.string().email("Неверный формат email"),
   currentPassword: z.string().optional(),
   newPassword: z.string().min(6, "Пароль должен содержать минимум 6 символов").optional(),
+  // Расширенная информация профиля
+  age: z.number().min(13, "Возраст должен быть не менее 13 лет").max(120, "Неверный возраст").optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  phone: z.string().max(20, "Телефон слишком длинный").optional(),
+  address: z.string().max(255, "Адрес слишком длинный").optional(),
+  city: z.string().max(100, "Название города слишком длинное").optional(),
+  country: z.string().max(100, "Название страны слишком длинное").optional(),
+  telegram: z.string().max(50, "Telegram слишком длинный").optional(),
+  instagram: z.string().max(50, "Instagram слишком длинный").optional(),
 })
 
 export async function PUT(request: NextRequest) {
@@ -50,6 +59,16 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date()
     }
 
+    // Добавляем расширенную информацию профиля
+    if (validatedData.age !== undefined) updateData.age = validatedData.age;
+    if (validatedData.gender !== undefined) updateData.gender = validatedData.gender;
+    if (validatedData.phone !== undefined) updateData.phone = validatedData.phone?.trim() || null;
+    if (validatedData.address !== undefined) updateData.address = validatedData.address?.trim() || null;
+    if (validatedData.city !== undefined) updateData.city = validatedData.city?.trim() || null;
+    if (validatedData.country !== undefined) updateData.country = validatedData.country?.trim() || null;
+    if (validatedData.telegram !== undefined) updateData.telegram = validatedData.telegram?.trim() || null;
+    if (validatedData.instagram !== undefined) updateData.instagram = validatedData.instagram?.trim() || null;
+
     // Если нужно изменить пароль
     if (validatedData.newPassword && validatedData.currentPassword) {
       // Проверяем текущий пароль
@@ -85,6 +104,14 @@ export async function PUT(request: NextRequest) {
         avatar: true,
         isActive: true,
         lastLoginAt: true,
+        age: true,
+        gender: true,
+        phone: true,
+        address: true,
+        city: true,
+        country: true,
+        telegram: true,
+        instagram: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -94,7 +121,8 @@ export async function PUT(request: NextRequest) {
             submissions: true,
             quizAttempts: true,
             groupStudents: true,
-            groupTeachers: true
+            groupTeachers: true,
+            payments: true
           }
         }
       }
