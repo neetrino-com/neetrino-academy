@@ -3,6 +3,8 @@
  * Отслеживает все попытки доступа, входы, выходы и подозрительную активность
  */
 
+import { securityNotificationManager } from './security-notifications'
+
 export interface SecurityEvent {
   id: string
   timestamp: Date
@@ -72,6 +74,9 @@ class SecurityLogger {
     // Проверяем на подозрительную активность
     this.checkSuspiciousActivity(securityEvent)
     
+    // Создаем уведомления о безопасности
+    this.createSecurityNotifications(securityEvent)
+    
     // Выводим в консоль для разработки
     console.log(`[SECURITY] ${event.eventType}: ${event.details}`, {
       user: event.userEmail,
@@ -79,6 +84,22 @@ class SecurityLogger {
       risk: event.riskLevel,
       timestamp: securityEvent.timestamp.toISOString()
     })
+  }
+
+  /**
+   * Создает уведомления о безопасности на основе события
+   */
+  private createSecurityNotifications(event: SecurityEvent): void {
+    try {
+      // Обрабатываем событие через менеджер уведомлений
+      const notifications = securityNotificationManager.processSecurityEvent(event)
+      
+      if (notifications.length > 0) {
+        console.log(`[SECURITY] Created ${notifications.length} security notifications for event ${event.eventType}`)
+      }
+    } catch (error) {
+      console.error('[SECURITY] Error creating security notifications:', error)
+    }
   }
 
   /**
