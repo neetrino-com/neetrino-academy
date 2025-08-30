@@ -343,6 +343,89 @@ class TelegramIntegration {
       return false
     }
   }
+
+  /**
+   * Проверяет права бота в чате
+   */
+  async checkBotPermissions(): Promise<{ success: boolean; permissions?: any; message: string }> {
+    if (!this.config.botToken || !this.config.chatId) {
+      return {
+        success: false,
+        message: 'Не указан токен бота или ID чата'
+      }
+    }
+
+    try {
+      console.log(`[TELEGRAM] Checking bot permissions in chat ${this.config.chatId}`)
+      
+      // Получаем информацию о чате
+      const chatResponse = await fetch(`https://api.telegram.org/bot${this.config.botToken}/getChat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chat_id: this.config.chatId })
+      })
+
+      if (!chatResponse.ok) {
+        const errorText = await chatResponse.text()
+        throw new Error(`Failed to get chat info: ${chatResponse.status} - ${errorText}`)
+      }
+
+      const chatResult = await chatResponse.json()
+      console.log(`[TELEGRAM] Chat info:`, chatResult)
+
+      if (!chatResult.ok) {
+        throw new Error(`Chat info error: ${chatResult.description}`)
+      }
+
+      // Получаем информацию о правах бота в чате
+      const memberResponse = await fetch(`https://api.telegram.org/bot${this.config.botToken}/getChatMember`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          chat_id: this.config.chatId,
+          user_id: (await this.getBotInfo()).botInfo?.id
+        })
+      })
+
+      if (!memberResponse.ok) {
+        const errorText = await memberResponse.text()
+        throw new Error(`Failed to get bot member info: ${memberResponse.status} - ${errorText}`)
+      }
+
+      const memberResult = await memberResponse.json()
+      console.log(`[TELEGRAM] Bot member info:`, memberResult)
+
+      if (!memberResult.ok) {
+        throw new Error(`Member info error: ${memberResult.description}`)
+      }
+
+      const permissions = memberResult.result
+      const canSendMessages = permissions.can_send_messages
+      const status = permissions.status
+
+      return {
+        success: true,
+        permissions: {
+          canSendMessages,
+          status,
+          chatType: chatResult.result.type,
+          chatTitle: chatResult.result.title || chatResult.result.first_name
+        },
+        message: `Права бота проверены. Статус: ${status}, Может отправлять сообщения: ${canSendMessages ? 'Да' : 'Нет'}`
+      }
+
+    } catch (error) {
+      console.error('[TELEGRAM] Check permissions error:', error)
+      return {
+        success: false,
+        message: `Ошибка проверки прав: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`
+      }
+    }
+  }
 }
 
 // Экспортируем единственный экземпляр

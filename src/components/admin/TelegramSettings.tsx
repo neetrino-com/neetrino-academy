@@ -126,6 +126,24 @@ export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
     }
   }
 
+  const handleCheckBotPermissions = async () => {
+    if (!config.botToken || !config.chatId) return
+    
+    setLoading(true)
+    try {
+      const result = await telegramIntegration.checkBotPermissions()
+      if (result.success) {
+        alert('✅ Бот имеет необходимые права!')
+      } else {
+        alert('❌ Бот не имеет необходимых прав. Пожалуйста, проверьте настройки бота и чата.')
+      }
+    } catch (error) {
+      alert('Ошибка при проверке прав бота')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const updateNotificationType = (type: keyof typeof config.notificationTypes, value: boolean) => {
     setConfig(prev => ({
       ...prev,
@@ -246,6 +264,13 @@ export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Проверить
+              </button>
+              <button
+                onClick={handleCheckBotPermissions}
+                disabled={!config.botToken || !config.chatId || loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Права бота
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-1">
