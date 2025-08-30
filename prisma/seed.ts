@@ -133,14 +133,15 @@ async function main() {
                     content: 'В этом уроке вы познакомитесь с программой курса и узнаете, что вас ожидает.',
                     duration: 15,
                     order: 1,
-                    lectureId: lectures[i % 10].id // Прикрепляем лекцию к первому уроку
+                    lecture: {
+                      connect: { id: lectures[i % 10].id }
+                    }
                   },
                   {
                     title: 'Подготовка окружения',
                     content: 'Настройка необходимых инструментов и программ для работы.',
                     duration: 30,
-                    order: 2,
-                    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                    order: 2
                   }
                 ]
               }
@@ -156,14 +157,15 @@ async function main() {
                     content: 'Изучение фундаментальных принципов и концепций.',
                     duration: 45,
                     order: 1,
-                    lectureId: lectures[(i + 1) % 10].id // Прикрепляем лекцию ко второму уроку
+                    lecture: {
+                      connect: { id: lectures[(i + 1) % 10].id }
+                    }
                   },
                   {
                     title: 'Практические примеры',
                     content: 'Разбор практических примеров и кейсов.',
                     duration: 60,
-                    order: 2,
-                    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+                    order: 2
                   }
                 ]
               }
@@ -179,7 +181,9 @@ async function main() {
                     content: 'Выполнение практического задания для закрепления материала.',
                     duration: 90,
                     order: 1,
-                    lectureId: lectures[(i + 2) % 10].id // Прикрепляем лекцию к третьему уроку
+                    lecture: {
+                      connect: { id: lectures[(i + 2) % 10].id }
+                    }
                   },
                   {
                     title: 'Мини-проект',
