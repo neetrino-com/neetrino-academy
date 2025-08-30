@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
 import QuizBuilder from '@/components/admin/QuizBuilder'
 import { 
   Plus, 
@@ -60,9 +60,8 @@ interface QuizStats {
   averageAttempts: number
 }
 
-export default function TestsManagement() {
+function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionProps) {
   const router = useRouter()
-  const { data: session, status } = useSession()
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
   const [loading, setLoading] = useState(true)
   const [showQuizBuilder, setShowQuizBuilder] = useState(false)
@@ -77,15 +76,14 @@ export default function TestsManagement() {
   })
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (isLoading) return
     
-    if (!session) {
-      router.push('/login')
+    if (!userRole) {
       return
     }
 
     fetchQuizzes()
-  }, [session, status, router])
+  }, [userRole, isLoading])
 
   const fetchQuizzes = async () => {
     try {
@@ -464,3 +462,9 @@ export default function TestsManagement() {
     </div>
   )
 }
+
+// Экспортируем защищенный компонент
+export default withStaffProtection(TestsManagementComponent, {
+  fallback: null,
+  showAccessDenied: true
+})

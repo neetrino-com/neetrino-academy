@@ -76,7 +76,33 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
 
-  // Пропускаем не-API маршруты
+  // Защита админских страниц на уровне middleware
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
+    try {
+      const session = await auth()
+      
+      if (!session?.user) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+
+      const userRole = session.user.role as UserRole
+      
+      // Проверяем, что у пользователя есть права администратора или преподавателя
+      if (!['ADMIN', 'TEACHER'].includes(userRole)) {
+        return NextResponse.redirect(new URL('/access-denied', request.url))
+      }
+
+      // Логируем успешный доступ к админским страницам
+      console.log(`[SECURITY] Admin access granted to ${userRole} for ${pathname}`)
+      
+      return NextResponse.next()
+    } catch (error) {
+      console.error('[SECURITY] Middleware error for admin page:', error)
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
+  // Пропускаем не-API маршруты (кроме админских)
   if (!pathname.startsWith('/api')) {
     return NextResponse.next()
   }
@@ -151,6 +177,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/api/:path*'
+    '/api/:path*',
+    '/admin/:path*'
   ]
 }

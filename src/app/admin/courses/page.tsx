@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
 import { 
   ArrowLeft,
   Plus, 
@@ -49,9 +49,8 @@ interface CourseStats {
   totalStudents: number
 }
 
-export default function CoursesManagement() {
+function CoursesManagementComponent({ userRole, isLoading }: WithRoleProtectionProps) {
   const router = useRouter()
-  const { data: session, status } = useSession()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -65,15 +64,14 @@ export default function CoursesManagement() {
   })
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (isLoading) return
     
-    if (!session) {
-      router.push('/login')
+    if (!userRole) {
       return
     }
 
     fetchCourses()
-  }, [session, status, router])
+  }, [userRole, isLoading])
 
   const fetchCourses = async () => {
     try {
@@ -453,3 +451,9 @@ export default function CoursesManagement() {
     </div>
   )
 }
+
+// Экспортируем защищенный компонент
+export default withStaffProtection(CoursesManagementComponent, {
+  fallback: null,
+  showAccessDenied: true
+})

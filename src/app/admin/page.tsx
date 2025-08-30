@@ -20,6 +20,7 @@ import {
   Activity,
   Target
 } from 'lucide-react'
+import SecurityStatus from '@/components/admin/SecurityStatus'
 
 interface DashboardStats {
   totalCourses: number
@@ -582,6 +583,11 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
               Статистика и отчеты
             </p>
           </div>
+        </div>
+
+        {/* Блок безопасности */}
+        <div className="mb-8">
+          <SecurityStatus userRole={userRole} />
         </div>
 
 

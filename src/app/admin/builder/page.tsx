@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
 import { 
   BookOpen, FileText, Video, ClipboardList, TestTube, 
   Rocket, ChevronRight, ChevronLeft, Save,
@@ -106,7 +107,7 @@ const STEPS = [
   { id: 'publish', title: 'Публикация', icon: Rocket }
 ]
 
-export default function CourseBuilder() {
+function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const editCourseId = searchParams.get('edit')
@@ -2109,3 +2110,9 @@ export default function CourseBuilder() {
     </div>
   )
 }
+
+// Экспортируем защищенный компонент
+export default withStaffProtection(CourseBuilderComponent, {
+  fallback: null,
+  showAccessDenied: true
+})
