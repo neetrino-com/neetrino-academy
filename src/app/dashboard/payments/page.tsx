@@ -74,7 +74,7 @@ interface PaymentSummary {
   overdueAmount: number
 }
 
-export default function PaymentsPage() {
+export default function DashboardPaymentsPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [payments, setPayments] = useState<Payment[]>([])

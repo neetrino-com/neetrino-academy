@@ -182,7 +182,7 @@ export default async function DashboardPage() {
                   Все курсы →
                 </Link>
                 <Link
-                  href="/payments"
+                  href="/dashboard/payments"
                   className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-6 py-3 rounded-xl hover:from-emerald-700 hover:to-teal-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   Мои платежи →
@@ -310,7 +310,7 @@ export default async function DashboardPage() {
               </Link>
 
               <Link
-                href="/payments"
+                href="/dashboard/payments"
                 className="flex flex-col items-center p-6 border border-gray-200 rounded-2xl hover:border-emerald-300 hover:shadow-xl transition-all duration-300 group bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100"
               >
                 <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">

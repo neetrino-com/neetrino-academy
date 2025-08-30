@@ -191,7 +191,7 @@ export function AppHeader() {
                         {/* Показываем платежи только студентам */}
                         {session?.user.role === 'STUDENT' && (
                           <Link
-                            href="/payments"
+                            href="/dashboard/payments"
                             onClick={() => setShowUserMenu(false)}
                             className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >

@@ -79,7 +79,7 @@ export default function StudentSidebar({ isCollapsed = false, onToggle }: Studen
     },
     {
       name: 'Платежи',
-      href: '/payments',
+      href: '/dashboard/payments',
       icon: CreditCard,
       description: 'Управление оплатой',
       color: 'from-green-500 to-emerald-600'
