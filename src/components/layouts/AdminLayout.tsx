@@ -25,30 +25,6 @@ function AdminLayoutComponent({ children, userRole, isLoading }: AdminLayoutProp
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Информационная панель о роли */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white/20 rounded-full p-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <span className="font-medium">
-                Административная панель
-                {userRole === 'ADMIN' && ' (Полный доступ)'}
-                {userRole === 'TEACHER' && ' (Доступ преподавателя)'}
-              </span>
-            </div>
-            
-            <div className="text-sm opacity-90">
-              Роль: {userRole === 'ADMIN' ? 'Администратор' : 'Преподаватель'}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Основной контент */}
       <main className="container mx-auto px-4 py-8">
         {children}
