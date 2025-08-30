@@ -1,100 +1,59 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { hasPermission, type Permission, type UserRole } from '@/lib/permissions'
-
-// Определяем требуемые разрешения для API маршрутов
-const API_PERMISSIONS: Record<string, Permission> = {
-  // Курсы
-  'GET /api/courses': 'courses.view',
-  'POST /api/courses': 'courses.create',
-  'PUT /api/courses': 'courses.edit',
-  'DELETE /api/courses': 'courses.delete',
-  
-  // Админ курсы
-  'GET /api/admin/courses': 'courses.view',
-  'POST /api/admin/courses': 'courses.create',
-  'PUT /api/admin/courses': 'courses.edit',
-  'DELETE /api/admin/courses': 'courses.delete',
-  
-  // Задания
-  'GET /api/assignments': 'assignments.view',
-  'POST /api/assignments': 'assignments.create',
-  'PUT /api/assignments': 'assignments.grade',
-  
-  // Студенческие задания
-  'GET /api/student/assignments': 'assignments.view',
-  'POST /api/student/assignments': 'assignments.submit',
-  
-  // Группы
-  'GET /api/admin/groups': 'groups.view',
-  'POST /api/admin/groups': 'groups.create',
-  'PUT /api/admin/groups': 'groups.manage',
-  'DELETE /api/admin/groups': 'groups.manage',
-  
-  // Тесты
-  'GET /api/admin/tests': 'tests.view',
-  'POST /api/admin/tests': 'tests.create',
-  'PUT /api/admin/tests': 'tests.create',
-  'DELETE /api/admin/tests': 'tests.create',
-  
-  // Пользователи
-  'GET /api/admin/users': 'users.view',
-  'POST /api/admin/users': 'users.create',
-  'PUT /api/admin/users': 'users.manage',
-  'DELETE /api/admin/users': 'users.manage',
-  
-  // Аналитика
-  'GET /api/analytics': 'analytics.view',
-  'GET /api/admin/analytics': 'analytics.view',
-  
-  // Уведомления
-  'GET /api/notifications': 'notifications.view',
-  'POST /api/notifications': 'notifications.send',
-  
-  // Календарь
-  'GET /api/events': 'calendar.view',
-  'POST /api/events': 'calendar.create',
-  'PUT /api/events': 'calendar.manage',
-  'DELETE /api/events': 'calendar.manage'
-}
-
-// Открытые маршруты (не требуют авторизации)
-const PUBLIC_ROUTES = [
-  '/api/auth',
-  '/api/upload'
-]
-
-// Маршруты только для определенных ролей
-const ROLE_RESTRICTED_ROUTES: Record<string, UserRole[]> = {
-  '/api/admin': ['ADMIN', 'TEACHER'],
-  '/api/teacher': ['TEACHER', 'ADMIN'],
-  '/api/student': ['STUDENT']
-}
+import { UserRole } from '@/lib/permissions'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const method = request.method
+
+  // Защита API маршрутов
+  if (pathname.startsWith('/api/admin')) {
+    try {
+      const session = await auth()
+
+      if (!session?.user) {
+        console.log(`[SECURITY] Unauthorized API access attempt to ${pathname}`)
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      const userRole = session.user.role as UserRole
+
+      // Проверяем, что у пользователя есть права администратора или преподавателя
+      if (!['ADMIN', 'TEACHER'].includes(userRole)) {
+        console.log(`[SECURITY] Access denied to API ${pathname} for role ${userRole}`)
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      }
+
+      // Логируем успешный доступ к API
+      console.log(`[SECURITY] API access granted to ${userRole} for ${pathname}`)
+
+      return NextResponse.next()
+    } catch (error) {
+      console.error('[SECURITY] Middleware error for API:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+  }
 
   // Защита админских страниц на уровне middleware
   if (pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
     try {
       const session = await auth()
-      
+
       if (!session?.user) {
+        console.log(`[SECURITY] Unauthorized admin page access attempt to ${pathname}`)
         return NextResponse.redirect(new URL('/login', request.url))
       }
 
       const userRole = session.user.role as UserRole
-      
+
       // Проверяем, что у пользователя есть права администратора или преподавателя
       if (!['ADMIN', 'TEACHER'].includes(userRole)) {
+        console.log(`[SECURITY] Admin access denied to ${pathname} for role ${userRole}`)
         return NextResponse.redirect(new URL('/access-denied', request.url))
       }
 
       // Логируем успешный доступ к админским страницам
       console.log(`[SECURITY] Admin access granted to ${userRole} for ${pathname}`)
-      
+
       return NextResponse.next()
     } catch (error) {
       console.error('[SECURITY] Middleware error for admin page:', error)
@@ -102,82 +61,46 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Пропускаем не-API маршруты (кроме админских)
-  if (!pathname.startsWith('/api')) {
-    return NextResponse.next()
-  }
+  // Защита студенческих страниц
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/assignments') || pathname.startsWith('/calendar')) {
+    try {
+      const session = await auth()
 
-  // Пропускаем открытые маршруты
-  if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
-    return NextResponse.next()
-  }
-
-  try {
-    // Получаем сессию
-    const session = await auth()
-    
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const userRole = session.user.role as UserRole
-
-    // Проверяем ограничения по ролям
-    for (const [routePrefix, allowedRoles] of Object.entries(ROLE_RESTRICTED_ROUTES)) {
-      if (pathname.startsWith(routePrefix)) {
-        if (!allowedRoles.includes(userRole)) {
-          return NextResponse.json(
-            { error: 'Forbidden: Insufficient role permissions' },
-            { status: 403 }
-          )
-        }
+      if (!session?.user) {
+        console.log(`[SECURITY] Unauthorized student page access attempt to ${pathname}`)
+        return NextResponse.redirect(new URL('/login', request.url))
       }
-    }
 
-    // Проверяем разрешения для конкретных API маршрутов
-    const routeKey = `${method} ${pathname}`
-    const requiredPermission = API_PERMISSIONS[routeKey]
+      const userRole = session.user.role as UserRole
 
-    if (requiredPermission) {
-      if (!hasPermission(userRole, requiredPermission)) {
-        return NextResponse.json(
-          { error: 'Forbidden: Insufficient permissions' },
-          { status: 403 }
-        )
+      // Проверяем, что у пользователя есть права студента или выше
+      if (!['STUDENT', 'TEACHER', 'ADMIN'].includes(userRole)) {
+        console.log(`[SECURITY] Student page access denied to ${pathname} for role ${userRole}`)
+        return NextResponse.redirect(new URL('/access-denied', request.url))
       }
-    }
 
-    // Проверяем общие паттерны маршрутов
-    if (pathname.startsWith('/api/admin/') && userRole === 'STUDENT') {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      )
-    }
+      // Логируем успешный доступ к студенческим страницам
+      console.log(`[SECURITY] Student page access granted to ${userRole} for ${pathname}`)
 
-    if (pathname.startsWith('/api/student/') && userRole !== 'STUDENT') {
-      return NextResponse.json(
-        { error: 'Forbidden: Student access required' },
-        { status: 403 }
-      )
+      return NextResponse.next()
+    } catch (error) {
+      console.error('[SECURITY] Middleware error for student page:', error)
+      return NextResponse.redirect(new URL('/login', request.url))
     }
-
-    return NextResponse.next()
-  } catch (error) {
-    console.error('Middleware error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
   }
+
+  // Логируем все остальные запросы для мониторинга
+  console.log(`[SECURITY] Page access: ${pathname}`)
+
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
     '/api/:path*',
-    '/admin/:path*'
+    '/admin/:path*',
+    '/dashboard/:path*',
+    '/assignments/:path*',
+    '/calendar/:path*'
   ]
 }
