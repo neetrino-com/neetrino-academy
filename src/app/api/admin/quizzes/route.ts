@@ -91,7 +91,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const lessonId = searchParams.get('lessonId')
 
-    const where: any = {}
+    const where: {
+      lessonId?: string;
+    } = {}
     if (lessonId) {
       where.lessonId = lessonId
     }

@@ -26,7 +26,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
 
     // Строим фильтры для поиска
-    const where: any = {
+    const where: {
+      role: 'STUDENT';
+      OR?: Array<{
+        name?: { contains: string };
+        email?: { contains: string };
+        phone?: { contains: string };
+      }>;
+    } = {
       role: 'STUDENT'
     }
 

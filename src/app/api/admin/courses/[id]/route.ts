@@ -246,14 +246,14 @@ export async function PUT(
 
       // Обновляем или создаем модули
       for (const moduleData of validatedData.modules) {
-        let module
+        let currentModule
         
         // Проверяем, существует ли модуль с таким ID
         const existingModule = existingModules.find(m => m.id === moduleData.id)
         
         if (existingModule) {
           // Обновляем существующий модуль
-          module = await prisma.module.update({
+          currentModule = await prisma.module.update({
             where: { id: moduleData.id },
             data: {
               title: moduleData.title,
@@ -263,7 +263,7 @@ export async function PUT(
           })
         } else {
           // Создаем новый модуль
-          module = await prisma.module.create({
+          currentModule = await prisma.module.create({
             data: {
               title: moduleData.title,
               description: moduleData.description || '',
@@ -297,7 +297,7 @@ export async function PUT(
                 content: lessonData.content || null,
                 duration: lessonData.duration || null,
                 order: lessonData.order,
-                moduleId: module.id,
+                moduleId: currentModule.id,
                 lectureId: lessonData.lectureId || null
               }
             })
@@ -310,7 +310,7 @@ export async function PUT(
           
           // Удаляем старые задания модуля
           await prisma.assignment.deleteMany({
-            where: { moduleId: module.id }
+            where: { moduleId: currentModule.id }
           })
           
           // Создаем новые задания
@@ -321,7 +321,7 @@ export async function PUT(
                 title: assignmentData.title,
                 description: assignmentData.description || '',
                 dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
-                moduleId: module.id,
+                moduleId: currentModule.id,
                 createdBy: user.id
               }
             })

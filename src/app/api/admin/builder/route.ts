@@ -132,14 +132,14 @@ export async function POST(request: NextRequest) {
 
       // Создаём модули с уроками
       for (let i = 0; i < modules.length; i++) {
-        const module = modules[i]
-        console.log(`Создаём модуль ${i + 1}:`, module.title)
+        const moduleData = modules[i]
+        console.log(`Создаём модуль ${i + 1}:`, moduleData.title)
         
         const newModule = await tx.module.create({
           data: {
-            title: module.title,
-            description: module.description || '',
-            order: module.order,
+            title: moduleData.title,
+            description: moduleData.description || '',
+            order: moduleData.order,
             courseId: newCourse.id
           }
         })
@@ -147,9 +147,9 @@ export async function POST(request: NextRequest) {
         console.log(`Модуль создан, ID: ${newModule.id}`)
 
         // Создаём уроки
-        if (module.lessons && module.lessons.length > 0) {
-          for (let j = 0; j < module.lessons.length; j++) {
-            const lesson = module.lessons[j]
+        if (moduleData.lessons && moduleData.lessons.length > 0) {
+          for (let j = 0; j < moduleData.lessons.length; j++) {
+            const lesson = moduleData.lessons[j]
             console.log(`  Создаём урок ${j + 1}:`, lesson.title)
             
             await tx.lesson.create({
@@ -168,9 +168,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Создаём задания (если есть)
-        if (module.assignments && module.assignments.length > 0) {
-          console.log(`Создаём ${module.assignments.length} заданий для модуля ${module.title}`)
-          for (const assignment of module.assignments) {
+        if (moduleData.assignments && moduleData.assignments.length > 0) {
+          console.log(`Создаём ${moduleData.assignments.length} заданий для модуля ${moduleData.title}`)
+          for (const assignment of moduleData.assignments) {
             console.log('Создаём задание:', assignment.title)
             await tx.assignment.create({
               data: {

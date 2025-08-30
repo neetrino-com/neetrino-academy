@@ -119,8 +119,16 @@ interface OverviewAnalyticsData {
     totalStudents: number;
   }>;
   performance: {
-    mostPopularChecklist: any;
-    mostComprehensiveChecklist: any;
+    mostPopularChecklist: {
+      id: string;
+      title: string;
+      usageCount: number;
+    };
+    mostComprehensiveChecklist: {
+      id: string;
+      title: string;
+      itemCount: number;
+    };
     averageItemsPerChecklist: number;
     averageGroupsPerChecklist: number;
   };

@@ -206,7 +206,7 @@ export function LiveQA() {
               {['all', 'pending', 'answered', 'resolved'].map((status) => (
                 <button
                   key={status}
-                  onClick={() => setStatusFilter(status as any)}
+                  onClick={() => setStatusFilter(status as 'all' | 'pending' | 'answered' | 'resolved')}
                   className={`px-3 py-1 text-xs rounded-full transition-colors ${
                     statusFilter === status
                       ? 'bg-emerald-100 text-emerald-700'

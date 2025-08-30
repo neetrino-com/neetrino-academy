@@ -38,7 +38,12 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [pagination, setPagination] = useState<any>(null)
+  const [pagination, setPagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  } | null>(null)
   const [filters, setFilters] = useState({
     direction: '',
     level: '',

@@ -124,7 +124,7 @@ export async function POST(
     for (const question of quiz.questions) {
       maxScore += question.points;
       
-      const userAnswer = answers.find((a: any) => a.questionId === question.id);
+      const userAnswer = answers.find((a: { questionId: string; selectedOptions: string[] }) => a.questionId === question.id);
       if (!userAnswer) continue;
 
       const correctOptions = question.options.filter(opt => opt.isCorrect);

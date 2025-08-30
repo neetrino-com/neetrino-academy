@@ -141,7 +141,15 @@ export async function PATCH(
     }
 
     // Подготавливаем данные для обновления
-    const updateData: any = {}
+    const updateData: {
+      name?: string;
+      description?: string;
+      type?: 'ONLINE' | 'OFFLINE' | 'HYBRID';
+      maxStudents?: number;
+      startDate?: Date;
+      endDate?: Date | null;
+      isActive?: boolean;
+    } = {}
     
     if (body.name !== undefined) updateData.name = body.name
     if (body.description !== undefined) updateData.description = body.description

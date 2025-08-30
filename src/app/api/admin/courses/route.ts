@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     // Проверяем уникальность slug и добавляем суффикс если нужно
     let counter = 1;
-    let originalSlug = slug;
+      const originalSlug = slug;
     
     while (true) {
       const existingCourse = await prisma.course.findUnique({

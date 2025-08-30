@@ -154,7 +154,20 @@ export default function DashboardProfilePage() {
 
     try {
       setSaving(true)
-      const updateData: any = {
+      const updateData: {
+        name: string;
+        email: string;
+        age?: number;
+        gender?: string;
+        phone?: string;
+        address?: string;
+        city?: string;
+        country?: string;
+        telegram?: string;
+        instagram?: string;
+        currentPassword?: string;
+        newPassword?: string;
+      } = {
         name: editForm.name.trim(),
         email: editForm.email.trim()
       }

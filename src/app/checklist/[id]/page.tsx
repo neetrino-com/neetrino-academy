@@ -108,7 +108,7 @@ export default function ChecklistPage({ params }: { params: { id: string } }) {
         const data = await response.json();
         setChecklist(data);
         // По умолчанию разворачиваем все группы
-        setExpandedGroups(new Set(data.groups.map((g: any) => g.id)));
+        setExpandedGroups(new Set(data.groups.map((g: { id: string }) => g.id)));
       } else {
         toast.error('Ошибка загрузки чеклиста');
       }
@@ -152,7 +152,7 @@ export default function ChecklistPage({ params }: { params: { id: string } }) {
             const newProgress = { ...prev };
             newProgress.itemProgress[existingIndex] = {
               ...newProgress.itemProgress[existingIndex],
-              status: status as any,
+              status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'IN_PROGRESS',
               updatedAt: new Date().toISOString()
             };
             return newProgress;
@@ -164,7 +164,7 @@ export default function ChecklistPage({ params }: { params: { id: string } }) {
                 {
                   id: `temp-${Date.now()}`,
                   itemId,
-                  status: status as any,
+                  status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'IN_PROGRESS',
                   updatedAt: new Date().toISOString()
                 }
               ]

@@ -54,7 +54,7 @@ export async function POST(
     }
 
     // Проверяем, что модуль существует и принадлежит курсу, назначенному группе
-    const module = await prisma.module.findFirst({
+    const existingModule = await prisma.module.findFirst({
       where: {
         id: moduleId,
         course: {
@@ -70,7 +70,7 @@ export async function POST(
       }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json({ 
         error: 'Module not found or not assigned to this group' 
       }, { status: 404 })

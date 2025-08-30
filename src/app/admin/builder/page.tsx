@@ -200,7 +200,18 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       
       // Загружаем уроки для каждого модуля (модули уже содержат задания)
       const modulesWithLessons = await Promise.all(
-        modulesData.map(async (module: any) => {
+        modulesData.map(async (module: {
+          id: string;
+          title: string;
+          description?: string;
+          order: number;
+          assignments?: Array<{
+            id: string;
+            title: string;
+            description?: string;
+            dueDate?: string;
+          }>;
+        }) => {
           const lessonsResponse = await fetch(`/api/admin/modules/${module.id}/lessons`)
           const lessons = lessonsResponse.ok ? await lessonsResponse.json() : []
           
@@ -209,7 +220,12 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
           
           // Загружаем тесты для каждого урока
           const lessonsWithQuizzes = await Promise.all(
-            lessons.map(async (lesson: any) => {
+            lessons.map(async (lesson: {
+              id: string;
+              title: string;
+              description?: string;
+              videoUrl?: string;
+            }) => {
               const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
               const quiz = quizResponse.ok ? await quizResponse.json() : null
               
@@ -258,14 +274,19 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       // Инициализируем тесты из загруженных данных
       const allQuizzes = modulesWithLessons.flatMap(module => 
         module.lessons
-          .filter((lesson: any) => lesson.quiz)
-          .map((lesson: any) => lesson.quiz)
+          .filter((lesson: { quiz: unknown }) => lesson.quiz)
+          .map((lesson: { quiz: unknown }) => lesson.quiz)
       )
       setQuizzes(allQuizzes)
       
       // Инициализируем задания из загруженных данных
       const allAssignments = modulesWithLessons.flatMap(module => 
-        module.assignments ? module.assignments.map((assignment: any) => ({
+        module.assignments ? module.assignments.map((assignment: {
+          id: string;
+          title: string;
+          description?: string;
+          dueDate?: string;
+        }) => ({
           id: assignment.id,
           lessonId: module.lessons[0]?.id || '', // Привязываем к первому уроку модуля
           moduleId: module.id,
@@ -934,9 +955,9 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
                   {(() => {
-                    const module = modules.find(m => m.id === currentLesson.moduleId)
-                    if (!module) return '?'
-                    const lessonIndex = module.lessons.findIndex(l => l.id === currentLesson.id)
+                    const currentModule = modules.find(m => m.id === currentLesson.moduleId)
+                    if (!currentModule) return '?'
+                    const lessonIndex = currentModule.lessons.findIndex(l => l.id === currentLesson.id)
                     return lessonIndex >= 0 ? lessonIndex + 1 : '?'
                   })()}
                 </div>
@@ -1856,16 +1877,16 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         throw new Error('Добавьте хотя бы один модуль к курсу')
       }
 
-      for (const module of modules) {
-        if (!module.title) {
-          throw new Error(`Модуль ${module.order + 1}: заполните название`)
+      for (const currentModuleData of modules) {
+        if (!currentModuleData.title) {
+          throw new Error(`Модуль ${currentModuleData.order + 1}: заполните название`)
         }
-        if (module.lessons.length === 0) {
-          throw new Error(`Модуль "${module.title}": добавьте хотя бы один урок`)
+        if (currentModuleData.lessons.length === 0) {
+          throw new Error(`Модуль "${currentModuleData.title}": добавьте хотя бы один урок`)
         }
-        for (const lesson of module.lessons) {
+        for (const lesson of currentModuleData.lessons) {
           if (!lesson.title) {
-            throw new Error(`Урок в модуле "${module.title}": заполните название`)
+            throw new Error(`Урок в модуле "${currentModuleData.title}": заполните название`)
           }
         }
       }
@@ -1944,7 +1965,11 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         // Улучшенная обработка ошибок
         console.error('Ошибка HTTP:', response.status, response.statusText)
         
-        let errorData: any = {}
+        let errorData: {
+          error?: string;
+          message?: string;
+          [key: string]: unknown;
+        } = {}
         let errorMessage = 'Ошибка сохранения курса'
         
         try {

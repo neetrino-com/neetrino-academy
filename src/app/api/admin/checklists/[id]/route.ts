@@ -70,7 +70,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(checklist)
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка получения чеклиста:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
@@ -149,7 +149,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       checklist: updatedChecklist
     })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка обновления чеклиста:', error)
     
     if (error instanceof z.ZodError) {
@@ -225,7 +225,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       message: 'Чеклист успешно удален'
     })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка удаления чеклиста:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },

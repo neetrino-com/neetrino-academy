@@ -5,9 +5,23 @@ import { useRouter } from 'next/navigation'
 
 interface CourseFormProps {
   mode: 'create' | 'edit'
-  initialData?: any
+  initialData?: {
+    title?: string;
+    description?: string;
+    direction?: string;
+    level?: string;
+    price?: number;
+    isActive?: boolean;
+  }
   courseId?: string
-  onCourseSubmit?: (data: any) => void
+  onCourseSubmit?: (data: {
+    title: string;
+    description: string;
+    direction: string;
+    level: string;
+    price: number;
+    isActive: boolean;
+  }) => void
 }
 
 export function CourseForm({ mode, initialData, courseId, onCourseSubmit }: CourseFormProps) {
@@ -74,7 +88,7 @@ export function CourseForm({ mode, initialData, courseId, onCourseSubmit }: Cour
           if (data.error.includes('уже существует')) {
             throw new Error('Курс с таким названием уже существует. Пожалуйста, выберите другое название.')
           } else if (data.error.includes('валидации')) {
-            const details = data.details?.map((err: any) => err.message).join(', ')
+            const details = data.details?.map((err: { message: string }) => err.message).join(', ')
             throw new Error(`Ошибка валидации: ${details || data.error}`)
           } else {
             throw new Error(data.error)
@@ -108,8 +122,8 @@ export function CourseForm({ mode, initialData, courseId, onCourseSubmit }: Cour
         }
       }, 2000)
 
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка')
     } finally {
       setIsLoading(false)
     }

@@ -46,7 +46,14 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Построение условий фильтрации
-    const where: any = {}
+    const where: {
+      OR?: Array<{
+        title?: { contains: string; mode: 'insensitive' };
+        description?: { contains: string; mode: 'insensitive' };
+      }>;
+      direction?: string;
+      isActive?: boolean;
+    } = {}
     
     if (search) {
       where.OR = [

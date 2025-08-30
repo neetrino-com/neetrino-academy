@@ -104,8 +104,19 @@ interface StudentDetails {
     totalOverdue: number
     totalCancelled: number
     hasOverduePayments: boolean
-    lastPayment?: any
-    nextPaymentDue?: any
+    lastPayment?: {
+      id: string;
+      amount: number;
+      currency: string;
+      status: string;
+      createdAt: string;
+    }
+    nextPaymentDue?: {
+      id: string;
+      amount: number;
+      currency: string;
+      dueDate: string;
+    }
   }
   learningStats: {
     coursesEnrolled: number

@@ -110,7 +110,16 @@ export async function PUT(
     }
 
     // Подготавливаем данные для обновления
-    const updateData: any = {}
+    const updateData: {
+      status?: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+      amount?: number;
+      currency?: string;
+      dueDate?: Date | null;
+      paidAt?: Date | null;
+      paymentMethod?: string;
+      transactionId?: string;
+      notes?: string;
+    } = {}
     if (status !== undefined) updateData.status = status
     if (amount !== undefined) updateData.amount = amount
     if (currency !== undefined) updateData.currency = currency

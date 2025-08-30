@@ -38,7 +38,7 @@ export async function GET(
     });
 
     return NextResponse.json(notifications);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error fetching checklist notifications:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -89,7 +89,7 @@ export async function POST(
     });
 
     return NextResponse.json(notification, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating checklist notification:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

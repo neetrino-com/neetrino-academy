@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
     const userIds = searchParams.get('userIds')?.split(',')
 
     // Формируем условия для выборки
-    const whereCondition: any = {}
+    const whereCondition: {
+      id?: { in: string[] };
+    } = {}
     if (userIds && userIds.length > 0) {
       whereCondition.id = { in: userIds }
     }

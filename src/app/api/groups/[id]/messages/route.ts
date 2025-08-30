@@ -60,7 +60,11 @@ export async function GET(
     }
 
     // Получаем сообщения
-    const whereCondition: any = {
+    const whereCondition: {
+      groupId: string;
+      isDeleted: boolean;
+      createdAt?: { lt: Date };
+    } = {
       groupId: groupId,
       isDeleted: false
     }

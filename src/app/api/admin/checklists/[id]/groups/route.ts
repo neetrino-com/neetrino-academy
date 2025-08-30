@@ -60,7 +60,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(groups)
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка получения групп чеклиста:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       group
     }, { status: 201 })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка создания группы:', error)
     
     if (error instanceof z.ZodError) {

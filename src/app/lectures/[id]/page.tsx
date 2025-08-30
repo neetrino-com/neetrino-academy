@@ -9,7 +9,10 @@ interface Lecture {
   id: string
   title: string
   description?: string | null
-  content: any[]
+  content: Array<{
+    type: string;
+    data: unknown;
+  }>
   isActive: boolean
 }
 
@@ -49,7 +52,10 @@ export default function LecturePage() {
     }
   }
 
-  const parseLectureContent = (content: any) => {
+  const parseLectureContent = (content: Array<{
+    type: string;
+    data: unknown;
+  }> | string | null) => {
     try {
       if (!content) return [];
       return typeof content === 'string' ? JSON.parse(content) : content;
@@ -98,7 +104,10 @@ export default function LecturePage() {
     )
   }
 
-  const contentBlocks = parseLectureContent(lecture.content)
+  const contentBlocks = parseLectureContent(lecture.content) as Array<{
+    type: string;
+    data: unknown;
+  }>
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -143,7 +152,16 @@ export default function LecturePage() {
         <div className="bg-white rounded-lg shadow-sm p-8">
           {contentBlocks && contentBlocks.length > 0 ? (
             <div className="space-y-8">
-              {contentBlocks.map((block: any, index: number) => (
+              {contentBlocks.map((block: {
+                id?: string;
+                type: string;
+                content?: string;
+                metadata?: {
+                  url?: string;
+                  alt?: string;
+                  filename?: string;
+                };
+              }, index: number) => (
                 <div key={block.id || index} className="border-l-4 border-cyan-200 pl-6">
                   {block.type === 'text' && (
                     <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">

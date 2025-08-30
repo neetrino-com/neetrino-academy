@@ -106,7 +106,7 @@ export async function POST(
     const validatedData = createModuleSchema.parse(body)
 
     // Создаем модуль
-    const module = await prisma.module.create({
+    const newModule = await prisma.module.create({
       data: {
         title: validatedData.title,
         description: validatedData.description,
@@ -124,7 +124,7 @@ export async function POST(
       }
     })
 
-    return NextResponse.json(module, { status: 201 })
+    return NextResponse.json(newModule, { status: 201 })
   } catch (error) {
     console.error('Ошибка создания модуля:', error)
     

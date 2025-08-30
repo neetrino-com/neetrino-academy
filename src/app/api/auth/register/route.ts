@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
          } catch (error) {
          if (error instanceof z.ZodError) {
            return NextResponse.json(
-             { error: "Неверные данные", details: (error as any).errors },
+             { error: "Неверные данные", details: error.errors },
              { status: 400 }
            )
          }

@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Определить статус задания для студента
-function getAssignmentStatus(dueDate: Date, submission: any) {
+function getAssignmentStatus(dueDate: Date, submission: { gradedAt?: Date } | null) {
   const now = new Date()
   const due = new Date(dueDate)
 

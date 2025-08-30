@@ -9,7 +9,7 @@ export async function GET(
     const { id: moduleId } = await params
 
     // Проверяем, существует ли модуль
-    const module = await prisma.module.findUnique({
+    const existingModule = await prisma.module.findUnique({
       where: { id: moduleId },
       include: {
         course: {
@@ -21,7 +21,7 @@ export async function GET(
       }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json(
         { error: "Модуль не найден" },
         { status: 404 }
@@ -46,11 +46,11 @@ export async function GET(
 
     return NextResponse.json({ 
       module: {
-        id: module.id,
-        title: module.title,
-        description: module.description,
-        order: module.order,
-        course: module.course,
+        id: existingModule.id,
+        title: existingModule.title,
+        description: existingModule.description,
+        order: existingModule.order,
+        course: existingModule.course,
         lessons: lessons
       }
     })

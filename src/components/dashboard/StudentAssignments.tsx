@@ -32,7 +32,12 @@ interface Assignment {
   group: {
     name: string
   }
-  submission: any
+  submission: {
+    id: string;
+    submittedAt: string;
+    gradedAt?: string;
+    score?: number;
+  } | null
   status: 'pending' | 'due_soon' | 'overdue' | 'submitted' | 'graded'
 }
 
@@ -67,7 +72,15 @@ export default function StudentAssignments() {
         setAssignments(data.slice(0, 5)) // Показываем только 5 последних
         
         // Подсчет статистики
-        const stats = data.reduce((acc: any, assignment: Assignment) => {
+        const stats = data.reduce((acc: {
+          total: number;
+          pending: number;
+          submitted: number;
+          graded: number;
+          overdue: number;
+          due_soon: number;
+          [key: string]: number;
+        }, assignment: Assignment) => {
           acc.total++
           acc[assignment.status]++
           return acc

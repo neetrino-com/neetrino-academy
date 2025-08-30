@@ -53,7 +53,20 @@ export async function PUT(request: NextRequest) {
     }
 
     // Подготавливаем данные для обновления
-    const updateData: any = {
+    const updateData: {
+      name: string;
+      email: string;
+      updatedAt: Date;
+      age?: number;
+      gender?: 'MALE' | 'FEMALE' | 'OTHER';
+      phone?: string | null;
+      address?: string | null;
+      city?: string | null;
+      country?: string | null;
+      telegram?: string | null;
+      instagram?: string | null;
+      password?: string;
+    } = {
       name: validatedData.name.trim(),
       email: validatedData.email.trim(),
       updatedAt: new Date()

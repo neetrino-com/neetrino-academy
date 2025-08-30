@@ -347,7 +347,16 @@ class TelegramIntegration {
   /**
    * Проверяет права бота в чате
    */
-  async checkBotPermissions(): Promise<{ success: boolean; permissions?: any; message: string }> {
+  async checkBotPermissions(): Promise<{ 
+    success: boolean; 
+    permissions?: {
+      canSendMessages: boolean;
+      status: string;
+      chatType: string;
+      chatTitle: string;
+    }; 
+    message: string 
+  }> {
     if (!this.config.botToken || !this.config.chatId) {
       return {
         success: false,

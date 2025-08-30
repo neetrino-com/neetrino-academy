@@ -26,7 +26,13 @@ interface SecurityNotificationsProps {
 export default function SecurityNotifications({ userRole }: SecurityNotificationsProps) {
   const [notifications, setNotifications] = useState<SecurityNotification[]>([])
   const [rules, setRules] = useState<NotificationRule[]>([])
-  const [stats, setStats] = useState<any>(null)
+  const [stats, setStats] = useState<{
+    total: number;
+    unread: number;
+    highRisk: number;
+    mediumRisk: number;
+    lowRisk: number;
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   

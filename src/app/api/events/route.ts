@@ -26,7 +26,13 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')
 
     // Базовые условия фильтрации
-    let whereCondition: any = {
+    let whereCondition: {
+      isActive?: boolean;
+      groupId?: string;
+      type?: string;
+      OR?: Array<unknown>;
+      AND?: Array<unknown>;
+    } = {
       isActive: true,
       OR: [
         // События, которые создал пользователь

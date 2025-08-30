@@ -135,13 +135,13 @@ export default function StudentSidebar({ isCollapsed = false, onToggle }: Studen
     return pathname.startsWith(href)
   }
 
-  const renderIcon = (Icon: any, isActive: boolean, color: string, iconColor: string) => (
+  const renderIcon = (Icon: React.ComponentType<{ className?: string }>, isActive: boolean, color: string, iconColor: string) => (
     <div className={`p-2 rounded-lg ${isActive ? `bg-gradient-to-r ${color}` : 'bg-gray-100 group-hover:bg-gray-200'}`}>
       <Icon className={`w-5 h-5 ${isActive ? 'text-white' : iconColor}`} />
     </div>
   )
 
-  const renderCollapsedIcon = (Icon: any, isActive: boolean, color: string, iconColor: string) => (
+  const renderCollapsedIcon = (Icon: React.ComponentType<{ className?: string }>, isActive: boolean, color: string, iconColor: string) => (
     <div className={`p-2 rounded-lg ${isActive ? `bg-gradient-to-r ${color}` : 'bg-gray-100 group-hover:bg-gray-200'}`}>
       <Icon className={`w-5 h-5 ${isActive ? 'text-white' : iconColor}`} />
     </div>

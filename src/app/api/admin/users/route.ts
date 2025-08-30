@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset')
 
     // Формируем условия фильтрации
-    const whereCondition: any = {}
+    const whereCondition: {
+      role?: 'STUDENT' | 'TEACHER' | 'ADMIN';
+    } = {}
     if (role && ['STUDENT', 'TEACHER', 'ADMIN'].includes(role)) {
       whereCondition.role = role
     }

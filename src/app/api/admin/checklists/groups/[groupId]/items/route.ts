@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(items)
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка получения пунктов группы:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       item
     }, { status: 201 })
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Ошибка создания пункта:', error)
     
     if (error instanceof z.ZodError) {

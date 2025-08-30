@@ -27,11 +27,11 @@ export async function GET(
     }
 
     // Проверяем существование модуля
-    const module = await prisma.module.findUnique({
+    const existingModule = await prisma.module.findUnique({
       where: { id: (await params).id }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json(
         { error: 'Модуль не найден' },
         { status: 404 }

@@ -30,11 +30,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Проверяем существование модуля
-    const module = await prisma.module.findUnique({
+    const existingModule = await prisma.module.findUnique({
       where: { id: moduleId }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 })
     }
 

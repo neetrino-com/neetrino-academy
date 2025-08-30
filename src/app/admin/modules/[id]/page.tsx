@@ -21,7 +21,7 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
   }
 
   // Получаем модуль с уроками
-  const module = await prisma.module.findUnique({
+  const existingModule = await prisma.module.findUnique({
     where: { id: params.id },
     include: {
       course: {
@@ -45,7 +45,7 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
     }
   })
 
-  if (!module) {
+  if (!existingModule) {
     redirect('/admin/courses')
   }
 
@@ -59,15 +59,15 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Уроки модуля: {module.title}
+                  Уроки модуля: {existingModule.title}
                 </h1>
                 <p className="mt-2 text-gray-600">
-                  Курс: {module.course.title} • Уроков: {module._count.lessons} • Заданий: {module._count.assignments}
+                  Курс: {existingModule.course.title} • Уроков: {existingModule._count.lessons} • Заданий: {existingModule._count.assignments}
                 </p>
               </div>
               <div className="flex space-x-3">
                 <Link
-                  href={`/admin/courses/${module.course.id}/modules`}
+                  href={`/admin/courses/${existingModule.course.id}/modules`}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   Назад к модулям
@@ -83,17 +83,17 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
               <div className="bg-white rounded-lg shadow-md">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Уроки модуля ({module.lessons.length})
+                    Уроки модуля ({existingModule.lessons.length})
                   </h2>
                 </div>
                 
                 <div className="divide-y divide-gray-200">
-                  {module.lessons.length === 0 ? (
+                  {existingModule.lessons.length === 0 ? (
                     <div className="px-6 py-8 text-center text-gray-500">
                       <p>Уроки еще не созданы</p>
                     </div>
                   ) : (
-                    module.lessons.map((lesson) => (
+                    existingModule.lessons.map((lesson) => (
                       <div key={lesson.id} className="px-6 py-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">

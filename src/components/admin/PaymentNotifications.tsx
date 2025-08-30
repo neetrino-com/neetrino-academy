@@ -35,7 +35,12 @@ interface AccessControlResult {
   suspendedEnrollments: number
   restoredEnrollments: number
   sentReminders: number
-  details: any[]
+  details: Array<{
+    userId: string;
+    userName: string;
+    action: string;
+    timestamp: string;
+  }>
 }
 
 export default function PaymentNotifications() {

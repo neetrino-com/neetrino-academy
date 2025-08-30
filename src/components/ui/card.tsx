@@ -1,6 +1,8 @@
 import React from 'react';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+}
 
 export function Card({ className = '', children, ...props }: CardProps) {
   return (
@@ -13,7 +15,9 @@ export function Card({ className = '', children, ...props }: CardProps) {
   );
 }
 
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+}
 
 export function CardHeader({ className = '', children, ...props }: CardHeaderProps) {
   return (
@@ -26,7 +30,9 @@ export function CardHeader({ className = '', children, ...props }: CardHeaderPro
   );
 }
 
-export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  children?: React.ReactNode;
+}
 
 export function CardTitle({ className = '', children, ...props }: CardTitleProps) {
   return (
@@ -39,7 +45,9 @@ export function CardTitle({ className = '', children, ...props }: CardTitleProps
   );
 }
 
-export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode;
+}
 
 export function CardContent({ className = '', children, ...props }: CardContentProps) {
   return (

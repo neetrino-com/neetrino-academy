@@ -107,7 +107,18 @@ export default async function StudentQuizzesPage() {
   }
 
   // Функция для определения статуса теста
-  function getQuizStatus(quiz: any, attempt: any) {
+  function getQuizStatus(quiz: {
+    id: string;
+    title: string;
+    description?: string;
+    timeLimit: number;
+    passingScore: number;
+  }, attempt: {
+    id: string;
+    passed: boolean;
+    score: number;
+    completedAt: string;
+  } | null) {
     if (!attempt) {
       return 'available' // Доступен для прохождения
     }

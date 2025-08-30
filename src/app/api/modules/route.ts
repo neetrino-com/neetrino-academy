@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
 
-    let whereClause: any = {};
+    const whereClause: {
+      courseId?: string;
+    } = {};
 
     // Фильтрация по курсу
     if (courseId) {

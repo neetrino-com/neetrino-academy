@@ -75,9 +75,15 @@ export async function GET(request: NextRequest) {
           acc[checklist.direction].totalStudents += checklist._count.progress;
           
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, {
+          direction: string;
+          checklistCount: number;
+          totalGroups: number;
+          totalItems: number;
+          totalStudents: number;
+        }>);
 
-        return Object.values(directionStats).sort((a: any, b: any) => b.checklistCount - a.checklistCount);
+        return Object.values(directionStats).sort((a, b) => b.checklistCount - a.checklistCount);
       })(),
       recentActivity: (() => {
         const allProgress = checklists.flatMap(c => 

@@ -31,7 +31,7 @@ export function generateSlug(text: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-export function serializePrismaData(data: any): any {
+export function serializePrismaData(data: unknown): unknown {
   if (data === null || data === undefined) {
     return data;
   }
@@ -41,8 +41,8 @@ export function serializePrismaData(data: any): any {
       return data.map(item => serializePrismaData(item));
     }
     
-    const serialized: any = {};
-    for (const [key, value] of Object.entries(data)) {
+    const serialized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       if (value instanceof Date) {
         serialized[key] = value.toISOString();
       } else if (typeof value === 'object' && value !== null) {

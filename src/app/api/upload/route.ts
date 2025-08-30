@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest) {
 
     // Удаляем файл из Cloudinary
     const timestamp = Math.round(new Date().getTime() / 1000);
-    const signature = generateSignature(publicId, timestamp);
+    const signature = await generateSignature(publicId, timestamp);
 
     const deleteResponse = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/destroy`,
@@ -117,8 +117,8 @@ export async function DELETE(request: NextRequest) {
 }
 
 // Функция для генерации подписи Cloudinary
-function generateSignature(publicId: string, timestamp: number): string {
-  const crypto = require('crypto');
+async function generateSignature(publicId: string, timestamp: number): Promise<string> {
+  const crypto = await import('crypto');
   const params = `public_id=${publicId}&timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`;
   return crypto.createHash('sha1').update(params).digest('hex');
 }

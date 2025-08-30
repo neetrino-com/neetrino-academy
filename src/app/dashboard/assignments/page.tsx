@@ -110,7 +110,9 @@ export default async function StudentAssignmentsPage() {
   }
 
   // Функция для определения статуса задания
-  function getAssignmentStatus(dueDate: Date, submission: any) {
+  function getAssignmentStatus(dueDate: Date, submission: {
+    gradedAt?: string;
+  } | null) {
     const now = new Date()
     const due = new Date(dueDate)
 

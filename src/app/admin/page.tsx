@@ -91,14 +91,14 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
       
       setStats({
         totalCourses: coursesData.length,
-        totalStudents: coursesData.reduce((acc: number, c: any) => acc + (c._count?.enrollments || 0), 0),
+        totalStudents: coursesData.reduce((acc: number, c: { _count?: { enrollments?: number } }) => acc + (c._count?.enrollments || 0), 0),
         totalTests: testsData.length,
         totalGroups: groupsData.length,
         totalLectures: lecturesData.lectures?.length || 0,
         totalChecklists: checklistsData.checklists?.length || 0,
-        activeCourses: coursesData.filter((c: any) => c.isActive && !c.isDraft).length,
-        draftCourses: coursesData.filter((c: any) => c.isDraft).length,
-        completedTests: testsData.filter((t: any) => t.attempts?.length > 0).length,
+        activeCourses: coursesData.filter((c: { isActive?: boolean; isDraft?: boolean }) => c.isActive && !c.isDraft).length,
+        draftCourses: coursesData.filter((c: { isDraft?: boolean }) => c.isDraft).length,
+        completedTests: testsData.filter((t: { attempts?: Array<unknown> }) => t.attempts?.length > 0).length,
         recentActivity: Math.floor(Math.random() * 50) + 10, // Заглушка для активности
         totalPayments: paymentsData.payments?.length || 0,
         pendingPayments: paymentsData.stats?.PENDING || 0,

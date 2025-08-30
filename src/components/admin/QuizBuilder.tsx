@@ -31,9 +31,19 @@ interface QuizOption {
 
 interface QuizBuilderProps {
   lessonId?: string
-  onSave: (quiz: any) => void
+  onSave: (quiz: QuizData) => void
   onCancel: () => void
-  initialQuiz?: any
+  initialQuiz?: QuizData
+}
+
+interface QuizData {
+  title: string;
+  description: string;
+  timeLimit: number;
+  passingScore: number;
+  isActive: boolean;
+  lessonId: string;
+  questions: QuizQuestion[];
 }
 
 export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }: QuizBuilderProps) {
@@ -159,7 +169,7 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
   }
 
   // Обновить вопрос
-  const updateQuestion = (questionId: string, field: string, value: any) => {
+  const updateQuestion = (questionId: string, field: string, value: string | number | boolean) => {
     setQuiz({
       ...quiz,
       questions: quiz.questions.map(q => {
@@ -172,7 +182,7 @@ export default function QuizBuilder({ lessonId, onSave, onCancel, initialQuiz }:
   }
 
   // Обновить опцию
-  const updateOption = (questionId: string, optionId: string, field: string, value: any) => {
+  const updateOption = (questionId: string, optionId: string, field: string, value: string | number | boolean) => {
     setQuiz({
       ...quiz,
       questions: quiz.questions.map(q => {

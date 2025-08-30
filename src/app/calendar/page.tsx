@@ -48,7 +48,13 @@ export default function CalendarPage() {
     setShowEventModal(true)
   }
 
-  const handleEventSubmit = async (eventData: any) => {
+  const handleEventSubmit = async (eventData: {
+    title: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    groupId?: string;
+  }) => {
     try {
       const url = editingEventId 
         ? `/api/events/${editingEventId}` 

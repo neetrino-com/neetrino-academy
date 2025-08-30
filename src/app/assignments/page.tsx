@@ -108,7 +108,15 @@ export default function StudentAssignments() {
         setAssignments(data)
         
         // Подсчет статистики
-        const stats = data.reduce((acc: any, assignment: Assignment) => {
+        const stats = data.reduce((acc: {
+          total: number;
+          pending: number;
+          submitted: number;
+          graded: number;
+          overdue: number;
+          due_soon: number;
+          [key: string]: number;
+        }, assignment: Assignment) => {
           acc.total++
           acc[assignment.status]++
           return acc

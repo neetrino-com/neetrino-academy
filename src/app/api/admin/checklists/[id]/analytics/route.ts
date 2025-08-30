@@ -151,7 +151,7 @@ export async function GET(
     };
 
     return NextResponse.json(analytics);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error fetching checklist analytics:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

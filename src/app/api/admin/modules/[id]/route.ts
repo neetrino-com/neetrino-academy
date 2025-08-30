@@ -33,7 +33,7 @@ export async function GET(
       )
     }
 
-    const module = await prisma.module.findUnique({
+    const existingModule = await prisma.module.findUnique({
       where: { id: params.id },
       include: {
         course: {
@@ -49,14 +49,14 @@ export async function GET(
       }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json(
         { error: 'Модуль не найден' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json(module)
+    return NextResponse.json(existingModule)
   } catch (error) {
     console.error('Ошибка получения модуля:', error)
     return NextResponse.json(
@@ -106,7 +106,7 @@ export async function PUT(
     const validatedData = updateModuleSchema.parse(body)
 
     // Обновляем модуль
-    const module = await prisma.module.update({
+    const updatedModule = await prisma.module.update({
       where: { id: params.id },
       data: {
         title: validatedData.title,
@@ -124,7 +124,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(module)
+    return NextResponse.json(updatedModule)
   } catch (error) {
     console.error('Ошибка обновления модуля:', error)
     

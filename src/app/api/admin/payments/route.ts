@@ -28,7 +28,12 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
     const courseId = searchParams.get('courseId')
 
-    const where: any = {}
+    const where: {
+      status?: string;
+      paymentType?: string;
+      userId?: string;
+      courseId?: string;
+    } = {}
     
     if (status) where.status = status
     if (paymentType) where.paymentType = paymentType

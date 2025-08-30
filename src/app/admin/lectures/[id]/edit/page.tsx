@@ -9,7 +9,10 @@ interface Lecture {
   title: string;
   description?: string;
   thumbnail?: string;
-  content: any[];
+  content: Array<{
+    type: string;
+    data: unknown;
+  }>;
   isActive: boolean;
 }
 

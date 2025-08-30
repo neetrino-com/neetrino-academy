@@ -29,7 +29,10 @@ interface Lesson {
     id: string
     title: string
     description?: string | null
-    content: any[]
+    content: Array<{
+      type: string;
+      data: unknown;
+    }>
   } | null
   checklist?: {
     id: string
@@ -62,8 +65,25 @@ export default function LessonStudyPage() {
   const [error, setError] = useState('')
   const [isCompleted, setIsCompleted] = useState(false)
   const [videoProgress, setVideoProgress] = useState(0)
-  const [quiz, setQuiz] = useState<any>(null)
-  const [userAttempt, setUserAttempt] = useState<any>(null)
+  const [quiz, setQuiz] = useState<{
+    id: string;
+    title: string;
+    description?: string;
+    questions: Array<{
+      id: string;
+      text: string;
+      options: Array<{
+        id: string;
+        text: string;
+      }>;
+    }>;
+  } | null>(null)
+  const [userAttempt, setUserAttempt] = useState<{
+    id: string;
+    score: number;
+    passed: boolean;
+    completedAt: string;
+  } | null>(null)
   const [showQuiz, setShowQuiz] = useState(false)
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
 

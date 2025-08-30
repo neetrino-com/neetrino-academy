@@ -26,7 +26,19 @@ export async function GET(request: NextRequest) {
     const assignmentId = searchParams.get('assignmentId')
 
     // Базовый запрос для получения сдач
-    let whereCondition: any = {}
+    const whereCondition: {
+      assignment?: {
+        module?: {
+          course?: {
+            OR?: Array<{
+              createdBy?: string;
+              teacherCourses?: { some: { teacherId: string } };
+            }>;
+          };
+        };
+      };
+      status?: string;
+    } = {}
 
     // Для админа показываем все сдачи, для преподавателя - только от его групп
     if (user.role === 'TEACHER') {

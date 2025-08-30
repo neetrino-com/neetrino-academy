@@ -201,7 +201,7 @@ export async function GET(
     // Для преподавателя проверяем доступ
     if (user.role === 'TEACHER') {
       const hasAccess = submission.assignment.groupAssignments.some(ga =>
-        ga.group.teachers?.some((teacher: any) => teacher.userId === user.id)
+        ga.group.teachers?.some((teacher: { userId: string }) => teacher.userId === user.id)
       )
 
       if (!hasAccess) {

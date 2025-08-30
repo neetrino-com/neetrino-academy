@@ -12,7 +12,12 @@ interface Module {
   title: string
   description?: string | null
   order: number
-  lessons: any[]
+  lessons: Array<{
+    id: string;
+    title: string;
+    description?: string | null;
+    order: number;
+  }>
   _count: {
     lessons: number
     assignments: number
@@ -82,7 +87,7 @@ export default function CourseDetailPage() {
       const response = await fetch('/api/courses/my')
       if (response.ok) {
         const data = await response.json()
-        const enrolled = data.courses.some((enrollment: any) => 
+        const enrolled = data.courses.some((enrollment: { courseId: string }) => 
           enrollment.courseId === courseId
         )
         setIsEnrolled(enrolled)

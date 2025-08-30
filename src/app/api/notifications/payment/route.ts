@@ -107,7 +107,10 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const where: any = {
+    const where: {
+      userId: string;
+      type: string | { in: string[] };
+    } = {
       userId,
       type: {
         in: ['PAYMENT_REMINDER', 'PAYMENT_OVERDUE', 'PAYMENT_SUCCESSFUL']

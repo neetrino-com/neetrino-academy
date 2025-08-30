@@ -40,11 +40,11 @@ export async function GET(
     }
 
     // Проверяем существование модуля
-    const module = await prisma.module.findUnique({
+    const existingModule = await prisma.module.findUnique({
       where: { id: (await params).id }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json(
         { error: 'Модуль не найден' },
         { status: 404 }
@@ -101,7 +101,7 @@ export async function POST(
     }
 
     // Проверяем существование модуля
-    const module = await prisma.module.findUnique({
+    const existingModule = await prisma.module.findUnique({
       where: { id: (await params).id },
       include: {
         course: {
@@ -114,7 +114,7 @@ export async function POST(
       }
     })
 
-    if (!module) {
+    if (!existingModule) {
       return NextResponse.json(
         { error: 'Модуль не найден' },
         { status: 404 }

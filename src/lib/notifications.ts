@@ -13,7 +13,7 @@ interface CreateNotificationParams {
   type: NotificationType
   title: string
   message?: string
-  data?: any
+  data?: Record<string, unknown>
 }
 
 // Создать уведомление
@@ -480,7 +480,16 @@ export async function notifyUpcomingDeadlines() {
       }
     })
 
-    const notifications: any[] = []
+    const notifications: Array<{
+      id: string;
+      userId: string;
+      type: string;
+      title: string;
+      message?: string;
+      data?: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }> = []
 
     // Создаем уведомления о дедлайнах заданий
     for (const assignment of upcomingAssignments) {

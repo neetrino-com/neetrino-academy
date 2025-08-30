@@ -78,7 +78,7 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
   const [formData, setFormData] = useState<ChecklistFormData>({
     title: '',
     description: '',
-    direction: '' as any,
+    direction: '',
     thumbnail: '',
     isActive: true,
     groups: []
@@ -395,7 +395,7 @@ export default function ChecklistForm({ mode, initialData, checklistId }: Checkl
               </h4>
               <select
                 value={formData.direction}
-                onChange={(e) => setFormData(prev => ({ ...prev, direction: e.target.value as any }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, direction: e.target.value }))}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 required
               >

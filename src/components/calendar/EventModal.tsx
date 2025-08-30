@@ -21,7 +21,27 @@ interface Assignment {
 interface EventModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (eventData: any) => void
+  onSubmit: (eventData: {
+    title: string;
+    description: string;
+    type: string;
+    startDate: string;
+    startTime: string;
+    endDate: string;
+    endTime: string;
+    location: string;
+    groupId: string;
+    courseId: string;
+    assignmentId: string;
+    attendeeIds: string[];
+    isRecurring: boolean;
+    recurringRule: {
+      frequency: string;
+      interval: number;
+      daysOfWeek: number[];
+      endDate: string;
+    };
+  }) => void
   eventId?: string
   groupId?: string
 }
@@ -129,7 +149,7 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
           groupId: event.group?.id || '',
           courseId: event.course?.id || '',
           assignmentId: event.assignment?.id || '',
-          attendeeIds: event.attendees?.map((a: any) => a.userId) || [],
+          attendeeIds: event.attendees?.map((a: { userId: string }) => a.userId) || [],
           isRecurring: event.isRecurring || false,
           recurringRule: event.recurringRule ? JSON.parse(event.recurringRule) : {
             frequency: 'weekly',
@@ -165,7 +185,7 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
       const response = await fetch(`/api/admin/groups/${formData.groupId}/courses`)
       if (response.ok) {
         const data = await response.json()
-        setCourses(data.map((gc: any) => gc.course))
+        setCourses(data.map((gc: { course: Course }) => gc.course))
       }
     } catch (error) {
       console.error('Error fetching courses:', error)
@@ -179,11 +199,11 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
       const response = await fetch(`/api/admin/groups/${formData.groupId}/assignments`)
       if (response.ok) {
         const data = await response.json()
-        const courseAssignments = data.filter((a: any) => {
+        const courseAssignments = data.filter((a: { assignment: { module: { courseId: string } } }) => {
           // Найти задания, связанные с выбранным курсом через модули
           return a.assignment.module.courseId === formData.courseId
         })
-        setAssignments(courseAssignments.map((a: any) => a.assignment))
+        setAssignments(courseAssignments.map((a: { assignment: Assignment }) => a.assignment))
       }
     } catch (error) {
       console.error('Error fetching assignments:', error)
@@ -234,14 +254,14 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
     }
   }
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | boolean | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
   }
 
-  const handleRecurringRuleChange = (field: string, value: any) => {
+  const handleRecurringRuleChange = (field: string, value: string | number | number[]) => {
     setFormData(prev => ({
       ...prev,
       recurringRule: {

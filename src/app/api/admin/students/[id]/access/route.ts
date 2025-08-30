@@ -78,7 +78,10 @@ export async function PUT(
     }
 
     // Выполнить действие
-    let updateData: any = {};
+    let updateData: {
+      status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+      paymentStatus?: 'PENDING' | 'PAID' | 'OVERDUE';
+    } = {};
     let logMessage = '';
 
     switch (action) {

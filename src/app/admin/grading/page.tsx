@@ -255,7 +255,7 @@ export default function GradingPage() {
             <div className="flex gap-4">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pending' | 'reviewed' | 'graded')}
                 className="px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors duration-200"
               >
                 <option value="all">Все статусы</option>

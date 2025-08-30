@@ -291,7 +291,15 @@ export async function PUT(
     }
 
     // Обновляем студента
-    const updateData: any = {}
+    const updateData: {
+      name?: string;
+      email?: string;
+      role?: 'STUDENT' | 'TEACHER' | 'ADMIN';
+      bio?: string;
+      phone?: string;
+      telegramUsername?: string;
+      isActive?: boolean;
+    } = {}
     if (isActive !== undefined) updateData.isActive = isActive
 
     const updatedStudent = await prisma.user.update({

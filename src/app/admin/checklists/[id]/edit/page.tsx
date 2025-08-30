@@ -11,7 +11,17 @@ import ChecklistForm from '@/components/admin/ChecklistForm';
 export default function EditChecklistPage() {
   const { data: session, status } = useSession();
   const params = useParams();
-  const [checklist, setChecklist] = useState<any>(null);
+  const [checklist, setChecklist] = useState<{
+    id: string;
+    title: string;
+    description?: string;
+    direction?: string;
+    items?: Array<{
+      id: string;
+      text: string;
+      order: number;
+    }>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,7 +123,7 @@ export default function EditChecklistPage() {
             </div>
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-500">
-                📊 {checklist.groups.reduce((sum: number, g: any) => sum + g.items.length, 0)} пунктов
+                📊 {checklist.groups.reduce((sum: number, g: { items: Array<{ id: string }> }) => sum + g.items.length, 0)} пунктов
               </div>
               <div className="text-sm text-gray-500">
                 📂 {checklist.groups.length} групп
@@ -133,13 +143,26 @@ export default function EditChecklistPage() {
             direction: checklist.direction,
             thumbnail: checklist.thumbnail || '',
             isActive: checklist.isActive,
-            groups: checklist.groups.map((group: any) => ({
+            groups: checklist.groups.map((group: {
+              id: string;
+              title: string;
+              description?: string;
+              order: number;
+              isCollapsed?: boolean;
+              items: Array<{
+                id: string;
+                title: string;
+                description?: string;
+                order: number;
+                isRequired?: boolean;
+              }>;
+            }) => ({
               id: group.id,
               title: group.title,
               description: group.description || '',
               order: group.order,
               isCollapsed: group.isCollapsed,
-              items: group.items.map((item: any) => ({
+              items: group.items.map((item) => ({
                 id: item.id,
                 title: item.title,
                 description: item.description || '',

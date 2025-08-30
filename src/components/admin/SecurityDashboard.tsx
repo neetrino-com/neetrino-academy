@@ -41,7 +41,12 @@ export default function SecurityDashboard({ userRole }: SecurityDashboardProps) 
     securityScore: 100
   })
   
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [recentActivity, setRecentActivity] = useState<Array<{
+    timestamp: Date;
+    type: string;
+    message: string;
+    severity: string;
+  }>>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -82,7 +87,14 @@ export default function SecurityDashboard({ userRole }: SecurityDashboardProps) 
     }
   }
 
-  const calculateSecurityScore = (metrics: any, notificationStats: any): number => {
+  const calculateSecurityScore = (metrics: {
+    failedLogins: number;
+    accessDenied: number;
+    suspiciousActivity: number;
+    highRiskEvents: number;
+  }, notificationStats: {
+    unread: number;
+  }): number => {
     let score = 100
     
     // Снижаем балл за неудачные попытки входа
