@@ -583,6 +583,33 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
               Статистика и отчеты
             </p>
           </div>
+
+          {/* Безопасность системы */}
+          <div 
+            onClick={() => router.push('/admin/security')}
+            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                    🛡️
+                  </p>
+                  <p className="text-xs text-red-600 font-medium mt-1">активна</p>
+                </div>
+              </div>
+              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-3">Безопасность</h3>
+            <p className="text-slate-600 leading-relaxed">
+              Мониторинг и управление безопасностью системы
+            </p>
+          </div>
         </div>
 
         {/* Блок безопасности */}

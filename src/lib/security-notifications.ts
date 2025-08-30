@@ -20,7 +20,7 @@ export interface SecurityNotification {
   isRead: boolean
   actionRequired: boolean
   actionUrl?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, string | number | boolean>
 }
 
 export interface NotificationRule {

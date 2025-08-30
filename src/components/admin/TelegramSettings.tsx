@@ -19,6 +19,12 @@ interface TelegramSettingsProps {
   userRole?: string
 }
 
+interface BotInfo {
+  id: number
+  first_name: string
+  username: string
+}
+
 export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
   const [config, setConfig] = useState<TelegramConfig>({
     botToken: '',
@@ -35,7 +41,7 @@ export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
   
   const [loading, setLoading] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)
-  const [botInfo, setBotInfo] = useState<any>(null)
+  const [botInfo, setBotInfo] = useState<BotInfo | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -70,7 +76,7 @@ export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
       if (result.success) {
         // Обновляем информацию о боте
         const botInfoResult = await telegramIntegration.getBotInfo()
-        if (botInfoResult.success) {
+        if (botInfoResult.success && botInfoResult.botInfo) {
           setBotInfo(botInfoResult.botInfo)
         }
       }
@@ -163,11 +169,11 @@ export default function TelegramSettings({ userRole }: TelegramSettingsProps) {
               <p className="font-medium mb-2">Как настроить Telegram бота:</p>
               <ol className="list-decimal list-inside space-y-1">
                 <li>Создайте бота через <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="underline">@BotFather</a></li>
-                <li>Получите токен бота и вставьте его в поле "Токен бота"</li>
+                <li>Получите токен бота и вставьте его в поле &quot;Токен бота&quot;</li>
                 <li>Добавьте бота в нужный чат/канал</li>
                 <li>Получите ID чата (можно использовать <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" className="underline">@userinfobot</a>)</li>
                 <li>Вставьте ID чата в соответствующее поле</li>
-                <li>Нажмите "Тестировать подключение" для проверки</li>
+                <li>Нажмите &quot;Тестировать подключение&quot; для проверки</li>
               </ol>
             </div>
           </div>

@@ -16,6 +16,22 @@ export interface TelegramConfig {
   testMode: boolean
 }
 
+interface BotInfo {
+  id: number
+  is_bot: boolean
+  first_name: string
+  username: string
+  can_join_groups: boolean
+  can_read_all_group_messages: boolean
+  supports_inline_queries: boolean
+}
+
+interface TelegramResponse {
+  ok: boolean
+  result?: BotInfo
+  description?: string
+}
+
 class TelegramIntegration {
   private config: TelegramConfig = {
     botToken: '',
@@ -103,7 +119,7 @@ class TelegramIntegration {
     title: string,
     message: string,
     riskLevel: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, string | number | boolean>
   ): Promise<boolean> {
     if (!this.shouldSendNotification(riskLevel)) {
       return false
@@ -134,7 +150,7 @@ class TelegramIntegration {
         throw new Error(`Telegram API error: ${response.status}`)
       }
 
-      const result = await response.json()
+      const result: TelegramResponse = await response.json()
       
       if (result.ok) {
         console.log('[TELEGRAM] Notification sent successfully')
@@ -155,7 +171,7 @@ class TelegramIntegration {
     title: string,
     message: string,
     riskLevel: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, string | number | boolean>
   ): string {
     const riskEmoji = this.getRiskEmoji(riskLevel)
     const timestamp = new Date().toLocaleString('ru-RU')
@@ -221,9 +237,9 @@ class TelegramIntegration {
         throw new Error(`HTTP ${response.status}`)
       }
 
-      const result = await response.json()
+      const result: TelegramResponse = await response.json()
       
-      if (result.ok) {
+      if (result.ok && result.result) {
         // Отправляем тестовое сообщение
         const testResult = await this.sendNotification(
           '🧪 Тест подключения',
@@ -244,7 +260,7 @@ class TelegramIntegration {
           }
         }
       } else {
-        throw new Error(result.description)
+        throw new Error(result.description || 'Неизвестная ошибка')
       }
     } catch (error) {
       return {
@@ -257,7 +273,7 @@ class TelegramIntegration {
   /**
    * Получает информацию о боте
    */
-  async getBotInfo(): Promise<{ success: boolean; botInfo?: any; message: string }> {
+  async getBotInfo(): Promise<{ success: boolean; botInfo?: BotInfo; message: string }> {
     if (!this.config.botToken) {
       return {
         success: false,
@@ -272,16 +288,16 @@ class TelegramIntegration {
         throw new Error(`HTTP ${response.status}`)
       }
 
-      const result = await response.json()
+      const result: TelegramResponse = await response.json()
       
-      if (result.ok) {
+      if (result.ok && result.result) {
         return {
           success: true,
           botInfo: result.result,
           message: 'Информация о боте получена'
         }
       } else {
-        throw new Error(result.description)
+        throw new Error(result.description || 'Неизвестная ошибка')
       }
     } catch (error) {
       return {
@@ -297,7 +313,7 @@ class TelegramIntegration {
   async validateBotToken(token: string): Promise<boolean> {
     try {
       const response = await fetch(`https://api.telegram.org/bot${token}/getMe`)
-      const result = await response.json()
+      const result: TelegramResponse = await response.json()
       return result.ok === true
     } catch {
       return false
@@ -321,7 +337,7 @@ class TelegramIntegration {
         body: JSON.stringify({ chat_id: chatId })
       })
 
-      const result = await response.json()
+      const result: TelegramResponse = await response.json()
       return result.ok === true
     } catch {
       return false

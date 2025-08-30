@@ -107,6 +107,12 @@ export function AppHeader() {
                 >
                   Аналитика
                 </Link>
+                <Link 
+                  href="/admin/security" 
+                  className="relative text-red-600 hover:text-red-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-sm"
+                >
+                  Безопасность
+                </Link>
               </AdminOnly>
             </nav>
           )}
