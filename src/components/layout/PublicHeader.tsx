@@ -125,7 +125,9 @@ export function PublicHeader() {
                           onClick={() => setShowUserMenu(false)}
                           className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
-                          <User className="w-4 h-4" />
+                          <div className="w-4 h-4 bg-gray-100 rounded flex items-center justify-center">
+                            <User className="w-3 h-3 text-gray-600" />
+                          </div>
                           <span>Мой профиль</span>
                         </Link>
 
@@ -134,7 +136,9 @@ export function PublicHeader() {
                           onClick={() => setShowUserMenu(false)}
                           className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
-                          <CreditCard className="w-4 h-4" />
+                          <div className="w-4 h-4 bg-gray-100 rounded flex items-center justify-center">
+                            <CreditCard className="w-3 h-3 text-gray-600" />
+                          </div>
                           <span>Платежи</span>
                         </Link>
 
@@ -147,7 +151,9 @@ export function PublicHeader() {
                           }}
                           className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
                         >
-                          <LogOut className="w-4 h-4" />
+                          <div className="w-4 h-4 bg-red-100 rounded flex items-center justify-center">
+                            <LogOut className="w-3 h-3 text-red-600" />
+                          </div>
                           <span>Выйти</span>
                         </button>
                       </div>
