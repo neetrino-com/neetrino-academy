@@ -776,8 +776,6 @@ export default function LessonStudyPage() {
             </div>
           </div>
         </div>
-        </div>
-        </AccessControl>
       </div>
     </div>
   )

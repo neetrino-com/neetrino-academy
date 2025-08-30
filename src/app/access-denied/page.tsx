@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Shield, AlertTriangle, ArrowLeft, Home, Courses, Dashboard } from 'lucide-react'
+import { Shield, AlertTriangle, ArrowLeft, Home, BookOpen, LayoutDashboard } from 'lucide-react'
 
 export default function AccessDeniedPage() {
   const router = useRouter()
@@ -47,7 +47,7 @@ export default function AccessDeniedPage() {
               onClick={() => router.push('/dashboard')}
               className="flex items-center justify-center space-x-2 bg-indigo-600 text-white py-4 px-6 rounded-xl hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              <Dashboard className="w-5 h-5" />
+              <LayoutDashboard className="w-5 h-5" />
               <span>Мой дашборд</span>
             </button>
             
@@ -55,7 +55,7 @@ export default function AccessDeniedPage() {
               onClick={() => router.push('/courses')}
               className="flex items-center justify-center space-x-2 bg-emerald-600 text-white py-4 px-6 rounded-xl hover:bg-emerald-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
-              <Courses className="w-5 h-5" />
+              <BookOpen className="w-5 h-5" />
               <span>Просмотреть курсы</span>
             </button>
             
