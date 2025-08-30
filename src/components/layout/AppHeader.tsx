@@ -16,7 +16,9 @@ import {
   Menu,
   X,
   BarChart3,
+  BookOpen,
   Users,
+  FileText,
   MessageSquare
 } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
