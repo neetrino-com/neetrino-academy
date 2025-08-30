@@ -26,68 +26,93 @@ function SecurityPageComponent({ userRole, isLoading }: WithRoleProtectionProps)
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Заголовок страницы */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-red-500 to-pink-500 rounded-lg p-3">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+      <div className="bg-gradient-to-r from-red-600 to-red-800 text-white py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center space-x-4">
+            <div className="bg-white/20 rounded-full p-3">
+              <span className="text-3xl">🛡️</span>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Безопасность системы</h1>
-              <p className="text-gray-600">
-                Мониторинг и управление безопасностью образовательной платформы
+              <h1 className="text-3xl font-bold">Центр безопасности</h1>
+              <p className="text-red-100 text-lg mt-1">
+                Мониторинг, логирование и уведомления о безопасности системы
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Вкладки */}
       <div className="container mx-auto px-4 py-6">
-        <div className="bg-white rounded-lg shadow-md mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'dashboard'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        {/* Улучшенные табы */}
+        <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+          <div className="border-b border-gray-200 bg-gray-50">
+            <nav className="flex space-x-1 px-6">
+              <button 
+                onClick={() => setActiveTab('dashboard')} 
+                className={`py-4 px-6 border-b-2 font-semibold text-base transition-all duration-200 rounded-t-lg relative ${
+                  activeTab === 'dashboard' 
+                    ? 'border-red-500 text-red-600 bg-white shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300 hover:bg-white'
                 }`}
               >
-                🛡️ Дашборд безопасности
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl">🛡️</span>
+                  <span>Дашборд безопасности</span>
+                </div>
+                {activeTab === 'dashboard' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-500 rounded-t-full"></div>
+                )}
               </button>
-              <button
-                onClick={() => setActiveTab('logs')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'logs'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              
+              <button 
+                onClick={() => setActiveTab('logs')} 
+                className={`py-4 px-6 border-b-2 font-semibold text-base transition-all duration-200 rounded-t-lg relative ${
+                  activeTab === 'logs' 
+                    ? 'border-blue-500 text-blue-600 bg-white shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-blue-700 hover:border-blue-300 hover:bg-white'
                 }`}
               >
-                📊 Логи безопасности
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl">📊</span>
+                  <span>Логи безопасности</span>
+                </div>
+                {activeTab === 'logs' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-t-full"></div>
+                )}
               </button>
-              <button
-                onClick={() => setActiveTab('notifications')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'notifications'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              
+              <button 
+                onClick={() => setActiveTab('notifications')} 
+                className={`py-4 px-6 border-b-2 font-semibold text-base transition-all duration-200 rounded-t-lg relative ${
+                  activeTab === 'notifications' 
+                    ? 'border-green-500 text-green-600 bg-white shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-green-700 hover:border-green-300 hover:bg-white'
                 }`}
               >
-                🔔 Уведомления о безопасности
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl">🔔</span>
+                  <span>Уведомления о безопасности</span>
+                </div>
+                {activeTab === 'notifications' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-500 rounded-t-full"></div>
+                )}
               </button>
-              <button
-                onClick={() => setActiveTab('telegram')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'telegram'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              
+              <button 
+                onClick={() => setActiveTab('telegram')} 
+                className={`py-4 px-6 border-b-2 font-semibold text-base transition-all duration-200 rounded-t-lg relative ${
+                  activeTab === 'telegram' 
+                    ? 'border-purple-500 text-purple-600 bg-white shadow-sm' 
+                    : 'border-transparent text-gray-600 hover:text-purple-700 hover:border-purple-300 hover:bg-white'
                 }`}
               >
-                📱 Настройки Telegram
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl">📱</span>
+                  <span>Настройки Telegram</span>
+                </div>
+                {activeTab === 'telegram' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500 rounded-t-full"></div>
+                )}
               </button>
             </nav>
           </div>
