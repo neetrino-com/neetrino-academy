@@ -10,6 +10,11 @@ interface Course {
   direction: string
   level: string
   price?: number | null
+  paymentType?: 'ONE_TIME' | 'MONTHLY' | null
+  monthlyPrice?: number | null
+  totalPrice?: number | null
+  duration?: number | null
+  durationUnit?: string | null
   _count: {
     modules: number
     enrollments: number

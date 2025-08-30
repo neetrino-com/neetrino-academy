@@ -11,6 +11,11 @@ interface CourseCardProps {
     direction: string
     level: string
     price?: number | null
+    paymentType?: 'ONE_TIME' | 'MONTHLY' | null
+    monthlyPrice?: number | null
+    totalPrice?: number | null
+    duration?: number | null
+    durationUnit?: string | null
     _count: {
       modules: number
       enrollments: number
@@ -131,9 +136,21 @@ export function CourseCard({
               {course._count.enrollments} студентов
             </span>
           </div>
-          {course.price && (
-            <div className="text-lg font-bold text-indigo-600">
-              {course.price === 0 ? 'Бесплатно' : `${course.price} ₽`}
+          {course.paymentType && (
+            <div className="text-right">
+              {course.paymentType === 'ONE_TIME' ? (
+                <div className="text-lg font-bold text-indigo-600">
+                  {course.price === 0 ? 'Бесплатно' : `${course.price} ₽`}
+                  <div className="text-xs text-gray-500 font-normal">1 разовая оплата</div>
+                </div>
+              ) : (
+                <div className="text-lg font-bold text-purple-600">
+                  {course.monthlyPrice} ₽
+                  <div className="text-xs text-gray-500 font-normal">
+                    в месяц • {course.duration} {course.durationUnit === 'months' ? 'месяцев' : course.durationUnit === 'weeks' ? 'недель' : 'дней'}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
