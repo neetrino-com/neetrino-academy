@@ -65,7 +65,7 @@ export function PublicHeader() {
               <div className="flex items-center space-x-4">
                 {/* Кнопка входа в приложение */}
                 <Link
-                  href="/app"
+                  href="/dashboard"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
                 >
                   Войти в приложение
@@ -110,9 +110,9 @@ export function PublicHeader() {
                       {/* Пункты меню */}
                       <div className="py-2">
                         <Link
-                          href="/app"
+                          href="/dashboard"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center space-x-3 px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors font-medium"
+                          className="flex items-center space-x-4 py-2 text-sm text-blue-700 hover:bg-blue-50 transition-colors font-medium"
                         >
                           <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
                             <span className="text-blue-600 text-xs">⚡</span>
