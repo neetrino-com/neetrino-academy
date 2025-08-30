@@ -16,10 +16,7 @@ import {
   Menu,
   X,
   BarChart3,
-  BookOpen,
   Users,
-  FileText,
-  Calendar,
   MessageSquare
 } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
@@ -97,29 +94,9 @@ export function AppHeader() {
           {session?.user && (
             <nav className="hidden xl:flex items-center space-x-2">
               
-              {/* Для студентов */}
+              {/* Для студентов - навигация убрана */}
               <StudentOnly>
-                <Link 
-                  href="/dashboard/courses" 
-                  className="flex items-center space-x-2 text-slate-700 hover:text-blue-600 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-blue-50 hover:shadow-md group"
-                >
-                  <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span>Мои курсы</span>
-                </Link>
-                <Link 
-                  href="/dashboard/assignments" 
-                  className="flex items-center space-x-2 text-slate-700 hover:text-green-600 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-green-50 hover:shadow-md group"
-                >
-                  <FileText className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span>Задания</span>
-                </Link>
-                <Link 
-                  href="/dashboard/groups" 
-                  className="flex items-center space-x-2 text-slate-700 hover:text-purple-600 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-purple-50 hover:shadow-md group"
-                >
-                  <Users className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span>Группы</span>
-                </Link>
+                {/* Навигация для студентов временно скрыта */}
               </StudentOnly>
 
               {/* Для преподавателей */}
@@ -354,38 +331,9 @@ export function AppHeader() {
           <div className="xl:hidden py-4 border-t border-slate-200 bg-white/90 backdrop-blur-sm">
             <div className="space-y-2">
               
-              {/* Для студентов */}
+              {/* Для студентов - навигация убрана */}
               <StudentOnly>
-                <Link 
-                  href="/dashboard/courses" 
-                  className="block px-4 py-3 text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl text-sm font-medium transition-all duration-200"
-                  onClick={() => setShowMobileMenu(false)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <BookOpen className="w-4 h-4" />
-                    <span>Мои курсы</span>
-                  </div>
-                </Link>
-                <Link 
-                  href="/dashboard/assignments" 
-                  className="block px-4 py-3 text-slate-700 hover:text-green-600 hover:bg-green-50 rounded-xl text-sm font-medium transition-all duration-200"
-                  onClick={() => setShowMobileMenu(false)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <FileText className="w-4 h-4" />
-                    <span>Задания</span>
-                  </div>
-                </Link>
-                <Link 
-                  href="/dashboard/groups" 
-                  className="block px-4 py-3 text-slate-700 hover:text-purple-600 hover:bg-purple-50 rounded-xl text-sm font-medium transition-all duration-200"
-                  onClick={() => setShowMobileMenu(false)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Users className="w-4 h-4" />
-                    <span>Группы</span>
-                  </div>
-                </Link>
+                {/* Навигация для студентов временно скрыта */}
               </StudentOnly>
 
               {/* Для преподавателей */}
