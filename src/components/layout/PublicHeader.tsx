@@ -128,7 +128,7 @@ export function PublicHeader() {
                           <div className="w-4 h-4 bg-gray-100 rounded flex items-center justify-center">
                             <User className="w-3 h-3 text-gray-600" />
                           </div>
-                          <span>Мой профиль</span>
+                          <span>Мой профиль ✨</span>
                         </Link>
 
                         <Link
