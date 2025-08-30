@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -123,7 +123,8 @@ interface StudentDetails {
   }
 }
 
-export default function StudentDetailPage({ params }: { params: { id: string } }) {
+export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
   const router = useRouter()
   const { data: session, status } = useSession()
   const [student, setStudent] = useState<StudentDetails | null>(null)
@@ -144,12 +145,12 @@ export default function StudentDetailPage({ params }: { params: { id: string } }
     }
 
     fetchStudentDetails()
-  }, [session, status, router, params.id])
+  }, [session, status, router, resolvedParams.id])
 
   const fetchStudentDetails = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/students/${params.id}`)
+      const response = await fetch(`/api/admin/students/${resolvedParams.id}`)
       if (response.ok) {
         const data = await response.json()
         setStudent(data)
@@ -169,7 +170,7 @@ export default function StudentDetailPage({ params }: { params: { id: string } }
     
     try {
       setUpdating(true)
-      const response = await fetch(`/api/admin/students/${params.id}`, {
+              const response = await fetch(`/api/admin/students/${resolvedParams.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
