@@ -10,9 +10,9 @@ export default async function AppPage() {
 
   // Перенаправляем пользователя в зависимости от роли
   if (session.user.role === 'STUDENT') {
-    redirect('/app/dashboard')
+    redirect('/dashboard')
   } else if (session.user.role === 'TEACHER' || session.user.role === 'ADMIN') {
-    redirect('/app/admin')
+    redirect('/admin')
   }
 
   // Fallback
