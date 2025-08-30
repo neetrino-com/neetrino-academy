@@ -43,8 +43,8 @@ export default async function DashboardPage() {
     },
     orderBy: {
       enrolledAt: 'desc'
-    },
-    take: 3 // Показываем только 3 последних курса
+    }
+    // Убрали take: 3 - теперь показываем все курсы
   })
 
   // Вычисляем статистику
@@ -141,17 +141,25 @@ export default async function DashboardPage() {
           {/* Мои курсы */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-blue-900">Мои курсы</h2>
-              <Link
-                href="/courses"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Все курсы →
-              </Link>
+              <h2 className="text-xl font-semibold text-blue-900">Мои курсы ({enrollments.length})</h2>
+              <div className="flex gap-3">
+                <Link
+                  href="/courses"
+                  className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                >
+                  Все курсы →
+                </Link>
+                <Link
+                  href="/payments"
+                  className="text-green-600 hover:text-green-700 font-medium hover:underline"
+                >
+                  Мои платежи →
+                </Link>
+              </div>
             </div>
 
             {enrollments.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-4">
                 {enrollments.map((enrollment) => {
                   const course = enrollment.course
                   const totalLessons = course.modules.reduce((acc, module) => {
@@ -167,28 +175,64 @@ export default async function DashboardPage() {
                   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
                   return (
-                    <div key={enrollment.id} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-                      <h3 className="font-semibold text-blue-900 mb-2 text-lg">{course.title}</h3>
-                      <div className="mb-3">
-                        <div className="flex justify-between text-sm text-blue-600 mb-1 font-medium">
-                          <span>Прогресс</span>
-                          <span>{progress}%</span>
+                    <div key={enrollment.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="font-semibold text-gray-900 text-lg">{course.title}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              course.direction === 'WORDPRESS' ? 'bg-blue-100 text-blue-700' :
+                              course.direction === 'VIBE_CODING' ? 'bg-purple-100 text-purple-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {course.direction === 'WORDPRESS' ? 'WordPress' :
+                               course.direction === 'VIBE_CODING' ? 'Vibe Coding' : 'Shopify'}
+                            </span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              course.level === 'BEGINNER' ? 'bg-green-100 text-green-700' :
+                              course.level === 'INTERMEDIATE' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {course.level === 'BEGINNER' ? 'Начинающий' :
+                               course.level === 'INTERMEDIATE' ? 'Средний' : 'Продвинутый'}
+                            </span>
+                          </div>
+                          
+                          <div className="mb-3">
+                            <div className="flex justify-between text-sm text-gray-600 mb-1 font-medium">
+                              <span>Прогресс обучения</span>
+                              <span className="font-semibold">{progress}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${progress}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm text-gray-600">
+                            <span>{completedLessons} из {totalLessons} уроков завершено</span>
+                            <span className="text-xs text-gray-500">
+                              {course.modules.length} модулей
+                            </span>
+                          </div>
                         </div>
-                        <div className="w-full bg-blue-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          ></div>
+                        
+                        <div className="flex flex-col gap-2 ml-4">
+                          <Link
+                            href={`/courses/${course.id}`}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
+                          >
+                            Продолжить
+                          </Link>
+                          <Link
+                            href={`/courses/${course.id}/learn`}
+                            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium text-center"
+                          >
+                            Учиться
+                          </Link>
                         </div>
-                      </div>
-                      <div className="flex justify-between text-sm text-blue-500 font-medium">
-                        <span>{completedLessons} из {totalLessons} уроков</span>
-                        <Link
-                          href={`/courses/${course.id}`}
-                          className="text-blue-700 hover:text-blue-900 font-semibold"
-                        >
-                          Продолжить →
-                        </Link>
                       </div>
                     </div>
                   )
@@ -215,6 +259,60 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             )}
+          </div>
+
+          {/* Быстрые действия */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 className="text-xl font-semibold text-blue-900 mb-6">Быстрые действия</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link
+                href="/courses"
+                className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200 group"
+              >
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium text-gray-700 text-center">Найти новые курсы</span>
+              </Link>
+
+              <Link
+                href="/payments"
+                className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200 group"
+              >
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium text-gray-700 text-center">Мои платежи</span>
+              </Link>
+
+              <Link
+                href="/profile"
+                className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all duration-200 group"
+              >
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium text-gray-700 text-center">Профиль</span>
+              </Link>
+
+              <Link
+                href="/support"
+                className="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-md transition-all duration-200 group"
+              >
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-orange-200 transition-colors">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium text-gray-700 text-center">Поддержка</span>
+              </Link>
+            </div>
           </div>
 
           {/* Виджет заданий для студентов */}
