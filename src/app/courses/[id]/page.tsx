@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ModuleList } from '@/components/courses/ModuleList'
+import { AccessControl } from '@/components/courses/AccessControl'
 
 interface Module {
   id: string

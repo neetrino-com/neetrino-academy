@@ -28,6 +28,7 @@ import {
   Activity,
   Users
 } from 'lucide-react'
+import { AccessManagement } from '@/components/admin/AccessManagement'
 
 interface StudentDetails {
   student: {
@@ -130,6 +131,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const [student, setStudent] = useState<StudentDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
+  const [showAccessManager, setShowAccessManager] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -300,6 +302,14 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                 <UserCheck className="w-4 h-4" />
               )}
               {student.student.isActive ? 'Деактивировать' : 'Активировать'}
+            </button>
+            
+            <button
+              onClick={() => setShowAccessManager(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200"
+            >
+              <Users className="w-4 h-4" />
+              Управление доступом
             </button>
           </div>
         </div>
@@ -667,6 +677,15 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {/* Модалка управления доступом */}
+      {showAccessManager && student && (
+        <AccessManagement
+          studentId={student.id}
+          studentName={student.name}
+          onClose={() => setShowAccessManager(false)}
+        />
+      )}
     </div>
   )
 }

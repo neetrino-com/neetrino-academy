@@ -6,6 +6,7 @@ import Link from 'next/link'
 import VideoPlayer from '@/components/ui/VideoPlayer'
 import Quiz from '@/components/ui/Quiz'
 import ChecklistLesson from '@/components/lessons/ChecklistLesson'
+import { AccessControl } from '@/components/courses/AccessControl'
 
 interface Assignment {
   id: string
@@ -775,6 +776,8 @@ export default function LessonStudyPage() {
             </div>
           </div>
         </div>
+        </div>
+        </AccessControl>
       </div>
     </div>
   )
