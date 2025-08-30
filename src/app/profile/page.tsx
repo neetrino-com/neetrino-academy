@@ -97,8 +97,12 @@ export default function ProfilePage() {
     try {
       setLoading(true)
       const response = await fetch('/api/auth/me')
+      
+      console.log('Profile API response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('Profile data received:', data)
         setProfile(data)
         setEditForm({
           name: data.name || '',
@@ -115,6 +119,10 @@ export default function ProfilePage() {
           telegram: data.telegram || '',
           instagram: data.instagram || ''
         })
+      } else {
+        const errorData = await response.json()
+        console.error('Profile API error:', response.status, errorData)
+        setMessage({ type: 'error', text: errorData.error || 'Ошибка загрузки профиля' })
       }
     } catch (error) {
       console.error('Ошибка загрузки профиля:', error)

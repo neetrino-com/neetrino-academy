@@ -259,6 +259,111 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
+
+          {/* Второй ряд блока "Контроль обучения" */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {/* Аналитика тестов */}
+            <div 
+              onClick={() => router.push('/admin/tests/analytics')}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-rose-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-rose-50 hover:to-pink-50 hover:border-rose-300"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-to-br from-rose-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                    <TrendingUp className="w-8 h-8 text-rose-600" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                      {stats.totalTests}
+                    </p>
+                    <p className="text-xs text-rose-600 font-medium mt-1">тестов</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-rose-600 transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-3">Аналитика тестов</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Статистика прохождения и результаты тестирования
+              </p>
+            </div>
+
+            {/* Платежи и финансы */}
+            <div 
+              onClick={() => router.push('/admin/payments')}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-green-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-300"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
+                      💳
+                    </p>
+                    <p className="text-xs text-green-600 font-medium mt-1">контроль</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-3">Платежи и финансы</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Управление платежами и финансовая отчетность
+              </p>
+            </div>
+
+            {/* Уведомления системы */}
+            <div 
+              onClick={() => router.push('/admin/notifications')}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-indigo-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-indigo-50 hover:to-blue-50 hover:border-indigo-300"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 3h6l5 5v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2zm0 4v2h6V7H9z" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent leading-none">
+                      🔔
+                    </p>
+                    <p className="text-xs text-indigo-600 font-medium mt-1">система</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-3">Уведомления</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Настройка и управление системными уведомлениями
+              </p>
+            </div>
+
+            {/* Резерв для будущих функций */}
+            <div className="bg-white/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-gray-200/60 opacity-60">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-gray-100 rounded-2xl p-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-gray-400 leading-none">
+                      ⚡
+                    </p>
+                    <p className="text-xs text-gray-400 font-medium mt-1">скоро</p>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-600 mb-3">Новая функция</h3>
+              <p className="text-gray-500 leading-relaxed">
+                Планируется добавление новых инструментов
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Основные блоки управления */}

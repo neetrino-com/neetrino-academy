@@ -123,9 +123,15 @@ export default function StudentsManagementPage() {
         params.append('search', searchTerm)
       }
 
+      console.log('Fetching students from:', `/api/admin/students?${params}`)
+      
       const response = await fetch(`/api/admin/students?${params}`)
+      
+      console.log('Students API response status:', response.status)
+      
       if (response.ok) {
         const data: StudentsResponse = await response.json()
+        console.log('Students data received:', data)
         setStudents(data.students)
         setPagination(prev => ({
           ...prev,
@@ -133,6 +139,9 @@ export default function StudentsManagementPage() {
           totalPages: data.pagination.totalPages
         }))
         setStats(data.stats)
+      } else {
+        const errorData = await response.json()
+        console.error('Students API error:', response.status, errorData)
       }
     } catch (error) {
       console.error('Ошибка загрузки студентов:', error)
