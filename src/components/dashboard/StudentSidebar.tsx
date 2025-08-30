@@ -107,7 +107,7 @@ export default function StudentSidebar({ isCollapsed = false, onToggle }: Studen
     },
     {
       name: 'Профиль',
-      href: '/dashboard/profile',
+      href: '/profile',
       icon: User,
       description: 'Настройки аккаунта',
       color: 'from-slate-500 to-gray-600'
