@@ -455,110 +455,83 @@ export default function CourseBuilder() {
             </div>
           </div>
 
-          {/* Тип оплаты */}
-          <div className="lg:col-span-2">
+          {/* Цена и тип оплаты */}
+          <div>
             <label className="block text-sm font-semibold text-gray-800 mb-3">
-              💳 Тип оплаты за курс
+              💰 Стоимость курса
             </label>
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+            
+            {/* Переключатель типов оплаты */}
+            <div className="flex gap-2 mb-3">
               <button
                 type="button"
                 onClick={() => setCourseData({...courseData, paymentType: 'ONE_TIME'})}
-                className={`flex-1 py-3 px-4 rounded-md font-medium transition-all duration-200 text-sm ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                   courseData.paymentType === 'ONE_TIME'
-                    ? 'bg-white text-blue-600 shadow-md'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base">💎</span>
-                  <span>Разовая оплата</span>
-                </div>
+                💎 Разовая
               </button>
               
               <button
                 type="button"
                 onClick={() => setCourseData({...courseData, paymentType: 'MONTHLY'})}
-                className={`flex-1 py-3 px-4 rounded-md font-medium transition-all duration-200 text-sm ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                   courseData.paymentType === 'MONTHLY'
-                    ? 'bg-white text-purple-600 shadow-md'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? 'bg-purple-100 text-purple-700 border border-purple-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base">📅</span>
-                  <span>Ежемесячная оплата</span>
-                </div>
+                📅 Месячная
               </button>
             </div>
-          </div>
 
-          {/* Цена в зависимости от типа оплаты */}
-          {courseData.paymentType === 'ONE_TIME' ? (
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">
-                💰 Стоимость курса
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  value={courseData.price}
-                  onChange={(e) => setCourseData({...courseData, price: parseInt(e.target.value) || 0})}
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
-                  min="0"
-                  placeholder="0"
-                />
-                <select
-                  value={courseData.currency}
-                  onChange={(e) => setCourseData({...courseData, currency: e.target.value as 'RUB' | 'USD' | 'AMD'})}
-                  className="px-4 py-3 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900 min-w-[100px]"
-                >
-                  <option value="RUB">₽</option>
-                  <option value="USD">$</option>
-                  <option value="AMD">֏</option>
-                </select>
-              </div>
-              {courseData.price > 0 && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-xs text-blue-800">
-                    💡 Разовая оплата: <strong>{courseData.price} {courseData.currency}</strong>
-                  </p>
-                </div>
-              )}
+            {/* Поле ввода цены */}
+            <div className="flex gap-3">
+              <input
+                type="number"
+                value={courseData.paymentType === 'ONE_TIME' ? courseData.price : courseData.monthlyPrice}
+                onChange={(e) => {
+                  if (courseData.paymentType === 'ONE_TIME') {
+                    setCourseData({...courseData, price: parseInt(e.target.value) || 0})
+                  } else {
+                    setCourseData({...courseData, monthlyPrice: parseInt(e.target.value) || 0})
+                  }
+                }}
+                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
+                min="0"
+                placeholder="0"
+              />
+              <select
+                value={courseData.currency}
+                onChange={(e) => setCourseData({...courseData, currency: e.target.value as 'RUB' | 'USD' | 'AMD'})}
+                className="px-4 py-3 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900 min-w-[100px]"
+              >
+                <option value="RUB">₽</option>
+                <option value="USD">$</option>
+                <option value="AMD">֏</option>
+              </select>
             </div>
-          ) : (
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">
-                💰 Ежемесячная стоимость
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  value={courseData.monthlyPrice}
-                  onChange={(e) => setCourseData({...courseData, monthlyPrice: parseInt(e.target.value) || 0})}
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300"
-                  min="0"
-                  placeholder="0"
-                />
-                <select
-                  value={courseData.currency}
-                  onChange={(e) => setCourseData({...courseData, currency: e.target.value as 'RUB' | 'USD' | 'AMD'})}
-                  className="px-4 py-3 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-300 bg-white text-gray-900 min-w-[100px]"
-                >
-                  <option value="RUB">₽</option>
-                  <option value="USD">$</option>
-                  <option value="AMD">֏</option>
-                </select>
+
+            {/* Информация о цене */}
+            {courseData.paymentType === 'ONE_TIME' && courseData.price > 0 && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-xs text-blue-800">
+                  💡 Разовая оплата: <strong>{courseData.price} {courseData.currency}</strong>
+                </p>
               </div>
-              {courseData.monthlyPrice > 0 && (
-                <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded-md">
-                  <p className="text-xs text-purple-800">
-                    💡 <strong>{courseData.monthlyPrice} {courseData.currency}</strong> в месяц • Итого: <strong>{courseData.totalPrice} {courseData.currency}</strong>
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+            
+            {courseData.paymentType === 'MONTHLY' && courseData.monthlyPrice > 0 && (
+              <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded-md">
+                <p className="text-xs text-purple-800">
+                  💡 <strong>{courseData.monthlyPrice} {courseData.currency}</strong> в месяц • Итого: <strong>{courseData.totalPrice} {courseData.currency}</strong>
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Описание */}
           <div className="lg:col-span-2">
