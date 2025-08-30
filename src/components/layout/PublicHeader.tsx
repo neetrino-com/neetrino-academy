@@ -65,7 +65,7 @@ export function PublicHeader() {
               <div className="flex items-center space-x-4">
                 {/* Кнопка входа в приложение */}
                 <Link
-                  href="/dashboard"
+                  href="/app"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm"
                 >
                   Войти в приложение
