@@ -140,17 +140,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
+      // При входе устанавливаем базовые поля
       if (user) {
-        token.role = user.role
-        token.id = user.id
+        token.role = (user as any).role
+        token.id = (user as any).id
+        return token
       }
+
+      // На каждый запрос проверяем, существует ли пользователь и активен ли он
+      try {
+        if (token?.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { id: true, role: true, isActive: true }
+          })
+
+          // Если пользователь удалён или деактивирован — обнуляем токен
+          if (!dbUser || !dbUser.isActive) {
+            return {}
+          }
+
+          token.role = dbUser.role
+        }
+      } catch (e) {
+        // В случае ошибки в БД считаем токен недействительным
+        return {}
+      }
+
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
+      // Если токен пустой/недействительный — сессии нет
+      if (!token?.id) {
+        return null as any
       }
+      session.user.id = token.id as string
+      session.user.role = token.role as string
       return session
     },
     async signOut({ session, token }) {
