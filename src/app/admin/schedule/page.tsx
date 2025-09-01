@@ -122,9 +122,11 @@ export default function ScheduleDashboard() {
       
       // Получаем группы
       const groupsResponse = await fetch('/api/admin/groups')
+      let groupsData = []
       if (groupsResponse.ok) {
-        const groupsData = await groupsResponse.json()
-        setGroups(Array.isArray(groupsData) ? groupsData : [])
+        const groupsDataResponse = await groupsResponse.json()
+        groupsData = Array.isArray(groupsDataResponse) ? groupsDataResponse : []
+        setGroups(groupsData)
       } else {
         console.error('Ошибка загрузки групп:', groupsResponse.status)
         setGroups([])
@@ -137,35 +139,44 @@ export default function ScheduleDashboard() {
         setTeachers(Array.isArray(teachersData) ? teachersData : [])
       } else {
         console.error('Ошибка загрузки учителей:', teachersResponse.status)
+        // Если нет учителей, создаем пустой массив
         setTeachers([])
       }
 
       // Получаем расписание всех групп
       if (groupsData.length > 0) {
-        const schedulePromises = groupsData.map((group: Group) =>
-          fetch(`/api/admin/groups/${group.id}/schedule`)
-            .then(res => res.ok ? res.json() : null)
-            .catch(() => null)
-        )
-        
-        const schedulesData = await Promise.all(schedulePromises)
-        const allEntries: ScheduleEntry[] = []
-        
-        schedulesData.forEach((schedule, index) => {
-          if (schedule && schedule.entries) {
-            schedule.entries.forEach((entry: any) => {
-              allEntries.push({
-                ...entry,
-                groupId: groupsData[index].id,
-                groupName: groupsData[index].name,
-                teacherId: groupsData[index].teacher?.id || '',
-                teacherName: groupsData[index].teacher?.name || 'Не назначен'
+        try {
+          const schedulePromises = groupsData.map((group: Group) =>
+            fetch(`/api/admin/groups/${group.id}/schedule`)
+              .then(res => res.ok ? res.json() : null)
+              .catch((error) => {
+                console.error(`Ошибка загрузки расписания группы ${group.name}:`, error)
+                return null
               })
-            })
-          }
-        })
-        
-        setScheduleEntries(allEntries)
+          )
+          
+          const schedulesData = await Promise.all(schedulePromises)
+          const allEntries: ScheduleEntry[] = []
+          
+          schedulesData.forEach((schedule, index) => {
+            if (schedule && schedule.entries) {
+              schedule.entries.forEach((entry: any) => {
+                allEntries.push({
+                  ...entry,
+                  groupId: groupsData[index].id,
+                  groupName: groupsData[index].name,
+                  teacherId: groupsData[index].teacher?.id || '',
+                  teacherName: groupsData[index].teacher?.name || 'Не назначен'
+                })
+              })
+            }
+          })
+          
+          setScheduleEntries(allEntries)
+        } catch (error) {
+          console.error('Ошибка загрузки расписания групп:', error)
+          setScheduleEntries([])
+        }
       } else {
         setScheduleEntries([])
       }
