@@ -1,4 +1,7 @@
-# Academy Rules
+# Academy Rules - Development Guidelines
+
+## Purpose
+Rules for developing Neetrino Academy features with proper validation, notifications, and user experience.
 
 ## Notifications
 - Error: critical issues
