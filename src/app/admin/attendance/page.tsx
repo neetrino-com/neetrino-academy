@@ -112,21 +112,21 @@ export default function AttendancePage() {
     }
   }
 
-  const selectedGroupData = groups.find(g => g.id === selectedGroup)
-  const filteredEvents = events.filter(event => 
+  const selectedGroupData = Array.isArray(groups) ? groups.find(g => g.id === selectedGroup) : null
+  const filteredEvents = Array.isArray(events) ? events.filter(event => 
     event.title.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  ) : []
 
   // Статистика
-  const totalEvents = events.length
-  const totalStudents = selectedGroupData?.students.length || 0
-  const totalAttended = events.reduce((sum, event) => 
-    sum + event.attendees.filter(a => a.status === 'ATTENDED').length, 0
-  )
-  const totalAbsent = events.reduce((sum, event) => 
-    sum + event.attendees.filter(a => a.status === 'ABSENT').length, 0
-  )
-  const attendanceRate = totalEvents > 0 ? (totalAttended / (totalEvents * totalStudents) * 100) : 0
+  const totalEvents = Array.isArray(events) ? events.length : 0
+  const totalStudents = selectedGroupData?.students?.length || 0
+  const totalAttended = Array.isArray(events) ? events.reduce((sum, event) => 
+    sum + (event.attendees?.filter(a => a.status === 'ATTENDED').length || 0), 0
+  ) : 0
+  const totalAbsent = Array.isArray(events) ? events.reduce((sum, event) => 
+    sum + (event.attendees?.filter(a => a.status === 'ABSENT').length || 0), 0
+  ) : 0
+  const attendanceRate = totalEvents > 0 && totalStudents > 0 ? (totalAttended / (totalEvents * totalStudents) * 100) : 0
 
   if (loading) {
     return (
@@ -225,9 +225,9 @@ export default function AttendancePage() {
                 onChange={(e) => setSelectedGroup(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {groups.map((group) => (
+                {Array.isArray(groups) && groups.map((group) => (
                   <option key={group.id} value={group.id}>
-                    {group.name} ({group._count.students} студентов)
+                    {group.name} ({group._count?.students || 0} студентов)
                   </option>
                 ))}
               </select>
@@ -278,8 +278,8 @@ export default function AttendancePage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredEvents.map((event) => {
-                    const attended = event.attendees.filter(a => a.status === 'ATTENDED').length
-                    const absent = event.attendees.filter(a => a.status === 'ABSENT').length
+                    const attended = event.attendees?.filter(a => a.status === 'ATTENDED').length || 0
+                    const absent = event.attendees?.filter(a => a.status === 'ABSENT').length || 0
                     
                     return (
                       <tr key={event.id} className="hover:bg-gray-50">
