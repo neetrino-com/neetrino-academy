@@ -122,37 +122,53 @@ export default function ScheduleDashboard() {
       
       // Получаем группы
       const groupsResponse = await fetch('/api/admin/groups')
-      const groupsData = await groupsResponse.json()
-      setGroups(groupsData)
+      if (groupsResponse.ok) {
+        const groupsData = await groupsResponse.json()
+        setGroups(Array.isArray(groupsData) ? groupsData : [])
+      } else {
+        console.error('Ошибка загрузки групп:', groupsResponse.status)
+        setGroups([])
+      }
 
       // Получаем учителей
       const teachersResponse = await fetch('/api/admin/teachers')
-      const teachersData = await teachersResponse.json()
-      setTeachers(teachersData)
+      if (teachersResponse.ok) {
+        const teachersData = await teachersResponse.json()
+        setTeachers(Array.isArray(teachersData) ? teachersData : [])
+      } else {
+        console.error('Ошибка загрузки учителей:', teachersResponse.status)
+        setTeachers([])
+      }
 
       // Получаем расписание всех групп
-      const schedulePromises = groupsData.map((group: Group) =>
-        fetch(`/api/admin/groups/${group.id}/schedule`).then(res => res.json())
-      )
-      
-      const schedulesData = await Promise.all(schedulePromises)
-      const allEntries: ScheduleEntry[] = []
-      
-      schedulesData.forEach((schedule, index) => {
-        if (schedule.entries) {
-          schedule.entries.forEach((entry: any) => {
-            allEntries.push({
-              ...entry,
-              groupId: groupsData[index].id,
-              groupName: groupsData[index].name,
-              teacherId: groupsData[index].teacher?.id || '',
-              teacherName: groupsData[index].teacher?.name || 'Не назначен'
+      if (groupsData.length > 0) {
+        const schedulePromises = groupsData.map((group: Group) =>
+          fetch(`/api/admin/groups/${group.id}/schedule`)
+            .then(res => res.ok ? res.json() : null)
+            .catch(() => null)
+        )
+        
+        const schedulesData = await Promise.all(schedulePromises)
+        const allEntries: ScheduleEntry[] = []
+        
+        schedulesData.forEach((schedule, index) => {
+          if (schedule && schedule.entries) {
+            schedule.entries.forEach((entry: any) => {
+              allEntries.push({
+                ...entry,
+                groupId: groupsData[index].id,
+                groupName: groupsData[index].name,
+                teacherId: groupsData[index].teacher?.id || '',
+                teacherName: groupsData[index].teacher?.name || 'Не назначен'
+              })
             })
-          })
-        }
-      })
-      
-      setScheduleEntries(allEntries)
+          }
+        })
+        
+        setScheduleEntries(allEntries)
+      } else {
+        setScheduleEntries([])
+      }
     } catch (error) {
       console.error('Ошибка загрузки данных расписания:', error)
     } finally {
@@ -164,6 +180,8 @@ export default function ScheduleDashboard() {
     const newConflicts: ScheduleConflict[] = []
     
     // Проверяем конфликты учителей
+    if (!Array.isArray(teachers)) return
+    
     teachers.forEach(teacher => {
       const teacherEntries = scheduleEntries.filter(entry => 
         entry.teacherId === teacher.id && entry.isActive
@@ -329,13 +347,13 @@ export default function ScheduleDashboard() {
               <Calendar className="w-8 h-8" />
               Расписание групп
             </h2>
-            <p className="text-blue-100 mt-1 flex items-center gap-2">
-              <span>{groups.length} групп</span>
-              <span className="text-blue-200">•</span>
-              <span>{teachers.length} учителей</span>
-              <span className="text-blue-200">•</span>
-              <span>{scheduleEntries.filter(e => e.isActive).length} активных занятий</span>
-            </p>
+                         <p className="text-blue-100 mt-1 flex items-center gap-2">
+               <span>{Array.isArray(groups) ? groups.length : 0} групп</span>
+               <span className="text-blue-200">•</span>
+               <span>{Array.isArray(teachers) ? teachers.length : 0} учителей</span>
+               <span className="text-blue-200">•</span>
+               <span>{scheduleEntries.filter(e => e.isActive).length} активных занятий</span>
+             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -363,7 +381,7 @@ export default function ScheduleDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Всего групп</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{groups.length}</p>
+                                 <p className="text-2xl font-bold text-gray-900 mt-1">{Array.isArray(groups) ? groups.length : 0}</p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
             </div>
@@ -372,7 +390,7 @@ export default function ScheduleDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Учителей</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{teachers.length}</p>
+                                 <p className="text-2xl font-bold text-gray-900 mt-1">{Array.isArray(teachers) ? teachers.length : 0}</p>
               </div>
               <User className="w-8 h-8 text-emerald-600" />
             </div>
@@ -413,29 +431,29 @@ export default function ScheduleDashboard() {
               />
             </div>
             
-            <select
-              value={selectedTeacher}
-              onChange={(e) => setSelectedTeacher(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Все учителя</option>
-              {teachers.map(teacher => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.name} ({getTeacherWorkload(teacher.id).totalGroups} групп)
-                </option>
-              ))}
-            </select>
+                         <select
+               value={selectedTeacher}
+               onChange={(e) => setSelectedTeacher(e.target.value)}
+               className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+             >
+               <option value="all">Все учителя</option>
+               {Array.isArray(teachers) && teachers.map(teacher => (
+                 <option key={teacher.id} value={teacher.id}>
+                   {teacher.name} ({getTeacherWorkload(teacher.id).totalGroups} групп)
+                 </option>
+               ))}
+             </select>
 
-            <select
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Все группы</option>
-              {groups.map(group => (
-                <option key={group.id} value={group.id}>{group.name}</option>
-              ))}
-            </select>
+                         <select
+               value={selectedGroup}
+               onChange={(e) => setSelectedGroup(e.target.value)}
+               className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+             >
+               <option value="all">Все группы</option>
+               {Array.isArray(groups) && groups.map(group => (
+                 <option key={group.id} value={group.id}>{group.name}</option>
+               ))}
+             </select>
 
             <div className="flex items-center gap-2">
               <button
