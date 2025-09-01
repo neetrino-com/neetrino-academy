@@ -37,6 +37,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
     try {
       const session = await auth()
+      console.log(`[DEBUG] Session for ${pathname}:`, session?.user ? `User ID: ${session.user.id}, Role: ${session.user.role}` : 'No session')
 
       if (!session?.user) {
         console.log(`[SECURITY] Unauthorized admin page access attempt to ${pathname}`)
@@ -44,6 +45,7 @@ export async function middleware(request: NextRequest) {
       }
 
       const userRole = session.user.role as UserRole
+      console.log(`[DEBUG] User role: ${userRole}, checking against ADMIN/TEACHER`)
 
       // Проверяем, что у пользователя есть права администратора или преподавателя
       if (!['ADMIN', 'TEACHER'].includes(userRole)) {

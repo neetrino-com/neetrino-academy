@@ -147,9 +147,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token
       }
 
-      // На каждый запрос проверяем, существует ли пользователь и активен ли он
-      try {
-        if (token?.id) {
+      // Проверяем активность пользователя только периодически (раз в 5 минут)
+      const now = Date.now()
+      const lastCheck = token.lastUserCheck as number || 0
+      const CHECK_INTERVAL = 5 * 60 * 1000 // 5 минут
+
+      if (token?.id && (now - lastCheck > CHECK_INTERVAL)) {
+        try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
             select: { id: true, role: true, isActive: true }
@@ -161,10 +165,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
 
           token.role = dbUser.role
+          token.lastUserCheck = now
+        } catch (e) {
+          // В случае ошибки просто не обновляем токен, но оставляем его валидным
+          console.error('JWT callback error:', e)
         }
-      } catch (e) {
-        // В случае ошибки в БД считаем токен недействительным
-        return {}
       }
 
       return token
