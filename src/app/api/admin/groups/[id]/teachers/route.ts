@@ -122,19 +122,37 @@ export async function POST(
   }
 }
 
-// Получить преподавателей группы
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<Params> }
 ) {
   try {
     const session = await auth()
+    
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!user || !['ADMIN', 'TEACHER'].includes(user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { id: groupId } = await params
 
+    // Проверяем существование группы
+    const group = await prisma.group.findUnique({
+      where: { id: groupId }
+    })
+
+    if (!group) {
+      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+    }
+
+    // Получаем учителей группы
     const groupTeachers = await prisma.groupTeacher.findMany({
       where: { groupId },
       include: {
@@ -143,21 +161,32 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            avatar: true,
-            role: true,
-            createdAt: true
+            avatar: true
           }
         }
       },
       orderBy: {
-        joinedAt: 'desc'
+        joinedAt: 'asc'
       }
     })
 
-    return NextResponse.json(groupTeachers)
+    const teachers = groupTeachers.map(gt => ({
+      id: gt.user.id,
+      name: gt.user.name,
+      email: gt.user.email,
+      avatar: gt.user.avatar,
+      role: gt.role,
+      joinedAt: gt.joinedAt
+    }))
+
+    return NextResponse.json(teachers)
+
   } catch (error) {
     console.error('Error fetching group teachers:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 

@@ -39,8 +39,7 @@ import {
   Copy,
   RotateCcw,
   Play,
-  Pause,
-  Stop
+  Pause
 } from 'lucide-react'
 
 interface Group {
@@ -131,6 +130,18 @@ export default function ScheduleDashboard() {
       if (groupsResponse.ok) {
         const groupsDataResponse = await groupsResponse.json()
         groupsData = Array.isArray(groupsDataResponse) ? groupsDataResponse : []
+        
+        // Получаем учителей для каждой группы
+        for (const group of groupsData) {
+          const teachersResponse = await fetch(`/api/admin/groups/${group.id}/teachers`)
+          if (teachersResponse.ok) {
+            const teachersData = await teachersResponse.json()
+            if (teachersData && teachersData.length > 0) {
+              group.teacher = teachersData[0] // Берем первого учителя как основного
+            }
+          }
+        }
+        
         setGroups(groupsData)
       } else {
         console.error('Ошибка загрузки групп:', groupsResponse.status)
@@ -164,8 +175,8 @@ export default function ScheduleDashboard() {
           const allEntries: ScheduleEntry[] = []
           
           schedulesData.forEach((schedule, index) => {
-            if (schedule && schedule.entries) {
-              schedule.entries.forEach((entry: any) => {
+            if (schedule && schedule.schedule) {
+              schedule.schedule.forEach((entry: any) => {
                 allEntries.push({
                   ...entry,
                   groupId: groupsData[index].id,
