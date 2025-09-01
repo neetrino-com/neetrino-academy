@@ -42,9 +42,14 @@ export async function GET(
       where: { id: groupId },
       include: {
         students: {
-          select: {
-            id: true,
-            name: true
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
           }
         }
       }
@@ -75,7 +80,11 @@ export async function GET(
       group: {
         id: group.id,
         name: group.name,
-        students: group.students
+        students: group.students.map(gs => ({
+          id: gs.user.id,
+          name: gs.user.name,
+          email: gs.user.email
+        }))
       },
       schedule: schedule.map(item => ({
         id: item.id,
