@@ -19,7 +19,7 @@ export default function GroupAttendancePage() {
           <ArrowLeft className="w-5 h-5" /> Назад к группам
         </button>
       </div>
-      <AttendanceJournal groupId={groupId} mode="page" />
+      <AttendanceJournal groupId={groupId} />
     </div>
   )
 }
