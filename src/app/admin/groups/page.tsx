@@ -410,7 +410,7 @@ export default function GroupsManagement() {
                     </button>
 
                     <button
-                      onClick={() => openScheduleManager(group.id)}
+                      onClick={() => router.push(`/admin/groups/${group.id}/schedule`)}
                       className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
                       title="Расписание"
                     >
@@ -418,7 +418,7 @@ export default function GroupsManagement() {
                     </button>
 
                     <button
-                      onClick={() => openAttendanceJournal(group.id)}
+                      onClick={() => router.push(`/admin/groups/${group.id}/attendance`)}
                       className="w-12 h-12 flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-purple-200 hover:border-purple-600 backdrop-blur-sm"
                       title="Журнал посещаемости"
                     >

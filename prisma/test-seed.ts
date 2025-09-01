@@ -77,7 +77,7 @@ async function main() {
 
   // Студенты
   const students = []
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= 40; i++) {
     const student = await prisma.user.upsert({
       where: { email: `student${i}@academy.com` },
       update: {},
@@ -876,7 +876,77 @@ fetch('/admin/api/2023-04/products.json', {
 
   console.log('✅ Группы созданы!')
 
-  // 6. Создание записей студентов на курсы
+  // 6. Расписание групп и генерация событий на 8 недель
+  console.log('🗓️ Создаем расписание групп и события...')
+
+  // Базовое расписание: Пн/Ср/Сб 19:00-21:00 для group1, Вт/Чт 19:00-21:00 для group2, Сб 11:00-14:00 для group3
+  await prisma.groupSchedule.createMany({
+    data: [
+      { groupId: 'group1', dayOfWeek: 1, startTime: '19:00', endTime: '21:00', isActive: true },
+      { groupId: 'group1', dayOfWeek: 3, startTime: '19:00', endTime: '21:00', isActive: true },
+      { groupId: 'group1', dayOfWeek: 6, startTime: '11:00', endTime: '13:00', isActive: true },
+      { groupId: 'group2', dayOfWeek: 2, startTime: '19:00', endTime: '21:00', isActive: true },
+      { groupId: 'group2', dayOfWeek: 4, startTime: '19:00', endTime: '21:00', isActive: true },
+      { groupId: 'group3', dayOfWeek: 6, startTime: '11:00', endTime: '14:00', isActive: true }
+    ]
+  })
+
+  // Генерация событий на 8 недель вперёд для каждой группы
+  const start = new Date()
+  const addDays = (d: Date, days: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days)
+  const groupIds = ['group1', 'group2', 'group3']
+  const schedules = await prisma.groupSchedule.findMany({ where: { groupId: { in: groupIds } }, orderBy: { dayOfWeek: 'asc' } })
+
+  for (const gid of groupIds) {
+    const group = await prisma.group.findUnique({ where: { id: gid } })
+    const groupStudents = await prisma.groupStudent.findMany({ where: { groupId: gid } })
+    const groupSchedules = schedules.filter(s => s.groupId === gid)
+
+    for (let week = 0; week < 8; week++) {
+      for (const sch of groupSchedules) {
+        // Находим ближайшую дату в текущей неделе для заданного дня недели
+        const today = new Date()
+        const monday = addDays(today, -((today.getDay() + 6) % 7) + week * 7) // понедельник недели + смещение недель
+        const eventDate = addDays(monday, sch.dayOfWeek === 0 ? 6 : sch.dayOfWeek - 1) // наша схема 0=вс → 6, 1=пн → 0
+
+        const [sh, sm] = sch.startTime.split(':').map(n => parseInt(n, 10))
+        const [eh, em] = sch.endTime.split(':').map(n => parseInt(n, 10))
+
+        const startDate = new Date(eventDate); startDate.setHours(sh, sm || 0, 0, 0)
+        const endDate = new Date(eventDate); endDate.setHours(eh, em || 0, 0, 0)
+
+        const ev = await prisma.event.create({
+          data: {
+            title: `Занятие группы ${group?.name}`,
+            description: 'Плановое занятие по расписанию',
+            type: 'LESSON',
+            startDate,
+            endDate,
+            location: gid === 'group3' ? 'Аудитория 101' : 'Онлайн (Zoom) #'+gid,
+            createdById: (await prisma.user.findFirst({ where: { role: 'ADMIN' } }))!.id,
+            groupId: gid,
+            isActive: true,
+            isAttendanceRequired: true
+          }
+        })
+
+        // Добавляем участников события
+        for (const gs of groupStudents) {
+          await prisma.eventAttendee.create({
+            data: {
+              eventId: ev.id,
+              userId: gs.userId,
+              status: Math.random() > 0.2 ? 'ATTENDED' : 'ABSENT'
+            }
+          })
+        }
+      }
+    }
+  }
+
+  console.log('✅ Расписание и события созданы!')
+
+  // 7. Создание записей студентов на курсы
   console.log('📝 Записываем студентов на курсы...')
 
   // Записываем всех студентов группы 1 на курс WordPress
@@ -1057,7 +1127,7 @@ fetch('/admin/api/2023-04/products.json', {
   console.log('\n🎓 Студенты:')
   console.log('   student1@academy.com / student123')
   console.log('   student2@academy.com / student123')
-  console.log('   ... student20@academy.com / student123')
+  console.log('   ... student40@academy.com / student123')
   console.log('\n🌐 Запущен на: http://localhost:3001')
 }
 

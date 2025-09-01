@@ -58,10 +58,11 @@ interface AttendanceData {
 
 interface AttendanceJournalProps {
   groupId: string
-  onClose: () => void
+  onClose?: () => void
+  mode?: 'modal' | 'page'
 }
 
-export default function AttendanceJournal({ groupId, onClose }: AttendanceJournalProps) {
+export default function AttendanceJournal({ groupId, onClose, mode = 'modal' }: AttendanceJournalProps) {
   const [data, setData] = useState<AttendanceData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -259,7 +260,7 @@ export default function AttendanceJournal({ groupId, onClose }: AttendanceJourna
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className={mode === 'modal' ? "fixed inset-0 bg-black/50 flex items-center justify-center z-50" : "p-6"}>
         <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-4" />
@@ -272,17 +273,19 @@ export default function AttendanceJournal({ groupId, onClose }: AttendanceJourna
 
   if (!data) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className={mode === 'modal' ? "fixed inset-0 bg-black/50 flex items-center justify-center z-50" : "p-6"}>
         <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-4" />
             <p className="text-gray-600">Ошибка загрузки данных</p>
-            <button
-              onClick={onClose}
-              className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            >
-              Закрыть
-            </button>
+            {mode === 'modal' && onClose && (
+              <button
+                onClick={onClose}
+                className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Закрыть
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -290,8 +293,8 @@ export default function AttendanceJournal({ groupId, onClose }: AttendanceJourna
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden">
+    <div className={mode === 'modal' ? "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" : "p-0"}>
+      <div className={mode === 'modal' ? "bg-white rounded-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden" : "bg-white min-h-[calc(100vh-100px)]"}>
         {/* Хедер */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
           <div className="flex justify-between items-center">
@@ -299,12 +302,14 @@ export default function AttendanceJournal({ groupId, onClose }: AttendanceJourna
               <h2 className="text-2xl font-bold">Журнал посещаемости</h2>
               <p className="text-emerald-100 mt-1">{data.group.name}</p>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-            >
-              <XCircle className="w-6 h-6" />
-            </button>
+            {mode === 'modal' && onClose && (
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -357,7 +362,7 @@ export default function AttendanceJournal({ groupId, onClose }: AttendanceJourna
         </div>
 
         {/* Содержимое */}
-        <div className="p-6 overflow-auto max-h-[60vh]">
+        <div className={mode === 'modal' ? "p-6 overflow-auto max-h-[60vh]" : "p-6"}>
           {filteredEvents.length === 0 ? (
             <div className="text-center py-12">
               <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
