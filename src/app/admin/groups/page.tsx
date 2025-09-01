@@ -26,6 +26,7 @@ import {
   ClipboardList
 } from 'lucide-react'
 import AttendanceJournal from '@/components/admin/AttendanceJournal'
+import GroupScheduleManager from '@/components/admin/GroupScheduleManager'
 
 interface Group {
   id: string
@@ -66,6 +67,7 @@ export default function GroupsManagement() {
   })
   const [showAttendanceJournal, setShowAttendanceJournal] = useState(false)
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+  const [showScheduleManager, setShowScheduleManager] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -152,6 +154,16 @@ export default function GroupsManagement() {
 
   const closeAttendanceJournal = () => {
     setShowAttendanceJournal(false)
+    setSelectedGroupId(null)
+  }
+
+  const openScheduleManager = (groupId: string) => {
+    setSelectedGroupId(groupId)
+    setShowScheduleManager(true)
+  }
+
+  const closeScheduleManager = () => {
+    setShowScheduleManager(false)
     setSelectedGroupId(null)
   }
 
@@ -398,6 +410,14 @@ export default function GroupsManagement() {
                     </button>
 
                     <button
+                      onClick={() => openScheduleManager(group.id)}
+                      className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
+                      title="Расписание"
+                    >
+                      <Calendar className="w-5 h-5" />
+                    </button>
+
+                    <button
                       onClick={() => openAttendanceJournal(group.id)}
                       className="w-12 h-12 flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-purple-200 hover:border-purple-600 backdrop-blur-sm"
                       title="Журнал посещаемости"
@@ -460,6 +480,13 @@ export default function GroupsManagement() {
         <AttendanceJournal
           groupId={selectedGroupId}
           onClose={closeAttendanceJournal}
+        />
+      )}
+
+      {showScheduleManager && selectedGroupId && (
+        <GroupScheduleManager
+          groupId={selectedGroupId}
+          onClose={closeScheduleManager}
         />
       )}
     </div>
