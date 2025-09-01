@@ -238,6 +238,11 @@ export default function AttendanceJournal({ groupId, onClose, mode = 'modal' }: 
     return true
   }) || []
 
+  const totalSessions = data?.events.length || 0
+  const totalStudents = data?.students.length || 0
+  const attendedCount = data?.events.reduce((acc, e) => acc + e.attendees.filter(a => a.status === 'ATTENDED').length, 0) || 0
+  const absentCount = data?.events.reduce((acc, e) => acc + e.attendees.filter(a => a.status === 'ABSENT').length, 0) || 0
+
   // Фильтрация студентов
   const filteredStudents = data?.students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -313,8 +318,29 @@ export default function AttendanceJournal({ groupId, onClose, mode = 'modal' }: 
           </div>
         </div>
 
-        {/* Фильтры и поиск */}
+        {/* Summary + Фильтры */}
         <div className="p-6 border-b border-gray-200">
+          {/* Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+              <div className="text-sm text-emerald-700">Событий</div>
+              <div className="text-2xl font-bold text-emerald-900 mt-1">{totalSessions}</div>
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+              <div className="text-sm text-blue-700">Студентов</div>
+              <div className="text-2xl font-bold text-blue-900 mt-1">{totalStudents}</div>
+            </div>
+            <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+              <div className="text-sm text-green-700">Отмечено присутствий</div>
+              <div className="text-2xl font-bold text-green-900 mt-1">{attendedCount}</div>
+            </div>
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+              <div className="text-sm text-red-700">Отсутствий</div>
+              <div className="text-2xl font-bold text-red-900 mt-1">{absentCount}</div>
+            </div>
+          </div>
+
+          {/* Фильтры */}
           <div className="flex gap-4 items-center mb-4">
             <div className="flex-1 relative">
               <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />

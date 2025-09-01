@@ -23,7 +23,8 @@ type ScheduleItem = {
 
 interface GroupScheduleManagerProps {
   groupId: string
-  onClose: () => void
+  onClose?: () => void
+  mode?: 'modal' | 'page'
 }
 
 const DAY_LABELS: Record<number, string> = {
@@ -36,7 +37,7 @@ const DAY_LABELS: Record<number, string> = {
   6: 'Суббота'
 }
 
-export default function GroupScheduleManager({ groupId, onClose }: GroupScheduleManagerProps) {
+export default function GroupScheduleManager({ groupId, onClose, mode = 'modal' }: GroupScheduleManagerProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -157,9 +158,13 @@ export default function GroupScheduleManager({ groupId, onClose }: GroupSchedule
     }
   }
 
+  const totalWeeklySessions = useMemo(() => {
+    return schedule.filter(s => s.isActive !== false).length
+  }, [schedule])
+
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className={mode === 'modal' ? 'fixed inset-0 bg-black/50 flex items-center justify-center z-50' : 'p-6'}>
         <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-4" />
           <p className="text-gray-600">Загрузка расписания...</p>
@@ -169,8 +174,8 @@ export default function GroupScheduleManager({ groupId, onClose }: GroupSchedule
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
+    <div className={mode === 'modal' ? 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4' : ''}>
+      <div className={mode === 'modal' ? 'bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden' : 'bg-white min-h-[calc(100vh-100px)]'}>
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6">
           <div className="flex items-center justify-between">
@@ -180,16 +185,34 @@ export default function GroupScheduleManager({ groupId, onClose }: GroupSchedule
               </h2>
               <p className="text-blue-100 mt-1">Группа: {groupName}</p>
             </div>
-            <button
-              onClick={onClose}
-              className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
-            >
-              Закрыть
-            </button>
+            {mode === 'modal' && onClose && (
+              <button
+                onClick={onClose}
+                className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
+              >
+                Закрыть
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 divide-y lg:divide-y-0 lg:divide-x">
+        {/* Summary bar */}
+        <div className="px-6 pt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+            <div className="text-sm text-blue-700">Слотов в неделю</div>
+            <div className="text-2xl font-bold text-blue-900 mt-1">{totalWeeklySessions}</div>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+            <div className="text-sm text-emerald-700">Сессий за 8 недель</div>
+            <div className="text-2xl font-bold text-emerald-900 mt-1">{totalWeeklySessions * 8}</div>
+          </div>
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+            <div className="text-sm text-amber-700">Статус</div>
+            <div className="text-2xl font-bold text-amber-900 mt-1">{groupName ? 'Активно' : '—'}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 divide-y lg:divide-y-0 lg:divide-x mt-4">
           {/* Schedule editor */}
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
