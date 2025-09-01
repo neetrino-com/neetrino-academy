@@ -1,31 +1,3 @@
 # Academy Rules - Development Guidelines
 
-## Purpose
-Rules for developing Neetrino Academy features with proper validation, notifications, and user experience.
-
-## Notifications
-- Error: critical issues
-- Warning: recommendations  
-- Success: completed actions
-- Info: status updates
-
-## Validation
-- Names: min 3 chars
-- Email: valid format
-- Password: min 8 chars
-- Schedule: check conflicts
-
-## UI Colors
-- Error: #ef4444
-- Warning: #f59e0b
-- Success: #10b981
-- Info: #3b82f6
-
-## Tasks
-- [ ] Frontend + backend validation
-- [ ] Notifications for all scenarios
-- [ ] Conflict checking
-- [ ] Testing
-
-## Goal
-Users understand what's happening, errors prevented.
+When creating a form function and input validation, use hints if the user has filled in, clicked, or is trying to save something that will not be possible due to some parameter. For example, a minimum number of characters, an unselected option, or a file with such data already created
