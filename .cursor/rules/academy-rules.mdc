@@ -1,28 +1,28 @@
-# Правила Academy
+# Academy Rules
 
-## 🔔 Уведомления
-- **Error** - критические ошибки
-- **Warning** - предупреждения  
-- **Success** - успех
-- **Info** - информация
+## Notifications
+- Error: critical issues
+- Warning: recommendations  
+- Success: completed actions
+- Info: status updates
 
-## ✅ Валидация
-- Названия: минимум 3 символа
-- Email: валидный формат
-- Пароль: минимум 8 символов
-- Расписание: проверка конфликтов
+## Validation
+- Names: min 3 chars
+- Email: valid format
+- Password: min 8 chars
+- Schedule: check conflicts
 
-## 🎨 UI
-- Error: `#ef4444` (красный)
-- Warning: `#f59e0b` (желтый)
-- Success: `#10b981` (зеленый)
-- Info: `#3b82f6` (синий)
+## UI Colors
+- Error: #ef4444
+- Warning: #f59e0b
+- Success: #10b981
+- Info: #3b82f6
 
-## 📋 Чек-лист
-- [ ] Валидация фронтенд + бэкенд
-- [ ] Уведомления для всех сценариев
-- [ ] Проверка конфликтов
-- [ ] Тестирование
+## Tasks
+- [ ] Frontend + backend validation
+- [ ] Notifications for all scenarios
+- [ ] Conflict checking
+- [ ] Testing
 
-## 🎯 Цель
-Пользователи понимают что происходит, ошибки предотвращаются.
+## Goal
+Users understand what's happening, errors prevented.
