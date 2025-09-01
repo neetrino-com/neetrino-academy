@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { DynamicHeader } from "@/components/layout/DynamicHeader";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import SessionGuard from "@/components/auth/SessionGuard";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,12 +21,14 @@ export default function RootLayout({
     <html lang="ru">
       <body className={inter.className}>
         <SessionProvider>
-          <div className="min-h-screen bg-blue-50">
-            <DynamicHeader />
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
+          <SessionGuard>
+            <div className="min-h-screen bg-blue-50">
+              <DynamicHeader />
+              <main className="flex-1">
+                {children}
+              </main>
+            </div>
+          </SessionGuard>
         </SessionProvider>
       </body>
     </html>

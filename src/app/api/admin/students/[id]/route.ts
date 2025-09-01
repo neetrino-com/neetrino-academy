@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { sessionManager } from '@/lib/session-manager'
 
 // GET /api/admin/students/[id] - получение детальной информации о студенте
 export async function GET(
@@ -342,6 +343,78 @@ export async function PUT(
 
   } catch (error) {
     console.error('Ошибка при обновлении студента:', error)
+    return NextResponse.json(
+      { error: 'Внутренняя ошибка сервера' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/admin/students/[id] - удаление/деактивация студента
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+    }
+
+    const { id } = await params
+
+    // Получаем текущего пользователя
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+    
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
+    }
+
+    // Проверяем существование студента
+    const student = await prisma.user.findUnique({
+      where: { 
+        id,
+        role: 'STUDENT'
+      }
+    })
+
+    if (!student) {
+      return NextResponse.json({ error: 'Студент не найден' }, { status: 404 })
+    }
+
+    // Профессиональная инвалидация сессий ПЕРЕД деактивацией
+    console.log(`[Admin] Deactivating student ${id} and invalidating sessions`)
+    await sessionManager.invalidateUserSessions(id)
+
+    // Деактивируем студента (soft delete)
+    const updatedStudent = await prisma.user.update({
+      where: { id },
+      data: { 
+        isActive: false,
+        updatedAt: new Date()
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true
+      }
+    })
+
+    // Логируем действие администратора
+    console.log(`[Admin] Student ${student.email} deactivated by ${currentUser.email}`)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Студент деактивирован',
+      student: updatedStudent
+    })
+
+  } catch (error) {
+    console.error('Ошибка при удалении студента:', error)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
