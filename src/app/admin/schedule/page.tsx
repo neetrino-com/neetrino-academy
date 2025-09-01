@@ -66,7 +66,8 @@ interface Teacher {
   id: string
   name: string
   email: string
-  groups: Group[]
+  role: string
+  isActive: boolean
 }
 
 interface ScheduleEntry {
