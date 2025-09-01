@@ -41,6 +41,7 @@ import {
   Play,
   Pause
 } from 'lucide-react'
+import React from 'react'
 
 interface Group {
   id: string
@@ -764,8 +765,8 @@ export default function ScheduleDashboard() {
                 
                 {/* Временные слоты */}
                 {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map(time => (
-                  <>
-                    <div key={`time-${time}`} className="text-sm text-gray-600 py-2">
+                  <React.Fragment key={`time-slot-${time}`}>
+                    <div className="text-sm text-gray-600 py-2">
                       {time}
                     </div>
                     {[1, 2, 3, 4, 5, 6, 7].map(day => {
@@ -788,7 +789,7 @@ export default function ScheduleDashboard() {
                         </div>
                       )
                     })}
-                  </>
+                  </React.Fragment>
                 ))}
               </div>
             </div>
