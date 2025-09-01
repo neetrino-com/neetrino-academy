@@ -16,6 +16,7 @@ export async function GET(
     
     const session = await auth()
     console.log('👤 [GET] Сессия:', session?.user?.email)
+    console.log('👤 [GET] Полная сессия:', JSON.stringify(session, null, 2))
     
     if (!session?.user) {
       console.log('❌ [GET] Не авторизован')
@@ -26,10 +27,10 @@ export async function GET(
       where: { email: session.user.email! }
     })
 
-    console.log('👤 [GET] Пользователь:', user?.role)
+    console.log('👤 [GET] Пользователь:', user?.role, user?.id)
 
     if (!user || !['ADMIN', 'TEACHER'].includes(user.role)) {
-      console.log('❌ [GET] Нет прав доступа')
+      console.log('❌ [GET] Нет прав доступа:', user?.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -90,8 +91,9 @@ export async function GET(
 
   } catch (error) {
     console.error('❌ [GET] Ошибка получения расписания:', error)
+    console.error('❌ [GET] Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
