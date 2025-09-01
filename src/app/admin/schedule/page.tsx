@@ -107,14 +107,18 @@ export default function ScheduleDashboard() {
   const [conflicts, setConflicts] = useState<ScheduleConflict[]>([])
   const [bulkMode, setBulkMode] = useState(false)
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set())
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     fetchScheduleData()
   }, [])
 
   useEffect(() => {
-    detectConflicts()
-  }, [scheduleEntries])
+    if (Array.isArray(teachers) && Array.isArray(scheduleEntries)) {
+      detectConflicts()
+    }
+  }, [scheduleEntries, teachers])
 
   const fetchScheduleData = async () => {
     try {
@@ -191,7 +195,7 @@ export default function ScheduleDashboard() {
     const newConflicts: ScheduleConflict[] = []
     
     // Проверяем конфликты учителей
-    if (!Array.isArray(teachers)) return
+    if (!Array.isArray(teachers) || !Array.isArray(scheduleEntries)) return
     
     teachers.forEach(teacher => {
       const teacherEntries = scheduleEntries.filter(entry => 
@@ -300,7 +304,7 @@ export default function ScheduleDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           months,
-          groups: groups.map(g => g.id)
+          groups: Array.isArray(groups) ? groups.map(g => g.id) : []
         })
       })
       
@@ -337,7 +341,7 @@ export default function ScheduleDashboard() {
     }
   }
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-lg">
