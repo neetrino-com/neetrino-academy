@@ -78,10 +78,12 @@ export default function EventAttendancePage() {
           const initialAttendance: Record<string, 'ATTENDED' | 'ABSENT' | 'LATE'> = {}
           
           // Добавить всех студентов группы
-          data.group.students.forEach((student: Student) => {
-            const attendee = eventData.attendees.find((a: any) => a.userId === student.id)
-            initialAttendance[student.id] = attendee?.status || 'ABSENT'
-          })
+          if (data.group?.students && Array.isArray(data.group.students)) {
+            data.group.students.forEach((student: Student) => {
+              const attendee = eventData.attendees?.find((a: any) => a.userId === student.id)
+              initialAttendance[student.id] = attendee?.status || 'ABSENT'
+            })
+          }
           
           setAttendance(initialAttendance)
         }
@@ -130,7 +132,7 @@ export default function EventAttendancePage() {
   }
 
   const markAllAs = (status: 'ATTENDED' | 'ABSENT') => {
-    if (!event) return
+    if (!event || !event.group?.students || !Array.isArray(event.group.students)) return
     
     const newAttendance: Record<string, 'ATTENDED' | 'ABSENT' | 'LATE'> = {}
     event.group.students.forEach(student => {
@@ -161,10 +163,10 @@ export default function EventAttendancePage() {
     )
   }
 
-  const filteredStudents = event.group.students.filter(student =>
+  const filteredStudents = event.group?.students && Array.isArray(event.group.students) ? event.group.students.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  ) : []
 
   const attendedCount = Object.values(attendance).filter(status => status === 'ATTENDED').length
   const absentCount = Object.values(attendance).filter(status => status === 'ABSENT').length
@@ -231,7 +233,7 @@ export default function EventAttendancePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Всего студентов</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{event.group.students.length}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{event.group?.students?.length || 0}</p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
             </div>
