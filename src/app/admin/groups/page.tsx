@@ -25,8 +25,7 @@ import {
   AlertCircle,
   ClipboardList
 } from 'lucide-react'
-import AttendanceJournal from '@/components/admin/AttendanceJournal'
-import GroupScheduleManager from '@/components/admin/GroupScheduleManager'
+
 
 interface Group {
   id: string
@@ -65,9 +64,7 @@ export default function GroupsManagement() {
     inactive: 0,
     totalStudents: 0
   })
-  const [showAttendanceJournal, setShowAttendanceJournal] = useState(false)
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
-  const [showScheduleManager, setShowScheduleManager] = useState(false)
+
 
   useEffect(() => {
     if (status === 'loading') return
@@ -147,25 +144,7 @@ export default function GroupsManagement() {
     }
   }
 
-  const openAttendanceJournal = (groupId: string) => {
-    setSelectedGroupId(groupId)
-    setShowAttendanceJournal(true)
-  }
 
-  const closeAttendanceJournal = () => {
-    setShowAttendanceJournal(false)
-    setSelectedGroupId(null)
-  }
-
-  const openScheduleManager = (groupId: string) => {
-    setSelectedGroupId(groupId)
-    setShowScheduleManager(true)
-  }
-
-  const closeScheduleManager = () => {
-    setShowScheduleManager(false)
-    setSelectedGroupId(null)
-  }
 
   // Фильтрация групп
   const filteredGroups = groups.filter(group => {
@@ -241,13 +220,29 @@ export default function GroupsManagement() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => router.push('/admin/groups/create')}
-              className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <Plus className="w-4 h-4" />
-              Создать группу
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/admin/schedule')}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <Calendar className="w-4 h-4" />
+                Расписание
+              </button>
+              <button
+                onClick={() => router.push('/admin/attendance')}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Посещаемость
+              </button>
+              <button
+                onClick={() => router.push('/admin/groups/create')}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <Plus className="w-4 h-4" />
+                Создать группу
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -475,20 +470,7 @@ export default function GroupsManagement() {
         </div>
       </div>
 
-      {/* Журнал посещаемости */}
-      {showAttendanceJournal && selectedGroupId && (
-        <AttendanceJournal
-          groupId={selectedGroupId}
-          onClose={closeAttendanceJournal}
-        />
-      )}
 
-      {showScheduleManager && selectedGroupId && (
-        <GroupScheduleManager
-          groupId={selectedGroupId}
-          onClose={closeScheduleManager}
-        />
-      )}
     </div>
   )
 }
