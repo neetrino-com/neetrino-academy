@@ -68,37 +68,31 @@ export default function GroupSchedulePage() {
   }, [groupId])
 
   const fetchGroup = async () => {
-    console.log('📋 [Frontend] Загрузка группы:', groupId)
     try {
       const response = await fetch(`/api/admin/groups/${groupId}`)
-      console.log('📋 [Frontend] Ответ группы:', response.status)
       if (response.ok) {
         const data = await response.json()
-        console.log('📋 [Frontend] Данные группы:', data)
         setGroup(data)
       } else {
-        console.error('📋 [Frontend] Ошибка загрузки группы:', response.status)
+        console.error('Ошибка загрузки группы:', response.status)
       }
     } catch (error) {
-      console.error('📋 [Frontend] Ошибка сети при загрузке группы:', error)
+      console.error('Ошибка сети при загрузке группы:', error)
     }
   }
 
   const fetchGroupSchedule = async () => {
-    console.log('📅 [Frontend] Загрузка расписания группы:', groupId)
     try {
       const response = await fetch(`/api/admin/groups/${groupId}/schedule`)
-      console.log('📅 [Frontend] Ответ расписания:', response.status)
       if (response.ok) {
         const data = await response.json()
-        console.log('📅 [Frontend] Данные расписания:', data)
         setSchedule(data.schedule || [])
       } else {
-        console.error('📅 [Frontend] Ошибка загрузки расписания:', response.status)
+        console.error('Ошибка загрузки расписания:', response.status)
         setSchedule([])
       }
     } catch (error) {
-      console.error('📅 [Frontend] Ошибка сети при загрузке расписания:', error)
+      console.error('Ошибка сети при загрузке расписания:', error)
       setSchedule([])
     } finally {
       setLoading(false)
@@ -106,7 +100,6 @@ export default function GroupSchedulePage() {
   }
 
   const addScheduleEntry = async () => {
-    console.log('➕ [Frontend] Добавление записи расписания:', newSchedule)
     setSaving(true)
     try {
       const response = await fetch(`/api/admin/groups/${groupId}/schedule`, {
@@ -115,11 +108,8 @@ export default function GroupSchedulePage() {
         body: JSON.stringify(newSchedule)
       })
       
-      console.log('➕ [Frontend] Ответ сервера:', response.status, response.statusText)
-      
       if (response.ok) {
         const data = await response.json()
-        console.log('➕ [Frontend] Данные ответа:', data)
         await fetchGroupSchedule()
         setNewSchedule({
           dayOfWeek: 1,
@@ -128,11 +118,11 @@ export default function GroupSchedulePage() {
         })
       } else {
         const errorData = await response.json()
-        console.error('➕ [Frontend] Ошибка сервера:', errorData)
+        console.error('Ошибка сервера:', errorData)
         alert(`Ошибка: ${errorData.error || 'Неизвестная ошибка'}`)
       }
     } catch (error) {
-      console.error('➕ [Frontend] Ошибка сети:', error)
+      console.error('Ошибка сети:', error)
       alert('Ошибка сети при добавлении расписания')
     } finally {
       setSaving(false)
@@ -148,15 +138,20 @@ export default function GroupSchedulePage() {
       })
       
       if (response.ok) {
+        const data = await response.json()
         await fetchGroupSchedule()
+      } else {
+        const errorData = await response.json()
+        console.error('Ошибка сервера:', errorData)
+        alert(`Ошибка: ${errorData.error || 'Неизвестная ошибка'}`)
       }
     } catch (error) {
-      console.error('Error deleting schedule:', error)
+      console.error('Ошибка сети:', error)
+      alert('Ошибка сети при удалении расписания')
     }
   }
 
   const generateEvents = async () => {
-    console.log('🎯 [Frontend] Генерация событий')
     setGenerating(true)
     try {
       const response = await fetch(`/api/admin/groups/${groupId}/schedule/generate`, {
@@ -168,19 +163,16 @@ export default function GroupSchedulePage() {
         })
       })
       
-      console.log('🎯 [Frontend] Ответ сервера:', response.status, response.statusText)
-      
       if (response.ok) {
         const data = await response.json()
-        console.log('🎯 [Frontend] Данные ответа:', data)
         alert('События успешно сгенерированы!')
       } else {
         const errorData = await response.json()
-        console.error('🎯 [Frontend] Ошибка сервера:', errorData)
+        console.error('Ошибка сервера:', errorData)
         alert(`Ошибка: ${errorData.error || 'Неизвестная ошибка'}`)
       }
     } catch (error) {
-      console.error('🎯 [Frontend] Ошибка сети:', error)
+      console.error('Ошибка сети:', error)
       alert('Ошибка сети при генерации событий')
     } finally {
       setGenerating(false)

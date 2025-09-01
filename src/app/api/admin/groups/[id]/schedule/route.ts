@@ -12,14 +12,9 @@ export async function GET(
   { params }: { params: Promise<Params> }
 ) {
   try {
-    console.log('🔍 [GET] Запрос расписания группы')
-    
     const session = await auth()
-    console.log('👤 [GET] Сессия:', session?.user?.email)
-    console.log('👤 [GET] Полная сессия:', JSON.stringify(session, null, 2))
     
     if (!session?.user) {
-      console.log('❌ [GET] Не авторизован')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -27,15 +22,11 @@ export async function GET(
       where: { email: session.user.email! }
     })
 
-    console.log('👤 [GET] Пользователь:', user?.role, user?.id)
-
     if (!user || !['ADMIN', 'TEACHER'].includes(user.role)) {
-      console.log('❌ [GET] Нет прав доступа:', user?.role)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { id: groupId } = await params
-    console.log('📋 [GET] ID группы:', groupId)
 
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
@@ -50,10 +41,7 @@ export async function GET(
       }
     })
 
-    console.log('📋 [GET] Группа найдена:', !!group, group?.name)
-
     if (!group) {
-      console.log('❌ [GET] Группа не найдена')
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
@@ -68,8 +56,6 @@ export async function GET(
         { startTime: 'asc' }
       ]
     })
-
-    console.log('📅 [GET] Найдено записей расписания:', schedule.length)
 
     const response = {
       group: {
@@ -86,14 +72,12 @@ export async function GET(
       }))
     }
 
-    console.log('✅ [GET] Ответ:', JSON.stringify(response, null, 2))
     return NextResponse.json(response)
 
   } catch (error) {
-    console.error('❌ [GET] Ошибка получения расписания:', error)
-    console.error('❌ [GET] Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('Ошибка получения расписания:', error)
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -105,13 +89,9 @@ export async function POST(
   { params }: { params: Promise<Params> }
 ) {
   try {
-    console.log('➕ [POST] Создание записи расписания')
-    
     const session = await auth()
-    console.log('👤 [POST] Сессия:', session?.user?.email)
     
     if (!session?.user) {
-      console.log('❌ [POST] Не авторизован')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -119,10 +99,7 @@ export async function POST(
       where: { email: session.user.email! }
     })
 
-    console.log('👤 [POST] Пользователь:', user?.role)
-
     if (!user || !['ADMIN', 'TEACHER'].includes(user.role)) {
-      console.log('❌ [POST] Нет прав доступа')
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -130,27 +107,20 @@ export async function POST(
     const body = await request.json()
     const { dayOfWeek, startTime, endTime } = body
 
-    console.log('📋 [POST] Данные:', { groupId, dayOfWeek, startTime, endTime })
-
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
       where: { id: groupId }
     })
 
-    console.log('📋 [POST] Группа найдена:', !!group)
-
     if (!group) {
-      console.log('❌ [POST] Группа не найдена')
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
     // Валидация данных
     if (typeof dayOfWeek !== 'number' || dayOfWeek < 0 || dayOfWeek > 6) {
-      console.log('❌ [POST] Неверный день недели:', dayOfWeek)
       return NextResponse.json({ error: 'Invalid dayOfWeek' }, { status: 400 })
     }
     if (!startTime || !endTime) {
-      console.log('❌ [POST] Отсутствует время:', { startTime, endTime })
       return NextResponse.json({ error: 'startTime and endTime are required' }, { status: 400 })
     }
 
@@ -163,10 +133,7 @@ export async function POST(
       }
     })
 
-    console.log('📅 [POST] Существующее расписание:', !!existingSchedule)
-
     if (existingSchedule) {
-      console.log('❌ [POST] Расписание уже существует для этого дня')
       return NextResponse.json({ error: 'Schedule already exists for this day' }, { status: 400 })
     }
 
@@ -181,8 +148,6 @@ export async function POST(
       }
     })
 
-    console.log('✅ [POST] Создана запись:', newSchedule.id)
-
     const response = {
       success: true,
       message: 'Запись расписания добавлена',
@@ -195,11 +160,10 @@ export async function POST(
       }
     }
 
-    console.log('✅ [POST] Ответ:', JSON.stringify(response, null, 2))
     return NextResponse.json(response)
 
   } catch (error) {
-    console.error('❌ [POST] Ошибка создания расписания:', error)
+    console.error('Ошибка создания расписания:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -213,13 +177,9 @@ export async function DELETE(
   { params }: { params: Promise<Params> }
 ) {
   try {
-    console.log('🗑️ [DELETE] Удаление записи расписания')
-    
     const session = await auth()
-    console.log('👤 [DELETE] Сессия:', session?.user?.email)
     
     if (!session?.user) {
-      console.log('❌ [DELETE] Не авторизован')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -227,10 +187,7 @@ export async function DELETE(
       where: { email: session.user.email! }
     })
 
-    console.log('👤 [DELETE] Пользователь:', user?.role)
-
     if (!user || !['ADMIN', 'TEACHER'].includes(user.role)) {
-      console.log('❌ [DELETE] Нет прав доступа')
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -238,10 +195,7 @@ export async function DELETE(
     const body = await request.json()
     const { scheduleId } = body
 
-    console.log('📋 [DELETE] Данные:', { groupId, scheduleId })
-
     if (!scheduleId) {
-      console.log('❌ [DELETE] Отсутствует scheduleId')
       return NextResponse.json({ error: 'scheduleId is required' }, { status: 400 })
     }
 
@@ -253,10 +207,7 @@ export async function DELETE(
       }
     })
 
-    console.log('📅 [DELETE] Запись найдена:', !!scheduleEntry)
-
     if (!scheduleEntry) {
-      console.log('❌ [DELETE] Запись расписания не найдена')
       return NextResponse.json({ error: 'Schedule entry not found' }, { status: 404 })
     }
 
@@ -265,18 +216,15 @@ export async function DELETE(
       where: { id: scheduleId }
     })
 
-    console.log('✅ [DELETE] Запись удалена')
-
     const response = {
       success: true,
       message: 'Запись расписания удалена'
     }
 
-    console.log('✅ [DELETE] Ответ:', JSON.stringify(response, null, 2))
     return NextResponse.json(response)
 
   } catch (error) {
-    console.error('❌ [DELETE] Ошибка удаления расписания:', error)
+    console.error('Ошибка удаления расписания:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
