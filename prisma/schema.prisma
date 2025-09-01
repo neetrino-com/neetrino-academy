@@ -329,6 +329,22 @@ enum TeacherRole {
   GUEST
 }
 
+// Расписание занятий для групп
+model GroupSchedule {
+  id          String   @id @default(cuid())
+  groupId     String
+  dayOfWeek   Int      // 0 = воскресенье, 1 = понедельник, ..., 6 = суббота
+  startTime   String   // время начала в формате "HH:MM"
+  endTime     String   // время окончания в формате "HH:MM"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, dayOfWeek, startTime])
+}
+
 
 
 // Групповая система
@@ -349,6 +365,7 @@ model Group {
   assignments GroupAssignment[]
   messages    GroupMessage[]
   events      Event[]
+  schedule    GroupSchedule[] // расписание занятий
 }
 
 model GroupStudent {
@@ -450,6 +467,9 @@ model Event {
   courseId      String?
   assignmentId  String?
   isActive      Boolean         @default(true)
+  // Новые поля для системы посещаемости
+  isAttendanceRequired Boolean @default(false) // обязательная ли посещаемость
+  attendanceDeadline   DateTime? // до какого времени можно отметить посещение
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   

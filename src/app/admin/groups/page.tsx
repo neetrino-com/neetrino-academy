@@ -22,8 +22,10 @@ import {
   Target,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  ClipboardList
 } from 'lucide-react'
+import AttendanceJournal from '@/components/admin/AttendanceJournal'
 
 interface Group {
   id: string
@@ -62,6 +64,8 @@ export default function GroupsManagement() {
     inactive: 0,
     totalStudents: 0
   })
+  const [showAttendanceJournal, setShowAttendanceJournal] = useState(false)
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -139,6 +143,16 @@ export default function GroupsManagement() {
       console.error('Ошибка изменения статуса группы:', error)
       alert('Ошибка при изменении статуса группы')
     }
+  }
+
+  const openAttendanceJournal = (groupId: string) => {
+    setSelectedGroupId(groupId)
+    setShowAttendanceJournal(true)
+  }
+
+  const closeAttendanceJournal = () => {
+    setShowAttendanceJournal(false)
+    setSelectedGroupId(null)
   }
 
   // Фильтрация групп
@@ -384,6 +398,14 @@ export default function GroupsManagement() {
                     </button>
 
                     <button
+                      onClick={() => openAttendanceJournal(group.id)}
+                      className="w-12 h-12 flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-purple-200 hover:border-purple-600 backdrop-blur-sm"
+                      title="Журнал посещаемости"
+                    >
+                      <ClipboardList className="w-5 h-5" />
+                    </button>
+
+                    <button
                       onClick={() => toggleGroupStatus(group.id, group.isActive)}
                       className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 backdrop-blur-sm ${
                         group.isActive 
@@ -432,6 +454,14 @@ export default function GroupsManagement() {
           </div>
         </div>
       </div>
+
+      {/* Журнал посещаемости */}
+      {showAttendanceJournal && selectedGroupId && (
+        <AttendanceJournal
+          groupId={selectedGroupId}
+          onClose={closeAttendanceJournal}
+        />
+      )}
     </div>
   )
 }
