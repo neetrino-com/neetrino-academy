@@ -417,6 +417,8 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
               </p>
             </div>
           </div>
+            </div>
+          </div>
         )}
 
         {/* Таб "Управление системой" */}
