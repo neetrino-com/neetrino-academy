@@ -103,6 +103,10 @@ export default function GroupScheduleWeekView({
     return acc
   }, {} as Record<number, GroupScheduleEvent[]>)
 
+  // Отладочная информация
+  console.log('Week events:', weekEvents.length)
+  console.log('Events by day:', eventsByDay)
+
   // Сортируем события по времени
   Object.keys(eventsByDay).forEach(day => {
     eventsByDay[parseInt(day)].sort((a, b) => a.start.localeCompare(b.start))
@@ -249,7 +253,8 @@ export default function GroupScheduleWeekView({
                 const dayEvents = eventsByDay[day.value] || []
                 const slotEvents = dayEvents.filter(event => {
                   const eventTime = formatTime(event.start)
-                  return eventTime === timeSlot
+                  // Проверяем, что событие начинается в этом временном слоте или близко к нему
+                  return eventTime === timeSlot || eventTime.startsWith(timeSlot.substring(0, 2))
                 })
                 
                 return (
