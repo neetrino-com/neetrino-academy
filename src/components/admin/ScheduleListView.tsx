@@ -40,7 +40,7 @@ interface ScheduleListViewProps {
   events: ScheduleEvent[]
   onEditEvent?: (event: ScheduleEvent) => void
   onDeleteEvent?: (eventId: string) => void
-  onBulkAction?: (action: string, eventIds: string[]) => void
+  onBulkAction?: (action: 'activate' | 'deactivate' | 'delete', eventIds: string[]) => void
   onEventClick?: (event: ScheduleEvent) => void
 }
 
@@ -119,7 +119,7 @@ export default function ScheduleListView({
     setSelectedEvents(new Set())
   }
 
-  const handleBulkAction = (action: string) => {
+  const handleBulkAction = (action: 'activate' | 'deactivate' | 'delete') => {
     if (selectedEvents.size === 0) return
     onBulkAction?.(action, Array.from(selectedEvents))
     setSelectedEvents(new Set())
@@ -146,7 +146,7 @@ export default function ScheduleListView({
   }
 
   const getEventTypeColor = (type: string) => {
-    const colors: { [key: string]: string } = {
+    const colors: Record<string, string> = {
       'LESSON': 'bg-blue-100 text-blue-800',
       'EXAM': 'bg-red-100 text-red-800',
       'MEETING': 'bg-green-100 text-green-800',
@@ -160,7 +160,7 @@ export default function ScheduleListView({
   }
 
   const getEventTypeLabel = (type: string) => {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       'LESSON': 'Занятие',
       'EXAM': 'Экзамен',
       'MEETING': 'Встреча',

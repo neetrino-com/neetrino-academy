@@ -32,7 +32,19 @@ interface ScheduleDay {
 
 interface ScheduleGeneratorProps {
   groups: Group[]
-  onGenerate: (data: any) => void
+  onGenerate: (data: {
+    groupIds: string[]
+    startDate: string
+    endDate: string
+    scheduleDays: Array<{
+      dayOfWeek: number
+      startTime: string
+      endTime: string
+    }>
+    title?: string
+    location?: string
+    isAttendanceRequired?: boolean
+  }) => void
   onClose: () => void
 }
 
@@ -62,7 +74,26 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
   const [location, setLocation] = useState('')
   const [isAttendanceRequired, setIsAttendanceRequired] = useState(false)
   const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([])
-  const [previewData, setPreviewData] = useState<any>(null)
+  const [previewData, setPreviewData] = useState<{
+    groups: Group[]
+    period: {
+      start: string
+      end: string
+      duration: number
+    }
+    scheduleDays: Array<{
+      dayOfWeek: number
+      startTime: string
+      endTime: string
+      dayName: string
+    }>
+    settings: {
+      title: string
+      location: string
+      isAttendanceRequired: boolean
+    }
+    estimatedEvents: number
+  } | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
@@ -85,7 +116,7 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
     setScheduleDays(scheduleDays.filter((_, i) => i !== index))
   }
 
-  const updateScheduleDay = (index: number, field: keyof ScheduleDay, value: any) => {
+  const updateScheduleDay = (index: number, field: keyof ScheduleDay, value: string | number) => {
     const updated = [...scheduleDays]
     updated[index] = { ...updated[index], [field]: value }
     setScheduleDays(updated)
@@ -121,7 +152,7 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
     return newErrors
   }
 
-  const generatePreview = async () => {
+  const generatePreview = () => {
     const validationErrors = validateForm()
     if (validationErrors.length > 0) {
       setErrors(validationErrors)

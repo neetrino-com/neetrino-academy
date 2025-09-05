@@ -144,7 +144,7 @@ export default function ScheduleDashboard() {
 
   useEffect(() => {
     setMounted(true)
-    fetchScheduleData()
+    fetchScheduleData().catch(console.error)
   }, [])
 
   useEffect(() => {
@@ -219,13 +219,21 @@ export default function ScheduleDashboard() {
           
           schedulesData.forEach((schedule, index) => {
             if (schedule && schedule.schedule) {
-              schedule.schedule.forEach((entry: any) => {
+              schedule.schedule.forEach((entry: {
+                id: string
+                dayOfWeek: number
+                startTime: string
+                endTime: string
+                isActive: boolean
+              }) => {
                 allEntries.push({
                   ...entry,
                   groupId: groupsData[index].id,
                   groupName: groupsData[index].name,
                   teacherId: groupsData[index].teacher?.id || '',
-                  teacherName: groupsData[index].teacher?.name || 'Не назначен'
+                  teacherName: groupsData[index].teacher?.name || 'Не назначен',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
                 })
               })
             }
@@ -352,7 +360,19 @@ export default function ScheduleDashboard() {
     return matchesTeacher && matchesGroup && matchesSearch && matchesActive
   })
 
-  const generateAdvancedSchedule = async (data: any) => {
+  const generateAdvancedSchedule = async (data: {
+    groupIds: string[]
+    startDate: string
+    endDate: string
+    scheduleDays: Array<{
+      dayOfWeek: number
+      startTime: string
+      endTime: string
+    }>
+    title?: string
+    location?: string
+    isAttendanceRequired?: boolean
+  }) => {
     try {
       const response = await fetch('/api/admin/schedule/generate-advanced', {
         method: 'POST',

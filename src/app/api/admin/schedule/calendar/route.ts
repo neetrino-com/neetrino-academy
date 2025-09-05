@@ -134,13 +134,14 @@ export async function GET(request: NextRequest) {
     const eventsByMonth = groupEventsByMonth(calendarEvents)
 
     // Статистика
+    const now = new Date()
     const stats = {
       totalEvents: events.length,
       totalSchedules: schedules.length,
       totalGroups: groups.length,
       eventsByType: getEventsByType(events),
-      upcomingEvents: events.filter(e => e.startDate > new Date()).length,
-      pastEvents: events.filter(e => e.startDate <= new Date()).length
+      upcomingEvents: events.filter(e => e.startDate > now).length,
+      pastEvents: events.filter(e => e.startDate <= now).length
     }
 
     console.log(`✅ [Calendar] Найдено событий: ${events.length}, расписаний: ${schedules.length}`)
@@ -168,8 +169,24 @@ export async function GET(request: NextRequest) {
 }
 
 // Группировка событий по месяцам
-function groupEventsByMonth(events: any[]) {
-  const months: { [key: string]: any[] } = {}
+function groupEventsByMonth(events: Array<{
+  id: string
+  title: string
+  start: string
+  end: string
+  startDate: string
+  endDate: string
+  groupId: string
+  groupName: string
+  teacherId: string
+  teacherName: string
+  location?: string
+  type: string
+  isActive: boolean
+  isAttendanceRequired: boolean
+  color: string
+}>) {
+  const months: { [key: string]: typeof events } = {}
   
   events.forEach(event => {
     const date = new Date(event.start)
@@ -202,7 +219,7 @@ function getEventColor(type: string, groupType?: string): string {
 }
 
 // Статистика по типам событий
-function getEventsByType(events: any[]) {
+function getEventsByType(events: Array<{ type: string }>) {
   const types: { [key: string]: number } = {}
   
   events.forEach(event => {
