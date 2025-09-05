@@ -121,25 +121,62 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
   const validateForm = (): string[] => {
     const newErrors: string[] = []
 
+    // Проверка дат
     if (!startDate || !endDate) {
       newErrors.push('Укажите даты начала и окончания')
     } else {
       const start = new Date(startDate)
       const end = new Date(endDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Сбрасываем время для сравнения только дат
+      
       if (start >= end) {
         newErrors.push('Дата окончания должна быть позже даты начала')
       }
+      
+      if (start < today) {
+        newErrors.push('Дата начала не может быть в прошлом')
+      }
+      
+      // Проверяем, что период не слишком длинный (максимум 1 год)
+      const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+      if (daysDiff > 365) {
+        newErrors.push('Период обучения не может превышать 1 год')
+      }
     }
 
+    // Проверка расписания
     if (scheduleDays.length === 0) {
       newErrors.push('Добавьте хотя бы один день расписания')
     }
 
+    // Проверка каждого дня расписания
     scheduleDays.forEach((day, index) => {
       if (day.startTime >= day.endTime) {
-        newErrors.push(`Время окончания должно быть позже времени начала для дня ${index + 1}`)
+        newErrors.push(`Время окончания должно быть позже времени начала для занятия ${index + 1}`)
+      }
+      
+      // Проверяем, что занятие не слишком короткое (минимум 30 минут)
+      const startTime = new Date(`1970-01-01T${day.startTime}:00`)
+      const endTime = new Date(`1970-01-01T${day.endTime}:00`)
+      const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+      
+      if (durationMinutes < 30) {
+        newErrors.push(`Занятие ${index + 1} должно длиться минимум 30 минут`)
+      }
+      
+      // Проверяем, что занятие не слишком длинное (максимум 4 часа)
+      if (durationMinutes > 240) {
+        newErrors.push(`Занятие ${index + 1} не должно длиться более 4 часов`)
       }
     })
+
+    // Проверка на дубликаты дней недели
+    const dayOfWeeks = scheduleDays.map(day => day.dayOfWeek)
+    const uniqueDays = new Set(dayOfWeeks)
+    if (dayOfWeeks.length !== uniqueDays.size) {
+      newErrors.push('Нельзя добавлять несколько занятий в один день недели')
+    }
 
     return newErrors
   }
@@ -206,11 +243,24 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
         isAttendanceRequired
       }
 
+      console.log('🚀 Отправка данных для генерации расписания:', generateData)
       await onGenerate(generateData)
       onClose()
     } catch (error) {
-      console.error('Ошибка генерации расписания:', error)
-      setErrors(['Ошибка при генерации расписания'])
+      console.error('❌ Ошибка генерации расписания:', error)
+      
+      // Более детальная обработка ошибок
+      let errorMessage = 'Ошибка при генерации расписания'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message)
+      }
+      
+      setErrors([errorMessage])
     } finally {
       setIsGenerating(false)
     }

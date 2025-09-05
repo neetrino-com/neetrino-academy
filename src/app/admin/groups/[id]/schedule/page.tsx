@@ -227,6 +227,8 @@ export default function GroupSchedulePage() {
   }) => {
     setGenerating(true)
     try {
+      console.log('🔄 Генерация расписания для группы:', groupId, data)
+      
       const response = await fetch(`/api/admin/groups/${groupId}/schedule/generate-advanced`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -235,17 +237,33 @@ export default function GroupSchedulePage() {
       
       if (response.ok) {
         const result = await response.json()
+        console.log('✅ Расписание успешно создано:', result)
         alert(`Создано ${result.eventsCreated} занятий для группы ${result.group.name}`)
         await fetchGroupEvents()
         setShowGenerator(false)
       } else {
         const errorData = await response.json()
-        console.error('Ошибка сервера:', errorData)
-        alert(`Ошибка: ${errorData.error || 'Неизвестная ошибка'}`)
+        console.error('❌ Ошибка сервера:', errorData)
+        
+        // Более информативное сообщение об ошибке
+        let errorMessage = errorData.error || 'Неизвестная ошибка'
+        
+        if (errorData.details) {
+          console.error('🔍 Детали ошибки:', errorData.details)
+          errorMessage += ` (${errorData.details.message})`
+        }
+        
+        alert(`Ошибка: ${errorMessage}`)
       }
     } catch (error) {
-      console.error('Ошибка сети:', error)
-      alert('Ошибка сети при генерации расписания')
+      console.error('❌ Ошибка сети:', error)
+      
+      let errorMessage = 'Ошибка сети при генерации расписания'
+      if (error instanceof Error) {
+        errorMessage = `Ошибка сети: ${error.message}`
+      }
+      
+      alert(errorMessage)
     } finally {
       setGenerating(false)
     }
