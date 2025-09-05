@@ -39,9 +39,14 @@ import {
   Copy,
   RotateCcw,
   Play,
-  Pause
+  Pause,
+  Sparkles
 } from 'lucide-react'
 import React from 'react'
+import ScheduleGenerator from '@/components/admin/ScheduleGenerator'
+import ScheduleCalendar from '@/components/admin/ScheduleCalendar'
+import ScheduleListView from '@/components/admin/ScheduleListView'
+import ScheduleWeekView from '@/components/admin/ScheduleWeekView'
 
 interface Group {
   id: string
@@ -85,6 +90,24 @@ interface ScheduleEntry {
   updatedAt: string
 }
 
+interface CalendarEvent {
+  id: string
+  title: string
+  start: string
+  end: string
+  startDate: string
+  endDate: string
+  groupId: string
+  groupName: string
+  teacherId: string
+  teacherName: string
+  location?: string
+  type: string
+  isActive: boolean
+  isAttendanceRequired: boolean
+  color: string
+}
+
 interface ScheduleConflict {
   type: 'teacher' | 'location' | 'time_overlap'
   message: string
@@ -96,11 +119,12 @@ export default function ScheduleDashboard() {
   const [groups, setGroups] = useState<Group[]>([])
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [scheduleEntries, setScheduleEntries] = useState<ScheduleEntry[]>([])
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTeacher, setSelectedTeacher] = useState<string>('all')
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'grid'>('calendar')
-  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>('week')
+  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'week'>('calendar')
+  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>('month')
   const [showConflicts, setShowConflicts] = useState(true)
   const [showInactive, setShowInactive] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -109,6 +133,14 @@ export default function ScheduleDashboard() {
   const [bulkMode, setBulkMode] = useState(false)
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set())
   const [mounted, setMounted] = useState(false)
+  const [showGenerator, setShowGenerator] = useState(false)
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    totalSchedules: 0,
+    totalGroups: 0,
+    upcomingEvents: 0,
+    pastEvents: 0
+  })
 
   useEffect(() => {
     setMounted(true)
@@ -156,11 +188,21 @@ export default function ScheduleDashboard() {
         setTeachers(Array.isArray(teachersData) ? teachersData : [])
       } else {
         console.error('Ошибка загрузки учителей:', teachersResponse.status)
-        // Если нет учителей, создаем пустой массив
         setTeachers([])
       }
 
-      // Получаем расписание всех групп
+      // Получаем календарные данные
+      const calendarResponse = await fetch('/api/admin/schedule/calendar')
+      if (calendarResponse.ok) {
+        const calendarData = await calendarResponse.json()
+        setCalendarEvents(calendarData.events || [])
+        setStats(calendarData.stats || stats)
+      } else {
+        console.error('Ошибка загрузки календарных данных:', calendarResponse.status)
+        setCalendarEvents([])
+      }
+
+      // Получаем расписание всех групп (для совместимости)
       if (groupsData.length > 0) {
         try {
           const schedulePromises = groupsData.map((group: Group) =>
@@ -310,6 +352,29 @@ export default function ScheduleDashboard() {
     return matchesTeacher && matchesGroup && matchesSearch && matchesActive
   })
 
+  const generateAdvancedSchedule = async (data: any) => {
+    try {
+      const response = await fetch('/api/admin/schedule/generate-advanced', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        await fetchScheduleData()
+        alert(`Создано ${result.summary.eventsCount} занятий для ${result.summary.groupsCount} групп!`)
+        setShowGenerator(false)
+      } else {
+        const error = await response.json()
+        alert(`Ошибка: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Ошибка генерации расписания:', error)
+      alert('Ошибка при генерации расписания')
+    }
+  }
+
   const generateScheduleForPeriod = async (months: number) => {
     try {
       const response = await fetch('/api/admin/schedule/generate', {
@@ -354,6 +419,45 @@ export default function ScheduleDashboard() {
     }
   }
 
+  const bulkDeleteFutureEvents = async (eventIds: string[]) => {
+    try {
+      const response = await fetch('/api/admin/schedule/bulk-delete-future', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventIds,
+          confirmDelete: true
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        await fetchScheduleData()
+        alert(`Удалено ${result.deleted.events} событий и ${result.deleted.schedules} записей расписания`)
+      } else {
+        const error = await response.json()
+        alert(`Ошибка: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Ошибка массового удаления:', error)
+      alert('Ошибка при удалении занятий')
+    }
+  }
+
+  const handleEventClick = (event: CalendarEvent) => {
+    console.log('Event clicked:', event)
+  }
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    console.log('Edit event:', event)
+  }
+
+  const handleDeleteEvent = (eventId: string) => {
+    if (confirm('Вы уверены, что хотите удалить это занятие?')) {
+      bulkDeleteFutureEvents([eventId])
+    }
+  }
+
   if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
@@ -375,28 +479,28 @@ export default function ScheduleDashboard() {
               <Calendar className="w-8 h-8" />
               Расписание групп
             </h2>
-                         <p className="text-blue-100 mt-1 flex items-center gap-2">
-               <span>{Array.isArray(groups) ? groups.length : 0} групп</span>
-               <span className="text-blue-200">•</span>
-               <span>{Array.isArray(teachers) ? teachers.length : 0} учителей</span>
-               <span className="text-blue-200">•</span>
-               <span>{scheduleEntries.filter(e => e.isActive).length} активных занятий</span>
-             </p>
+            <p className="text-blue-100 mt-1 flex items-center gap-2">
+              <span>{stats.totalGroups} групп</span>
+              <span className="text-blue-200">•</span>
+              <span>{stats.totalEvents} событий</span>
+              <span className="text-blue-200">•</span>
+              <span>{stats.upcomingEvents} предстоящих</span>
+            </p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowGenerator(true)}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Создать расписание
+            </button>
             <button
               onClick={() => generateScheduleForPeriod(3)}
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
             >
               <CalendarRange className="w-4 h-4" />
-              Генерировать на 3 месяца
-            </button>
-            <button
-              onClick={() => generateScheduleForPeriod(4)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <Target className="w-4 h-4" />
-              Генерировать на 4 месяца
+              Быстрая генерация
             </button>
           </div>
         </div>
@@ -404,12 +508,12 @@ export default function ScheduleDashboard() {
 
       {/* Статистика */}
       <div className="p-6 border-b border-gray-200 bg-gray-50">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Всего групп</p>
-                                 <p className="text-2xl font-bold text-gray-900 mt-1">{Array.isArray(groups) ? groups.length : 0}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalGroups}</p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
             </div>
@@ -418,7 +522,7 @@ export default function ScheduleDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Учителей</p>
-                                 <p className="text-2xl font-bold text-gray-900 mt-1">{Array.isArray(teachers) ? teachers.length : 0}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{Array.isArray(teachers) ? teachers.length : 0}</p>
               </div>
               <User className="w-8 h-8 text-emerald-600" />
             </div>
@@ -426,21 +530,28 @@ export default function ScheduleDashboard() {
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Активных занятий</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  {scheduleEntries.filter(e => e.isActive).length}
-                </p>
+                <p className="text-sm text-gray-600">Всего событий</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">{stats.totalEvents}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <Calendar className="w-8 h-8 text-green-600" />
             </div>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Конфликтов</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">{conflicts.length}</p>
+                <p className="text-sm text-gray-600">Предстоящих</p>
+                <p className="text-2xl font-bold text-blue-600 mt-1">{stats.upcomingEvents}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+              <Clock className="w-8 h-8 text-blue-600" />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Прошедших</p>
+                <p className="text-2xl font-bold text-gray-600 mt-1">{stats.pastEvents}</p>
+              </div>
+              <CheckCircle className="w-8 h-8 text-gray-600" />
             </div>
           </div>
         </div>
@@ -496,15 +607,15 @@ export default function ScheduleDashboard() {
                 Календарь
               </button>
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => setViewMode('week')}
                 className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                  viewMode === 'grid' 
+                  viewMode === 'week' 
                     ? 'bg-blue-100 text-blue-700 border border-blue-200' 
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}
               >
-                <Grid3X3 className="w-4 h-4" />
-                Сетка
+                <CalendarDays className="w-4 h-4" />
+                Неделя
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -643,275 +754,52 @@ export default function ScheduleDashboard() {
       {/* Содержимое */}
       <div className="p-6">
         {viewMode === 'calendar' && (
-          <div className="space-y-6">
-            {[0, 1, 2, 3, 4, 5, 6].map(dayOfWeek => {
-              const dayEntries = filteredEntries.filter(entry => entry.dayOfWeek === dayOfWeek)
-              if (dayEntries.length === 0) return null
-              
-              return (
-                <div key={dayOfWeek} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <CalendarDays className="w-5 h-5 text-blue-600" />
-                      {getDayName(dayOfWeek)}
-                      <span className="text-sm text-gray-500">({dayEntries.length} занятий)</span>
-                    </h3>
-                  </div>
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {dayEntries.map(entry => {
-                        const isSelected = selectedEntries.has(entry.id)
-                        const hasConflict = conflicts.some(c => 
-                          c.entries.some(e => e.id === entry.id)
-                        )
-                        
-                        return (
-                          <div 
-                            key={entry.id} 
-                            className={`border rounded-lg p-4 transition-all ${
-                              isSelected 
-                                ? 'border-blue-500 bg-blue-50' 
-                                : hasConflict
-                                ? 'border-red-300 bg-red-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                          >
-                            {bulkMode && (
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  const newSelected = new Set(selectedEntries)
-                                  if (e.target.checked) {
-                                    newSelected.add(entry.id)
-                                  } else {
-                                    newSelected.delete(entry.id)
-                                  }
-                                  setSelectedEntries(newSelected)
-                                }}
-                                className="float-right rounded border-gray-300"
-                              />
-                            )}
-                            
-                            <div className="space-y-3">
-                              <div>
-                                <h4 className="font-semibold text-gray-900">{entry.groupName}</h4>
-                                <p className="text-sm text-gray-600">{entry.teacherName}</p>
-                              </div>
-                              
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Clock className="w-4 h-4" />
-                                {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
-                              </div>
-                              
-                              {entry.location && (
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <MapPin className="w-4 h-4" />
-                                  {entry.location}
-                                </div>
-                              )}
-                              
-                              <div className="flex items-center gap-2">
-                                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  entry.isActive 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                  {entry.isActive ? 'Активно' : 'Неактивно'}
-                                </div>
-                                {hasConflict && (
-                                  <div className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                                    Конфликт
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <div className="flex gap-2">
-                                <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center gap-1">
-                                  <Edit className="w-3 h-3" />
-                                  Изменить
-                                </button>
-                                <button className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 flex items-center gap-1">
-                                  <Trash2 className="w-3 h-3" />
-                                  Удалить
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <ScheduleCalendar
+            events={calendarEvents}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onEventClick={handleEventClick}
+          />
         )}
 
-        {viewMode === 'grid' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Сетка расписания</h3>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-8 gap-4">
-                {/* Заголовки */}
-                <div className="font-semibold text-gray-700">Время</div>
-                {[1, 2, 3, 4, 5, 6, 7].map(day => (
-                  <div key={day} className="font-semibold text-gray-700 text-center">
-                    {getShortDayName(day)}
-                  </div>
-                ))}
-                
-                {/* Временные слоты */}
-                {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map(time => (
-                  <React.Fragment key={`time-slot-${time}`}>
-                    <div className="text-sm text-gray-600 py-2">
-                      {time}
-                    </div>
-                    {[1, 2, 3, 4, 5, 6, 7].map(day => {
-                      const entries = filteredEntries.filter(entry => 
-                        entry.dayOfWeek === day && 
-                        entry.startTime <= time && 
-                        entry.endTime > time
-                      )
-                      
-                      return (
-                        <div key={`${day}-${time}`} className="border border-gray-200 p-2 min-h-[60px]">
-                          {entries.map(entry => (
-                            <div 
-                              key={entry.id} 
-                              className="text-xs p-1 bg-blue-100 text-blue-800 rounded mb-1 cursor-pointer hover:bg-blue-200"
-                            >
-                              {entry.groupName}
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    })}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
+        {viewMode === 'week' && (
+          <ScheduleWeekView
+            events={calendarEvents}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onEventClick={handleEventClick}
+            onAddEvent={(date, time) => {
+              console.log('Add event at:', date, time)
+              // Здесь можно открыть модальное окно для создания события
+            }}
+          />
         )}
 
         {viewMode === 'list' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Список всех занятий</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {bulkMode && (
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        <input
-                          type="checkbox"
-                          checked={selectedEntries.size === filteredEntries.length && filteredEntries.length > 0}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedEntries(new Set(filteredEntries.map(e => e.id)))
-                            } else {
-                              setSelectedEntries(new Set())
-                            }
-                          }}
-                          className="rounded border-gray-300"
-                        />
-                      </th>
-                    )}
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Группа</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Учитель</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">День</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Время</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Аудитория</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Статус</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Действия</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEntries.map(entry => {
-                    const isSelected = selectedEntries.has(entry.id)
-                    const hasConflict = conflicts.some(c => 
-                      c.entries.some(e => e.id === entry.id)
-                    )
-                    
-                    return (
-                      <tr key={entry.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        {bulkMode && (
-                          <td className="py-3 px-4">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={(e) => {
-                                const newSelected = new Set(selectedEntries)
-                                if (e.target.checked) {
-                                  newSelected.add(entry.id)
-                                } else {
-                                  newSelected.delete(entry.id)
-                                }
-                                setSelectedEntries(newSelected)
-                              }}
-                              className="rounded border-gray-300"
-                            />
-                          </td>
-                        )}
-                        <td className="py-3 px-4">
-                          <div>
-                            <p className="font-medium text-gray-900">{entry.groupName}</p>
-                            <p className="text-sm text-gray-500">{entry.groupId}</p>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-gray-900">{entry.teacherName}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-gray-900">{getDayName(entry.dayOfWeek)}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-gray-900">{formatTime(entry.startTime)} - {formatTime(entry.endTime)}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-gray-900">{entry.location || '-'}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              entry.isActive 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {entry.isActive ? 'Активно' : 'Неактивно'}
-                            </div>
-                            {hasConflict && (
-                              <div className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                                Конфликт
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex gap-2">
-                            <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 flex items-center gap-1">
-                              <Edit className="w-3 h-3" />
-                              Изменить
-                            </button>
-                            <button className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 flex items-center gap-1">
-                              <Trash2 className="w-3 h-3" />
-                              Удалить
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ScheduleListView
+            events={calendarEvents}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onBulkAction={(action, eventIds) => {
+              if (action === 'delete') {
+                bulkDeleteFutureEvents(eventIds)
+              } else {
+                console.log('Bulk action:', action, eventIds)
+              }
+            }}
+            onEventClick={handleEventClick}
+          />
         )}
       </div>
+
+      {/* Генератор расписания */}
+      {showGenerator && (
+        <ScheduleGenerator
+          groups={groups}
+          onGenerate={generateAdvancedSchedule}
+          onClose={() => setShowGenerator(false)}
+        />
+      )}
     </div>
   )
 }
