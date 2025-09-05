@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('end')
     const groupId = searchParams.get('groupId')
     const teacherId = searchParams.get('teacherId')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
 
     // Параметры по умолчанию
     const start = startDate ? new Date(startDate) : new Date()
@@ -31,35 +33,48 @@ export async function GET(request: NextRequest) {
 
     console.log(`📅 [Calendar] Период: ${start.toISOString().split('T')[0]} - ${end.toISOString().split('T')[0]}`)
 
-    // Получаем события
-    const events = await prisma.event.findMany({
-      where: {
-        isActive: true,
-        startDate: { gte: start },
-        endDate: { lte: end },
-        ...(groupId && { groupId }),
-        ...(teacherId && { createdById: teacherId })
-      },
-      include: {
-        group: {
-          select: {
-            id: true,
-            name: true,
-            type: true
+    // Получаем события с пагинацией
+    const [events, totalCount] = await Promise.all([
+      prisma.event.findMany({
+        where: {
+          isActive: true,
+          startDate: { gte: start },
+          endDate: { lte: end },
+          ...(groupId && { groupId }),
+          ...(teacherId && { createdById: teacherId })
+        },
+        include: {
+          group: {
+            select: {
+              id: true,
+              name: true,
+              type: true
+            }
+          },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
           }
         },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+        orderBy: {
+          startDate: 'asc'
+        },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.event.count({
+        where: {
+          isActive: true,
+          startDate: { gte: start },
+          endDate: { lte: end },
+          ...(groupId && { groupId }),
+          ...(teacherId && { createdById: teacherId })
         }
-      },
-      orderBy: {
-        startDate: 'asc'
-      }
-    })
+      })
+    ])
 
     // Получаем расписание групп
     const schedules = await prisma.groupSchedule.findMany({
@@ -153,6 +168,13 @@ export async function GET(request: NextRequest) {
       groups: groups,
       eventsByMonth: eventsByMonth,
       stats: stats,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        pages: Math.ceil(totalCount / limit),
+        hasMore: page < Math.ceil(totalCount / limit)
+      },
       period: {
         start: start.toISOString(),
         end: end.toISOString()

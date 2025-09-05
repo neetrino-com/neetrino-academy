@@ -141,6 +141,16 @@ export default function ScheduleDashboard() {
     upcomingEvents: 0,
     pastEvents: 0
   })
+  
+  // Состояние пагинации
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0,
+    hasMore: false
+  })
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -152,6 +162,36 @@ export default function ScheduleDashboard() {
       detectConflicts()
     }
   }, [scheduleEntries, teachers])
+
+  const loadMoreEvents = async () => {
+    if (loadingMore || !pagination.hasMore) return
+    
+    setLoadingMore(true)
+    try {
+      const response = await fetch(`/api/admin/schedule/calendar?page=${pagination.page + 1}&limit=${pagination.limit}`)
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Добавляем к существующим событиям
+        setCalendarEvents(prev => [...prev, ...(data.events || [])])
+        
+        // Обновляем пагинацию
+        if (data.pagination) {
+          setPagination({
+            page: data.pagination.page,
+            limit: data.pagination.limit,
+            total: data.pagination.total,
+            pages: data.pagination.pages,
+            hasMore: data.pagination.hasMore
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки дополнительных событий:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   const fetchScheduleData = async () => {
     try {
@@ -191,12 +231,23 @@ export default function ScheduleDashboard() {
         setTeachers([])
       }
 
-      // Получаем календарные данные
-      const calendarResponse = await fetch('/api/admin/schedule/calendar')
+      // Получаем календарные данные с пагинацией
+      const calendarResponse = await fetch(`/api/admin/schedule/calendar?page=1&limit=${pagination.limit}`)
       if (calendarResponse.ok) {
         const calendarData = await calendarResponse.json()
         setCalendarEvents(calendarData.events || [])
         setStats(calendarData.stats || stats)
+        
+        // Обновляем пагинацию
+        if (calendarData.pagination) {
+          setPagination({
+            page: calendarData.pagination.page,
+            limit: calendarData.pagination.limit,
+            total: calendarData.pagination.total,
+            pages: calendarData.pagination.pages,
+            hasMore: calendarData.pagination.hasMore
+          })
+        }
       } else {
         console.error('Ошибка загрузки календарных данных:', calendarResponse.status)
         setCalendarEvents([])
@@ -808,6 +859,14 @@ export default function ScheduleDashboard() {
               }
             }}
             onEventClick={handleEventClick}
+            pagination={{
+              hasMore: pagination.hasMore,
+              total: pagination.total,
+              currentPage: pagination.page,
+              totalPages: pagination.pages
+            }}
+            onLoadMore={loadMoreEvents}
+            loadingMore={loadingMore}
           />
         )}
       </div>
