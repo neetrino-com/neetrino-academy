@@ -130,7 +130,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Современный хедер */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10">
+      <div className="border-b border-slate-200/40">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex justify-between items-center">
             <div>
@@ -153,30 +153,48 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
       </div>
 
       {/* Табы навигации */}
-      <div className="bg-white/60 backdrop-blur-sm border-b border-slate-200/40 sticky top-[120px] z-10">
+      <div className="border-b border-slate-200/40">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex space-x-1 py-4">
+          <div className="flex space-x-2 py-4">
             <button
               onClick={() => setActiveTab('learning')}
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+              className={`flex-1 flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${
                 activeTab === 'learning'
-                  ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg transform scale-105'
+                  ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg'
                   : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'
               }`}
             >
-              <LearningIcon className="w-5 h-5" />
-              Контроль обучения
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                <LearningIcon className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-xl font-bold mb-1">
+                  Контроль обучения
+                </h2>
+                <p className="text-sm opacity-80">
+                  Инструменты для мониторинга и оценки образовательного процесса
+                </p>
+              </div>
             </button>
             <button
               onClick={() => setActiveTab('system')}
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+              className={`flex-1 flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${
                 activeTab === 'system'
-                  ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-lg transform scale-105'
+                  ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-lg'
                   : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'
               }`}
             >
-              <SystemIcon className="w-5 h-5" />
-              Управление системой
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                <SystemIcon className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <h2 className="text-xl font-bold mb-1">
+                  Управление системой
+                </h2>
+                <p className="text-sm opacity-80">
+                  Основные инструменты администрирования платформы
+                </p>
+              </div>
             </button>
           </div>
         </div>
@@ -186,27 +204,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
         {/* Контент табов */}
         {activeTab === 'learning' && (
           <div className="animate-fadeIn">
-            {/* Блок "Контроль обучения" */}
-            <div className="mb-8">
-              <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 mb-6 shadow-lg">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-1">
-                      Контроль обучения
-                    </h2>
-                    <p className="text-white/80 font-medium">
-                      Инструменты для мониторинга и оценки образовательного процесса
-                    </p>
-                  </div>
-                </div>
-              </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
             {/* Аналитика чеклистов */}
             <div 
               onClick={() => router.push('/admin/checklists/analytics')}
@@ -306,10 +304,10 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
                 Управление студентами, курсами и платежами
               </p>
             </div>
-          </div>
+            </div>
 
-          {/* Второй ряд блока "Контроль обучения" */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {/* Второй ряд блока "Контроль обучения" */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {/* Аналитика тестов */}
             <div 
               onClick={() => router.push('/admin/tests/analytics')}
@@ -416,7 +414,6 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
                 Планируется добавление новых инструментов
               </p>
             </div>
-          </div>
             </div>
           </div>
         )}
@@ -424,236 +421,209 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
         {/* Таб "Управление системой" */}
         {activeTab === 'system' && (
           <div className="animate-fadeIn">
-            {/* Блок "Управление системой" */}
-            <div className="mb-8">
-              <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-6 mb-6 shadow-lg">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+              {/* Управление группами */}
+              <div 
+                onClick={() => router.push('/admin/groups')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-emerald-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <UserCheck className="w-8 h-8 text-emerald-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
+                        {stats.totalGroups}
+                      </p>
+                      <p className="text-xs text-emerald-600 font-medium mt-1">активных</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-1">
-                      Управление системой
-                    </h2>
-                    <p className="text-white/80 font-medium">
-                      Основные инструменты администрирования платформы
-                    </p>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Группы</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Управление учебными группами
+                </p>
+              </div>
+
+              {/* Управление тестами */}
+              <div 
+                onClick={() => router.push('/admin/tests')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-purple-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <ClipboardList className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent leading-none">
+                        {stats.totalTests}
+                      </p>
+                      <p className="text-xs text-purple-600 font-medium mt-1">всего</p>
+                    </div>
                   </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-purple-600 transition-colors duration-300" />
                 </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Тесты</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Создание и анализ тестов
+                </p>
+              </div>
+
+              {/* Управление курсами */}
+              <div 
+                onClick={() => router.push('/admin/courses')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-indigo-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-indigo-50 hover:to-blue-50 hover:border-indigo-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <BookOpen className="w-8 h-8 text-indigo-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent leading-none">
+                        {stats.totalCourses}
+                      </p>
+                      <p className="text-xs text-indigo-600 font-medium mt-1">всего</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Курсы</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Управление образовательным контентом
+                </p>
+              </div>
+
+              {/* Управление лекциями */}
+              <div 
+                onClick={() => router.push('/admin/lectures')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-cyan-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <FileText className="w-8 h-8 text-cyan-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-none">
+                        {stats.totalLectures}
+                      </p>
+                      <p className="text-xs text-cyan-600 font-medium mt-1">всего</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-cyan-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Лекции</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Создание и управление учебными материалами
+                </p>
+              </div>
+
+              {/* Управление чеклистами */}
+              <div 
+                onClick={() => router.push('/admin/checklists')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-amber-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-amber-50 hover:to-yellow-50 hover:border-amber-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <ClipboardList className="w-8 h-8 text-amber-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent leading-none">
+                        {stats.totalChecklists || 0}
+                      </p>
+                      <p className="text-xs text-amber-600 font-medium mt-1">всего</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-amber-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Чеклисты</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Создание и управление чеклистами для студентов
+                </p>
+              </div>
+
+              {/* Управление пользователями */}
+              <div 
+                onClick={() => router.push('/admin/users')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <Users className="w-8 h-8 text-red-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                        {stats.totalStudents}
+                      </p>
+                      <p className="text-xs text-red-600 font-medium mt-1">студентов</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Пользователи</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Управление ролями и правами
+                </p>
+              </div>
+
+              {/* Аналитика и отчеты */}
+              <div 
+                onClick={() => router.push('/admin/analytics')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-green-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <BarChart3 className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
+                        100%
+                      </p>
+                      <p className="text-xs text-green-600 font-medium mt-1">покрытие</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Аналитика</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Статистика и отчеты
+                </p>
+              </div>
+
+              {/* Безопасность системы */}
+              <div 
+                onClick={() => router.push('/admin/security')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
+                        🛡️
+                      </p>
+                      <p className="text-xs text-red-600 font-medium mt-1">активна</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Безопасность</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Мониторинг и управление безопасностью системы
+                </p>
               </div>
             </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-          
-          {/* Управление группами */}
-          <div 
-            onClick={() => router.push('/admin/groups')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-emerald-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <UserCheck className="w-8 h-8 text-emerald-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
-                    {stats.totalGroups}
-                  </p>
-                  <p className="text-xs text-emerald-600 font-medium mt-1">активных</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Группы</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Управление учебными группами
-            </p>
-          </div>
-
-          {/* Управление тестами */}
-          <div 
-            onClick={() => router.push('/admin/tests')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-purple-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <ClipboardList className="w-8 h-8 text-purple-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent leading-none">
-                    {stats.totalTests}
-                  </p>
-                  <p className="text-xs text-purple-600 font-medium mt-1">всего</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-purple-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Тесты</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Создание и анализ тестов
-            </p>
-          </div>
-
-          {/* Управление курсами */}
-          <div 
-            onClick={() => router.push('/admin/courses')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-indigo-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-indigo-50 hover:to-blue-50 hover:border-indigo-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-indigo-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <BookOpen className="w-8 h-8 text-indigo-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent leading-none">
-                    {stats.totalCourses}
-                  </p>
-                  <p className="text-xs text-indigo-600 font-medium mt-1">всего</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Курсы</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Управление образовательным контентом
-            </p>
-          </div>
-
-          {/* Управление лекциями */}
-          <div 
-            onClick={() => router.push('/admin/lectures')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-cyan-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-cyan-50 hover:to-blue-50 hover:border-cyan-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <FileText className="w-8 h-8 text-cyan-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-none">
-                    {stats.totalLectures}
-                  </p>
-                  <p className="text-xs text-cyan-600 font-medium mt-1">всего</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-cyan-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Лекции</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Создание и управление учебными материалами
-            </p>
-          </div>
-
-          {/* Управление чеклистами */}
-          <div 
-            onClick={() => router.push('/admin/checklists')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-amber-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-amber-50 hover:to-yellow-50 hover:border-amber-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <ClipboardList className="w-8 h-8 text-amber-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent leading-none">
-                    {stats.totalChecklists || 0}
-                  </p>
-                  <p className="text-xs text-amber-600 font-medium mt-1">всего</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-amber-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Чеклисты</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Создание и управление чеклистами для студентов
-            </p>
-          </div>
-
-
-
-          {/* Управление пользователями */}
-          <div 
-            onClick={() => router.push('/admin/users')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <Users className="w-8 h-8 text-red-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
-                    {stats.totalStudents}
-                  </p>
-                  <p className="text-xs text-red-600 font-medium mt-1">студентов</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Пользователи</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Управление ролями и правами
-            </p>
-          </div>
-
-
-
-          {/* Аналитика и отчеты */}
-          <div 
-            onClick={() => router.push('/admin/analytics')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-green-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <BarChart3 className="w-8 h-8 text-green-600" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent leading-none">
-                    100%
-                  </p>
-                  <p className="text-xs text-green-600 font-medium mt-1">покрытие</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-green-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Аналитика</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Статистика и отчеты
-            </p>
-          </div>
-
-          {/* Безопасность системы */}
-          <div 
-            onClick={() => router.push('/admin/security')}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-red-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent leading-none">
-                    🛡️
-                  </p>
-                  <p className="text-xs text-red-600 font-medium mt-1">активна</p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-red-600 transition-colors duration-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Безопасность</h3>
-            <p className="text-slate-600 leading-relaxed">
-              Мониторинг и управление безопасностью системы
-            </p>
-          </div>
-        </div>
 
             {/* Блок безопасности */}
             <div className="mb-8">
