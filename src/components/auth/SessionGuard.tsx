@@ -10,15 +10,23 @@ interface SessionGuardProps {
 export default function SessionGuard({ children }: SessionGuardProps) {
   const pathname = usePathname()
   
-  // Определяем нужно ли проверять сессию для данной страницы
-  const shouldValidate = pathname.startsWith('/admin') || 
-                        pathname.startsWith('/dashboard') || 
-                        pathname.startsWith('/assignments') ||
-                        pathname.startsWith('/calendar')
+  // Определяем тип страницы для оптимизации
+  const getPageType = (): 'admin' | 'student' | 'public' => {
+    if (pathname.startsWith('/admin')) return 'admin'
+    if (pathname.startsWith('/dashboard') || 
+        pathname.startsWith('/assignments') ||
+        pathname.startsWith('/calendar') ||
+        pathname.startsWith('/courses') ||
+        pathname.startsWith('/lectures')) return 'student'
+    return 'public'
+  }
+
+  const pageType = getPageType()
+  const shouldValidate = pageType !== 'public'
 
   const { isValidating } = useSessionValidator({
     disabled: !shouldValidate,
-    checkInterval: 30000, // 30 секунд
+    pageType: pageType,
     onSessionInvalid: () => {
       // Показываем уведомление пользователю
       if (typeof window !== 'undefined') {
