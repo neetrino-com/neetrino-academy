@@ -93,6 +93,16 @@ export default function GroupSchedulePage() {
     upcoming: 0
   })
   
+  // Состояние пагинации
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0,
+    hasMore: false
+  })
+  const [loadingMore, setLoadingMore] = useState(false)
+  
   // Форма нового расписания
   const [newSchedule, setNewSchedule] = useState({
     dayOfWeek: 1,
@@ -122,12 +132,29 @@ export default function GroupSchedulePage() {
     }
   }
 
-  const fetchGroupEvents = async () => {
+  const fetchGroupEvents = async (page = 1, append = false) => {
     try {
-      const response = await fetch(`/api/admin/groups/${groupId}/schedule/events?limit=100`)
+      const response = await fetch(`/api/admin/groups/${groupId}/schedule/events?page=${page}&limit=${pagination.limit}`)
       if (response.ok) {
         const data = await response.json()
-        setEvents(data.events || [])
+        
+        if (append) {
+          // Добавляем к существующим событиям
+          setEvents(prev => [...prev, ...(data.events || [])])
+        } else {
+          // Заменяем события (первая загрузка)
+          setEvents(data.events || [])
+        }
+        
+        // Обновляем пагинацию
+        setPagination({
+          page: data.pagination?.page || page,
+          limit: data.pagination?.limit || pagination.limit,
+          total: data.pagination?.total || 0,
+          pages: data.pagination?.pages || 0,
+          hasMore: (data.pagination?.page || page) < (data.pagination?.pages || 0)
+        })
+        
         setStats({
           total: data.stats?.total || 0,
           active: data.stats?.active || 0,
@@ -139,6 +166,19 @@ export default function GroupSchedulePage() {
       }
     } catch (error) {
       console.error('Ошибка сети при загрузке событий:', error)
+    }
+  }
+
+  const loadMoreEvents = async () => {
+    if (loadingMore || !pagination.hasMore) return
+    
+    setLoadingMore(true)
+    try {
+      await fetchGroupEvents(pagination.page + 1, true)
+    } catch (error) {
+      console.error('Ошибка загрузки дополнительных событий:', error)
+    } finally {
+      setLoadingMore(false)
     }
   }
 
@@ -494,6 +534,14 @@ export default function GroupSchedulePage() {
             onDeleteEvent={handleDeleteEvent}
             onBulkAction={handleBulkAction}
             onEventClick={handleEventClick}
+            pagination={{
+              hasMore: pagination.hasMore,
+              total: pagination.total,
+              currentPage: pagination.page,
+              totalPages: pagination.pages
+            }}
+            onLoadMore={loadMoreEvents}
+            loadingMore={loadingMore}
           />
         )}
 
@@ -503,6 +551,14 @@ export default function GroupSchedulePage() {
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onEventClick={handleEventClick}
+            pagination={{
+              hasMore: pagination.hasMore,
+              total: pagination.total,
+              currentPage: pagination.page,
+              totalPages: pagination.pages
+            }}
+            onLoadMore={loadMoreEvents}
+            loadingMore={loadingMore}
           />
         )}
 
@@ -512,6 +568,14 @@ export default function GroupSchedulePage() {
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onEventClick={handleEventClick}
+            pagination={{
+              hasMore: pagination.hasMore,
+              total: pagination.total,
+              currentPage: pagination.page,
+              totalPages: pagination.pages
+            }}
+            onLoadMore={loadMoreEvents}
+            loadingMore={loadingMore}
           />
         )}
 

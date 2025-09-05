@@ -40,6 +40,15 @@ interface GroupScheduleListViewProps {
   onDeleteEvent?: (eventId: string) => void
   onBulkAction?: (action: 'activate' | 'deactivate' | 'delete', eventIds: string[]) => void
   onEventClick?: (event: GroupScheduleEvent) => void
+  // Пагинация
+  pagination?: {
+    hasMore: boolean
+    total: number
+    currentPage: number
+    totalPages: number
+  }
+  onLoadMore?: () => void
+  loadingMore?: boolean
 }
 
 export default function GroupScheduleListView({ 
@@ -47,7 +56,10 @@ export default function GroupScheduleListView({
   onEditEvent, 
   onDeleteEvent, 
   onBulkAction,
-  onEventClick 
+  onEventClick,
+  pagination,
+  onLoadMore,
+  loadingMore = false
 }: GroupScheduleListViewProps) {
   const [selectedEvents, setSelectedEvents] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -387,6 +399,39 @@ export default function GroupScheduleListView({
           </div>
         )}
       </div>
+
+      {/* Пагинация - Загрузить еще */}
+      {pagination && pagination.hasMore && (
+        <div className="flex justify-center py-6">
+          <button
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          >
+            {loadingMore ? (
+              <>
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                Загрузка...
+              </>
+            ) : (
+              <>
+                <Calendar className="w-4 h-4" />
+                Загрузить еще
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Информация о пагинации */}
+      {pagination && (
+        <div className="text-center text-sm text-gray-500 py-2">
+          Показано {events.length} из {pagination.total} занятий
+          {pagination.totalPages > 1 && (
+            <span> • Страница {pagination.currentPage} из {pagination.totalPages}</span>
+          )}
+        </div>
+      )}
 
       {/* Статистика */}
       <div className="bg-gray-50 rounded-lg p-4">
