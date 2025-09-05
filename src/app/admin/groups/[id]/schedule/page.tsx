@@ -9,7 +9,6 @@ import {
   Save,
   Trash2,
   ArrowLeft,
-  CalendarDays,
   AlertCircle,
   CheckCircle,
   Users,
@@ -269,34 +268,6 @@ export default function GroupSchedulePage() {
     }
   }
 
-  const generateEvents = async () => {
-    setGenerating(true)
-    try {
-      const response = await fetch(`/api/admin/groups/${groupId}/schedule/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startDate: new Date().toISOString().split('T')[0],
-          weeks: 8
-        })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        alert('События успешно сгенерированы!')
-        await fetchGroupEvents()
-      } else {
-        const errorData = await response.json()
-        console.error('Ошибка сервера:', errorData)
-        alert(`Ошибка: ${errorData.error || 'Неизвестная ошибка'}`)
-      }
-    } catch (error) {
-      console.error('Ошибка сети:', error)
-      alert('Ошибка сети при генерации событий')
-    } finally {
-      setGenerating(false)
-    }
-  }
 
   const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete', eventIds: string[]) => {
     if (eventIds.length === 0) return
@@ -418,14 +389,6 @@ export default function GroupSchedulePage() {
               >
                 <Sparkles className="w-4 h-4" />
                 Создать расписание
-              </button>
-              <button 
-                onClick={generateEvents}
-                disabled={generating || activeScheduleEntries.length === 0}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2"
-              >
-                <CalendarDays className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
-                Быстрая генерация
               </button>
             </div>
           </div>
