@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 import GroupScheduleGenerator from '@/components/admin/GroupScheduleGenerator'
 import GroupScheduleListView from '@/components/admin/GroupScheduleListView'
+import GroupScheduleWeekView from '@/components/admin/GroupScheduleWeekView'
+import GroupScheduleMonthView from '@/components/admin/GroupScheduleMonthView'
 
 interface ScheduleEntry {
   id: string
@@ -515,17 +517,21 @@ export default function GroupSchedulePage() {
         )}
 
         {viewMode === 'week' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Недельный вид</h3>
-            <p className="text-gray-500">Недельный вид будет реализован в следующих версиях</p>
-          </div>
+          <GroupScheduleWeekView
+            events={events}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onEventClick={handleEventClick}
+          />
         )}
 
         {viewMode === 'month' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Месячный вид</h3>
-            <p className="text-gray-500">Месячный вид будет реализован в следующих версиях</p>
-          </div>
+          <GroupScheduleMonthView
+            events={events}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onEventClick={handleEventClick}
+          />
         )}
 
         {/* Старое расписание (скрыто по умолчанию) */}

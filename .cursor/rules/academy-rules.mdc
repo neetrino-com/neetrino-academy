@@ -1,3 +1,4 @@
 # Academy Rules - Development Guidelines
 
 When creating a form function and input validation, use hints if the user has filled in, clicked, or is trying to save something that will not be possible due to some parameter. For example, a minimum number of characters, an unselected option, or a file with such data already created
+
