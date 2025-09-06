@@ -108,12 +108,6 @@ interface CalendarEvent {
   color: string
 }
 
-interface ScheduleConflict {
-  type: 'teacher' | 'location' | 'time_overlap'
-  message: string
-  severity: 'warning' | 'error'
-  entries: ScheduleEntry[]
-}
 
 export default function ScheduleDashboard() {
   const [groups, setGroups] = useState<Group[]>([])
@@ -125,11 +119,9 @@ export default function ScheduleDashboard() {
   const [selectedGroup, setSelectedGroup] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'week'>('calendar')
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>('month')
-  const [showConflicts, setShowConflicts] = useState(true)
   const [showInactive, setShowInactive] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [conflicts, setConflicts] = useState<ScheduleConflict[]>([])
   const [bulkMode, setBulkMode] = useState(false)
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set())
   const [mounted, setMounted] = useState(false)
@@ -157,11 +149,6 @@ export default function ScheduleDashboard() {
     fetchScheduleData().catch(console.error)
   }, [])
 
-  useEffect(() => {
-    if (Array.isArray(teachers) && Array.isArray(scheduleEntries)) {
-      detectConflicts()
-    }
-  }, [scheduleEntries, teachers])
 
   const loadMoreEvents = async () => {
     if (loadingMore || !pagination.hasMore) return
@@ -305,69 +292,6 @@ export default function ScheduleDashboard() {
     }
   }
 
-  const detectConflicts = () => {
-    const newConflicts: ScheduleConflict[] = []
-    
-    // Проверяем конфликты учителей
-    if (!Array.isArray(teachers) || !Array.isArray(scheduleEntries)) return
-    
-    teachers.forEach(teacher => {
-      const teacherEntries = scheduleEntries.filter(entry => 
-        entry.teacherId === teacher.id && entry.isActive
-      )
-      
-      // Проверяем пересечения времени для одного учителя
-      for (let i = 0; i < teacherEntries.length; i++) {
-        for (let j = i + 1; j < teacherEntries.length; j++) {
-          const entry1 = teacherEntries[i]
-          const entry2 = teacherEntries[j]
-          
-          if (entry1.dayOfWeek === entry2.dayOfWeek) {
-            const start1 = new Date(`2000-01-01T${entry1.startTime}`)
-            const end1 = new Date(`2000-01-01T${entry1.endTime}`)
-            const start2 = new Date(`2000-01-01T${entry2.startTime}`)
-            const end2 = new Date(`2000-01-01T${entry2.endTime}`)
-            
-            if (start1 < end2 && start2 < end1) {
-              newConflicts.push({
-                type: 'teacher',
-                message: `Конфликт времени у учителя ${teacher.name}: ${entry1.groupName} и ${entry2.groupName}`,
-                severity: 'error',
-                entries: [entry1, entry2]
-              })
-            }
-          }
-        }
-      }
-    })
-    
-    // Проверяем конфликты локаций
-    const locationEntries = scheduleEntries.filter(entry => entry.location && entry.isActive)
-    for (let i = 0; i < locationEntries.length; i++) {
-      for (let j = i + 1; j < locationEntries.length; j++) {
-        const entry1 = locationEntries[i]
-        const entry2 = locationEntries[j]
-        
-        if (entry1.location === entry2.location && entry1.dayOfWeek === entry2.dayOfWeek) {
-          const start1 = new Date(`2000-01-01T${entry1.startTime}`)
-          const end1 = new Date(`2000-01-01T${entry1.endTime}`)
-          const start2 = new Date(`2000-01-01T${entry2.startTime}`)
-          const end2 = new Date(`2000-01-01T${entry2.endTime}`)
-          
-          if (start1 < end2 && start2 < end1) {
-            newConflicts.push({
-              type: 'location',
-              message: `Конфликт аудитории ${entry1.location}: ${entry1.groupName} и ${entry2.groupName}`,
-              severity: 'error',
-              entries: [entry1, entry2]
-            })
-          }
-        }
-      }
-    }
-    
-    setConflicts(newConflicts)
-  }
 
   const getDayName = (dayOfWeek: number) => {
     const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
@@ -714,15 +638,6 @@ export default function ScheduleDashboard() {
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={showConflicts}
-                onChange={(e) => setShowConflicts(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              <span className="text-sm text-gray-600">Показывать конфликты</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
                 checked={showInactive}
                 onChange={(e) => setShowInactive(e.target.checked)}
                 className="rounded border-gray-300"
@@ -742,37 +657,6 @@ export default function ScheduleDashboard() {
         </div>
       </div>
 
-      {/* Конфликты */}
-      {showConflicts && conflicts.length > 0 && (
-        <div className="bg-red-50 border-b border-red-200 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-red-800 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
-              Обнаружены конфликты ({conflicts.length})
-            </h3>
-            <button
-              onClick={() => setShowConflicts(false)}
-              className="text-red-600 hover:text-red-800"
-            >
-              <XCircle className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            {conflicts.map((conflict, index) => (
-              <div key={index} className="bg-white rounded-lg p-3 border border-red-200">
-                <p className="text-red-800 font-medium">{conflict.message}</p>
-                <div className="flex gap-2 mt-2">
-                  {conflict.entries.map(entry => (
-                    <span key={entry.id} className="px-2 py-1 bg-red-100 text-red-700 text-sm rounded">
-                      {entry.groupName} ({getShortDayName(entry.dayOfWeek)} {formatTime(entry.startTime)})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Массовые действия */}
       {bulkMode && (
