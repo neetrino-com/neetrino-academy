@@ -529,7 +529,7 @@ export default function ScheduleListView({
             ) : (
               <>
                 <Calendar className="w-4 h-4" />
-                Загрузить еще
+                Загрузить еще месяц
               </>
             )}
           </button>

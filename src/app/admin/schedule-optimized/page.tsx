@@ -232,6 +232,44 @@ export default function OptimizedScheduleDashboard() {
     }
   }, [currentDate, loadingMore, getCachedData])
 
+  // Загрузка следующего месяца для списка
+  const loadMoreMonths = useCallback(async () => {
+    if (loadingMore) return
+    
+    setLoadingMore(true)
+    try {
+      // Определяем следующий месяц для загрузки
+      const lastEvent = calendarEvents[calendarEvents.length - 1]
+      if (!lastEvent) return
+      
+      const lastEventDate = new Date(lastEvent.startDate)
+      const nextMonth = new Date(lastEventDate.getFullYear(), lastEventDate.getMonth() + 1, 1)
+      const nextMonthEnd = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0)
+      
+      const cacheKey = `schedule-${nextMonth.toISOString().split('T')[0]}-${nextMonthEnd.toISOString().split('T')[0]}`
+      
+      const data = await getCachedData(cacheKey, async () => {
+        const response = await fetch(`/api/admin/schedule/all?start=${nextMonth.toISOString().split('T')[0]}&end=${nextMonthEnd.toISOString().split('T')[0]}&page=1&limit=50`)
+        if (!response.ok) throw new Error('Ошибка загрузки данных')
+        return response.json()
+      })
+
+      if (data.success && data.events) {
+        setCalendarEvents(prev => {
+          // Дедупликация по ID
+          const existingIds = new Set(prev.map(event => event.id))
+          const newEvents = data.events.filter((event: CalendarEvent) => !existingIds.has(event.id))
+          console.log(`✅ [Load More] Загружено ${newEvents.length} новых событий для следующего месяца`)
+          return [...prev, ...newEvents]
+        })
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки дополнительных месяцев:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [calendarEvents, loadingMore, getCachedData])
+
   // Предзагрузка следующего месяца при изменении даты
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -566,12 +604,12 @@ export default function OptimizedScheduleDashboard() {
             }}
             onEventClick={handleEventClick}
             pagination={{
-              hasMore: pagination.hasMore,
-              total: pagination.total,
-              currentPage: pagination.page,
-              totalPages: pagination.pages
+              hasMore: true, // Всегда показываем кнопку "Загрузить еще месяц"
+              total: calendarEvents.length,
+              currentPage: 1,
+              totalPages: 1
             }}
-            onLoadMore={() => {}}
+            onLoadMore={loadMoreMonths}
             loadingMore={loadingMore}
           />
         )}
