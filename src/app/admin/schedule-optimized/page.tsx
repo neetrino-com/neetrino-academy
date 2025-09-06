@@ -177,6 +177,7 @@ export default function OptimizedScheduleDashboard() {
       if (data.success) {
         setGroups(data.groups || [])
         setTeachers(data.teachers || [])
+        // Заменяем события при основной загрузке
         setCalendarEvents(data.events || [])
         setStats(data.stats || stats)
         
@@ -216,8 +217,13 @@ export default function OptimizedScheduleDashboard() {
       })
 
       if (data.success && data.events) {
-        setCalendarEvents(prev => [...prev, ...data.events])
-        console.log(`✅ [Lazy Loading] Загружено ${data.events.length} событий для следующего месяца`)
+        setCalendarEvents(prev => {
+          // Дедупликация по ID
+          const existingIds = new Set(prev.map(event => event.id))
+          const newEvents = data.events.filter((event: CalendarEvent) => !existingIds.has(event.id))
+          console.log(`✅ [Lazy Loading] Загружено ${newEvents.length} новых событий для следующего месяца`)
+          return [...prev, ...newEvents]
+        })
       }
     } catch (error) {
       console.error('Ошибка загрузки следующего месяца:', error)

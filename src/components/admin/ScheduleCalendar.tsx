@@ -226,9 +226,9 @@ export default function ScheduleCalendar({
                 </div>
                 
                 <div className="space-y-1">
-                  {events.map(event => (
+                  {events.map((event, eventIndex) => (
                     <div
-                      key={event.id}
+                      key={`${event.id}-${event.start}-${eventIndex}`}
                       onClick={() => onEventClick?.(event)}
                       className="p-2 text-xs rounded cursor-pointer hover:opacity-80 transition-opacity"
                       style={getEventStyle(event)}
@@ -345,9 +345,9 @@ export default function ScheduleCalendar({
                 </div>
                 
                 <div className="space-y-1">
-                  {dayEvents.slice(0, 3).map(event => (
+                  {dayEvents.slice(0, 3).map((event, eventIndex) => (
                     <div
-                      key={event.id}
+                      key={`${event.id}-${event.start}-${eventIndex}`}
                       onClick={() => onEventClick?.(event)}
                       className="p-1 text-xs rounded cursor-pointer hover:opacity-80 transition-opacity"
                       style={getEventStyle(event)}
