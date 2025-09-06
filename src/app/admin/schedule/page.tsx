@@ -168,6 +168,10 @@ export default function OptimizedScheduleDashboard() {
       const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
       
+      console.log(`📅 [Schedule] Текущая дата: ${now.toISOString()}`)
+      console.log(`📅 [Schedule] Начало месяца: ${startDate.toISOString()}`)
+      console.log(`📅 [Schedule] Конец месяца: ${endDate.toISOString()}`)
+      
       const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
       
       console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
@@ -242,13 +246,12 @@ export default function OptimizedScheduleDashboard() {
     
     setLoadingMore(true)
     try {
-      // Определяем следующий месяц для загрузки
-      const lastEvent = calendarEvents[calendarEvents.length - 1]
-      if (!lastEvent) return
+      // Определяем следующий месяц для загрузки на основе текущей даты
+      const now = new Date()
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1) // 1 число следующего месяца
+      const nextMonthEnd = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0) // Последний день следующего месяца
       
-      const lastEventDate = new Date(lastEvent.startDate)
-      const nextMonth = new Date(lastEventDate.getFullYear(), lastEventDate.getMonth() + 1, 1)
-      const nextMonthEnd = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0)
+      console.log(`📅 [Load More] Загружаем следующий месяц: ${nextMonth.toISOString().split('T')[0]} - ${nextMonthEnd.toISOString().split('T')[0]}`)
       
       const cacheKey = `schedule-${nextMonth.toISOString().split('T')[0]}-${nextMonthEnd.toISOString().split('T')[0]}`
       
@@ -272,7 +275,7 @@ export default function OptimizedScheduleDashboard() {
     } finally {
       setLoadingMore(false)
     }
-  }, [calendarEvents, loadingMore, getCachedData])
+  }, [loadingMore, getCachedData])
 
   // Предзагрузка следующего месяца при изменении даты
   useEffect(() => {
@@ -286,12 +289,6 @@ export default function OptimizedScheduleDashboard() {
   // Мемоизированные вычисления
   const filteredEntries = useMemo(() => {
     return calendarEvents.filter(event => {
-      // Фильтр по текущему месяцу
-      const eventDate = new Date(event.startDate)
-      const now = new Date()
-      const isCurrentMonth = eventDate.getMonth() === now.getMonth() && 
-                            eventDate.getFullYear() === now.getFullYear()
-      
       const matchesTeacher = selectedTeacher === 'all' || event.teacherId === selectedTeacher
       const matchesGroup = selectedGroup === 'all' || event.groupId === selectedGroup
       const matchesSearch = event.groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -299,7 +296,7 @@ export default function OptimizedScheduleDashboard() {
                            (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
       const matchesActive = showInactive || event.isActive
       
-      return isCurrentMonth && matchesTeacher && matchesGroup && matchesSearch && matchesActive
+      return matchesTeacher && matchesGroup && matchesSearch && matchesActive
     })
   }, [calendarEvents, selectedTeacher, selectedGroup, searchTerm, showInactive])
 
