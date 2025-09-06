@@ -171,21 +171,18 @@ export default function OptimizedScheduleDashboard() {
       const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
       
-      // Исправляем расчет - endDate должен быть последним днем текущего месяца
-      const correctedEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      
       console.log(`📅 [Schedule] Текущая дата: ${now.toISOString()}`)
       console.log(`📅 [Schedule] Начало месяца: ${startDate.toISOString()}`)
       console.log(`📅 [Schedule] Конец месяца: ${endDate.toISOString()}`)
       
       // Очищаем кэш для принудительной загрузки
-      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${correctedEndDate.toISOString().split('T')[0]}`
+      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
       setCache(new Map()) // Очищаем кэш
       
-      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${correctedEndDate.toISOString().split('T')[0]}`)
+      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${correctedEndDate.toISOString().split('T')[0]}&page=1&limit=50&force=true`)
+        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}&page=1&limit=50&force=true`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
@@ -218,39 +215,7 @@ export default function OptimizedScheduleDashboard() {
     }
   }, [getCachedData, stats])
 
-  // Ленивая загрузка следующего месяца
-  const loadNextMonth = useCallback(async () => {
-    if (loadingMore) return
-    
-    setLoadingMore(true)
-    try {
-      const nextMonth = new Date(currentDate)
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
-      const nextMonthEnd = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0)
-      
-      const cacheKey = `schedule-${nextMonth.toISOString().split('T')[0]}-${nextMonthEnd.toISOString().split('T')[0]}`
-      
-      const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${nextMonth.toISOString().split('T')[0]}&end=${nextMonthEnd.toISOString().split('T')[0]}&page=1&limit=50`)
-        if (!response.ok) throw new Error('Ошибка загрузки данных')
-        return response.json()
-      })
-
-      if (data.success && data.events) {
-        setCalendarEvents(prev => {
-          // Дедупликация по ID
-          const existingIds = new Set(prev.map(event => event.id))
-          const newEvents = data.events.filter((event: CalendarEvent) => !existingIds.has(event.id))
-          console.log(`✅ [Lazy Loading] Загружено ${newEvents.length} новых событий для следующего месяца`)
-          return [...prev, ...newEvents]
-        })
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки следующего месяца:', error)
-    } finally {
-      setLoadingMore(false)
-    }
-  }, [currentDate, loadingMore, getCachedData])
+  // Удалена функция loadNextMonth - загружаем только по кнопке
 
   // Загрузка следующего месяца для списка
   const loadMoreMonths = useCallback(async () => {
@@ -308,14 +273,7 @@ export default function OptimizedScheduleDashboard() {
     }
   }, [calendarEvents, loadingMore, getCachedData])
 
-  // Предзагрузка следующего месяца при изменении даты
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadNextMonth()
-    }, 1000) // Предзагружаем через 1 секунду
-
-    return () => clearTimeout(timer)
-  }, [currentDate, loadNextMonth])
+  // Убрана автоматическая предзагрузка - загружаем только по кнопке
 
   // Мемоизированные вычисления
   const filteredEntries = useMemo(() => {
