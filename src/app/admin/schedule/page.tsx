@@ -171,19 +171,16 @@ export default function OptimizedScheduleDashboard() {
       const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
       
-      // Исправляем расчет - endDate должен быть последним днем текущего месяца
-      const correctedEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      
       console.log(`📅 [Schedule] Текущая дата: ${now.toISOString()}`)
       console.log(`📅 [Schedule] Начало месяца: ${startDate.toISOString()}`)
       console.log(`📅 [Schedule] Конец месяца: ${endDate.toISOString()}`)
       
-      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${correctedEndDate.toISOString().split('T')[0]}`
+      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
       
-      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${correctedEndDate.toISOString().split('T')[0]}`)
+      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${correctedEndDate.toISOString().split('T')[0]}&page=1&limit=50`)
+        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}&page=1&limit=50`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
@@ -252,13 +249,28 @@ export default function OptimizedScheduleDashboard() {
 
   // Загрузка следующего месяца для списка
   const loadMoreMonths = useCallback(async () => {
-    if (loadingMore) return
+    console.log('🔄 [Load More] Функция loadMoreMonths вызвана!')
+    if (loadingMore) {
+      console.log('🔄 [Load More] Уже загружается, пропускаем')
+      return
+    }
     
     setLoadingMore(true)
     try {
-      // Определяем следующий месяц для загрузки на основе текущей даты
-      const now = new Date()
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1) // 1 число следующего месяца
+      // Определяем следующий месяц для загрузки на основе последнего загруженного события
+      const lastEvent = calendarEvents[calendarEvents.length - 1]
+      let nextMonth: Date
+      
+      if (lastEvent) {
+        // Если есть события, загружаем месяц после последнего события
+        const lastEventDate = new Date(lastEvent.startDate)
+        nextMonth = new Date(lastEventDate.getFullYear(), lastEventDate.getMonth() + 1, 1)
+      } else {
+        // Если нет событий, загружаем следующий месяц после текущего
+        const now = new Date()
+        nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      }
+      
       const nextMonthEnd = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0) // Последний день следующего месяца
       
       console.log(`📅 [Load More] Загружаем следующий месяц: ${nextMonth.toISOString().split('T')[0]} - ${nextMonthEnd.toISOString().split('T')[0]}`)
@@ -289,7 +301,7 @@ export default function OptimizedScheduleDashboard() {
     } finally {
       setLoadingMore(false)
     }
-  }, [loadingMore, getCachedData])
+  }, [calendarEvents, loadingMore, getCachedData])
 
   // Предзагрузка следующего месяца при изменении даты
   useEffect(() => {
