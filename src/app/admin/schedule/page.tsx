@@ -138,6 +138,9 @@ export default function OptimizedScheduleDashboard() {
   // Кэш для данных
   const [cache, setCache] = useState<Map<string, any>>(new Map())
   const CACHE_DURATION = 5 * 60 * 1000 // 5 минут
+  
+  // Отслеживание загруженных месяцев для ленивой загрузки
+  const [loadedMonths, setLoadedMonths] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setMounted(true)
@@ -168,16 +171,19 @@ export default function OptimizedScheduleDashboard() {
       const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
       
+      // Исправляем расчет - endDate должен быть последним днем текущего месяца
+      const correctedEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      
       console.log(`📅 [Schedule] Текущая дата: ${now.toISOString()}`)
       console.log(`📅 [Schedule] Начало месяца: ${startDate.toISOString()}`)
       console.log(`📅 [Schedule] Конец месяца: ${endDate.toISOString()}`)
       
-      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${correctedEndDate.toISOString().split('T')[0]}`
       
-      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
+      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${correctedEndDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}&page=1&limit=50`)
+        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${correctedEndDate.toISOString().split('T')[0]}&page=1&limit=50`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
@@ -188,6 +194,10 @@ export default function OptimizedScheduleDashboard() {
         // Заменяем события при основной загрузке
         setCalendarEvents(data.events || [])
         setStats(data.stats || stats)
+        
+        // Отмечаем текущий месяц как загруженный
+        const currentMonthKey = `${now.getFullYear()}-${now.getMonth() + 1}`
+        setLoadedMonths(new Set([currentMonthKey]))
         
         if (data.pagination) {
           setPagination({
@@ -269,6 +279,10 @@ export default function OptimizedScheduleDashboard() {
           console.log(`✅ [Load More] Загружено ${newEvents.length} новых событий для следующего месяца`)
           return [...prev, ...newEvents]
         })
+        
+        // Отмечаем следующий месяц как загруженный
+        const nextMonthKey = `${nextMonth.getFullYear()}-${nextMonth.getMonth() + 1}`
+        setLoadedMonths(prev => new Set([...prev, nextMonthKey]))
       }
     } catch (error) {
       console.error('Ошибка загрузки дополнительных месяцев:', error)
@@ -297,6 +311,44 @@ export default function OptimizedScheduleDashboard() {
       const matchesActive = showInactive || event.isActive
       
       return matchesTeacher && matchesGroup && matchesSearch && matchesActive
+    })
+  }, [calendarEvents, selectedTeacher, selectedGroup, searchTerm, showInactive])
+
+  // Фильтр для календаря - только текущий месяц
+  const calendarEventsFiltered = useMemo(() => {
+    const now = new Date()
+    return calendarEvents.filter(event => {
+      const eventDate = new Date(event.startDate)
+      const isCurrentMonth = eventDate.getMonth() === now.getMonth() && 
+                            eventDate.getFullYear() === now.getFullYear()
+      
+      const matchesTeacher = selectedTeacher === 'all' || event.teacherId === selectedTeacher
+      const matchesGroup = selectedGroup === 'all' || event.groupId === selectedGroup
+      const matchesSearch = event.groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           event.teacherName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
+      const matchesActive = showInactive || event.isActive
+      
+      return isCurrentMonth && matchesTeacher && matchesGroup && matchesSearch && matchesActive
+    })
+  }, [calendarEvents, selectedTeacher, selectedGroup, searchTerm, showInactive])
+
+  // Фильтр для недели - только текущий месяц
+  const weekEventsFiltered = useMemo(() => {
+    const now = new Date()
+    return calendarEvents.filter(event => {
+      const eventDate = new Date(event.startDate)
+      const isCurrentMonth = eventDate.getMonth() === now.getMonth() && 
+                            eventDate.getFullYear() === now.getFullYear()
+      
+      const matchesTeacher = selectedTeacher === 'all' || event.teacherId === selectedTeacher
+      const matchesGroup = selectedGroup === 'all' || event.groupId === selectedGroup
+      const matchesSearch = event.groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           event.teacherName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
+      const matchesActive = showInactive || event.isActive
+      
+      return isCurrentMonth && matchesTeacher && matchesGroup && matchesSearch && matchesActive
     })
   }, [calendarEvents, selectedTeacher, selectedGroup, searchTerm, showInactive])
 
@@ -580,7 +632,7 @@ export default function OptimizedScheduleDashboard() {
       <div className="p-6">
         {viewMode === 'calendar' && (
           <ScheduleCalendar
-            events={filteredEntries}
+            events={calendarEventsFiltered}
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onEventClick={handleEventClick}
@@ -589,7 +641,7 @@ export default function OptimizedScheduleDashboard() {
 
         {viewMode === 'week' && (
           <ScheduleWeekView
-            events={filteredEntries}
+            events={weekEventsFiltered}
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onEventClick={handleEventClick}
