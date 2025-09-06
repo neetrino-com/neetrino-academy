@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     const teacherId = searchParams.get('teacherId')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
+    const force = searchParams.get('force') === 'true' // Принудительная загрузка без кэша
 
     // Параметры по умолчанию - загружаем только текущий месяц
     const start = startDate ? new Date(startDate) : new Date()
@@ -34,13 +35,17 @@ export async function GET(request: NextRequest) {
 
     console.log(`🚀 [Schedule All] Период: ${start.toISOString().split('T')[0]} - ${end.toISOString().split('T')[0]}`)
 
-    // Проверяем кэш
+    // Проверяем кэш (только если не принудительная загрузка)
     const cacheKey = `schedule-all:${start.toISOString().split('T')[0]}:${end.toISOString().split('T')[0]}:${groupId || 'all'}:${teacherId || 'all'}:${page}:${limit}`
-    const cached = memoryCache.get(cacheKey)
     
-    if (cached) {
-      console.log(`📦 [Schedule All] Используем кэшированные данные`)
-      return NextResponse.json(cached)
+    if (!force) {
+      const cached = memoryCache.get(cacheKey)
+      if (cached) {
+        console.log(`📦 [Schedule All] Используем кэшированные данные`)
+        return NextResponse.json(cached)
+      }
+    } else {
+      console.log(`🔄 [Schedule All] Принудительная загрузка - пропускаем кэш`)
     }
 
     // Один оптимизированный запрос для всех данных

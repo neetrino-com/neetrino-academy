@@ -185,7 +185,7 @@ export default function OptimizedScheduleDashboard() {
       console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${correctedEndDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${correctedEndDate.toISOString().split('T')[0]}&page=1&limit=50`)
+        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${correctedEndDate.toISOString().split('T')[0]}&page=1&limit=50&force=true`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
@@ -283,7 +283,7 @@ export default function OptimizedScheduleDashboard() {
       const cacheKey = `schedule-${nextMonth.toISOString().split('T')[0]}-${nextMonthEnd.toISOString().split('T')[0]}`
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${nextMonth.toISOString().split('T')[0]}&end=${nextMonthEnd.toISOString().split('T')[0]}&page=1&limit=50`)
+        const response = await fetch(`/api/admin/schedule/all?start=${nextMonth.toISOString().split('T')[0]}&end=${nextMonthEnd.toISOString().split('T')[0]}&page=1&limit=50&force=true`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
