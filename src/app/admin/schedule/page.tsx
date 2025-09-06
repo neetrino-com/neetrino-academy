@@ -171,16 +171,21 @@ export default function OptimizedScheduleDashboard() {
       const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
       
+      // Исправляем расчет - endDate должен быть последним днем текущего месяца
+      const correctedEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      
       console.log(`📅 [Schedule] Текущая дата: ${now.toISOString()}`)
       console.log(`📅 [Schedule] Начало месяца: ${startDate.toISOString()}`)
       console.log(`📅 [Schedule] Конец месяца: ${endDate.toISOString()}`)
       
-      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+      // Очищаем кэш для принудительной загрузки
+      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${correctedEndDate.toISOString().split('T')[0]}`
+      setCache(new Map()) // Очищаем кэш
       
-      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
+      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${correctedEndDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}&page=1&limit=50`)
+        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${correctedEndDate.toISOString().split('T')[0]}&page=1&limit=50`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
@@ -674,7 +679,7 @@ export default function OptimizedScheduleDashboard() {
             onEventClick={handleEventClick}
             pagination={{
               hasMore: true, // Всегда показываем кнопку "Загрузить еще месяц"
-              total: stats.totalEvents, // Общее количество событий в системе
+              total: calendarEvents.length, // Количество загруженных событий
               currentPage: 1,
               totalPages: 1
             }}
