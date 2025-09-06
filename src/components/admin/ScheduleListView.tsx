@@ -196,7 +196,7 @@ export default function ScheduleListView({
           </h3>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">
-              {filteredAndSortedEvents.length} из {events.length} занятий
+              {filteredAndSortedEvents.length} из {pagination?.total || events.length} занятий
             </span>
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -539,7 +539,7 @@ export default function ScheduleListView({
       {/* Информация о пагинации */}
       {pagination && (
         <div className="text-center text-sm text-gray-500 py-2">
-          Показано {events.length} из {pagination.total} занятий
+          Показано {filteredAndSortedEvents.length} из {pagination.total} занятий
           {pagination.totalPages > 1 && (
             <span> • Страница {pagination.currentPage} из {pagination.totalPages}</span>
           )}

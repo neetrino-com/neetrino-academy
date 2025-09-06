@@ -158,15 +158,19 @@ export default function OptimizedScheduleDashboard() {
     return data
   }, [cache])
 
-  // Оптимизированная загрузка данных
+  // Оптимизированная загрузка данных - ТОЛЬКО ТЕКУЩИЙ МЕСЯЦ
   const fetchScheduleData = useCallback(async () => {
     try {
       setLoading(true)
       
-      const startDate = new Date()
-      const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // +30 дней
+      // Загружаем ТОЛЬКО текущий месяц (1-30/31 число)
+      const now = new Date()
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
       
       const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+      
+      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
         const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}&page=1&limit=50`)
@@ -282,6 +286,12 @@ export default function OptimizedScheduleDashboard() {
   // Мемоизированные вычисления
   const filteredEntries = useMemo(() => {
     return calendarEvents.filter(event => {
+      // Фильтр по текущему месяцу
+      const eventDate = new Date(event.startDate)
+      const now = new Date()
+      const isCurrentMonth = eventDate.getMonth() === now.getMonth() && 
+                            eventDate.getFullYear() === now.getFullYear()
+      
       const matchesTeacher = selectedTeacher === 'all' || event.teacherId === selectedTeacher
       const matchesGroup = selectedGroup === 'all' || event.groupId === selectedGroup
       const matchesSearch = event.groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -289,7 +299,7 @@ export default function OptimizedScheduleDashboard() {
                            (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
       const matchesActive = showInactive || event.isActive
       
-      return matchesTeacher && matchesGroup && matchesSearch && matchesActive
+      return isCurrentMonth && matchesTeacher && matchesGroup && matchesSearch && matchesActive
     })
   }, [calendarEvents, selectedTeacher, selectedGroup, searchTerm, showInactive])
 
@@ -603,7 +613,7 @@ export default function OptimizedScheduleDashboard() {
             onEventClick={handleEventClick}
             pagination={{
               hasMore: true, // Всегда показываем кнопку "Загрузить еще месяц"
-              total: calendarEvents.length,
+              total: stats.totalEvents, // Общее количество событий в системе
               currentPage: 1,
               totalPages: 1
             }}
