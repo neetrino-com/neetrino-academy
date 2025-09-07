@@ -91,6 +91,7 @@ export async function GET(
         dayOfWeek: item.dayOfWeek,
         startTime: item.startTime,
         endTime: item.endTime,
+        type: item.type,
         isActive: item.isActive
       }))
     }
@@ -130,7 +131,7 @@ export async function POST(
 
     const { id: groupId } = await params
     const body = await request.json()
-    const { dayOfWeek, startTime, endTime } = body
+    const { dayOfWeek, startTime, endTime, type = 'LESSON' } = body
 
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
@@ -169,6 +170,7 @@ export async function POST(
         dayOfWeek: dayOfWeek,
         startTime: startTime,
         endTime: endTime,
+        type: type,
         isActive: true
       }
     })
@@ -181,6 +183,7 @@ export async function POST(
         dayOfWeek: newSchedule.dayOfWeek,
         startTime: newSchedule.startTime,
         endTime: newSchedule.endTime,
+        type: newSchedule.type,
         isActive: newSchedule.isActive
       }
     }

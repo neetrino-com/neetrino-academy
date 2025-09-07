@@ -17,18 +17,21 @@ import {
   Grid3X3,
   Sparkles,
   Filter,
-  Download
+  Download,
+  X
 } from 'lucide-react'
 import GroupScheduleGenerator from '@/components/admin/GroupScheduleGenerator'
 import GroupScheduleListView from '@/components/admin/GroupScheduleListView'
 import GroupScheduleWeekView from '@/components/admin/GroupScheduleWeekView'
 import GroupScheduleMonthView from '@/components/admin/GroupScheduleMonthView'
+import { getEventTypeOptions, EVENT_TYPES, getEventTypeLabel, getEventTypeGradientClass } from '@/lib/event-types'
 
 interface ScheduleEntry {
   id: string
   dayOfWeek: number
   startTime: string
   endTime: string
+  type: string
   isActive: boolean
 }
 
@@ -107,7 +110,8 @@ export default function GroupSchedulePage() {
   const [newSchedule, setNewSchedule] = useState({
     dayOfWeek: 1,
     startTime: '09:00',
-    endTime: '10:30'
+    endTime: '10:30',
+    type: EVENT_TYPES.LESSON
   })
 
   useEffect(() => {
@@ -215,7 +219,8 @@ export default function GroupSchedulePage() {
         setNewSchedule({
           dayOfWeek: 1,
           startTime: '09:00',
-          endTime: '10:30'
+          endTime: '10:30',
+          type: EVENT_TYPES.LESSON
         })
       } else {
         const errorData = await response.json()
@@ -262,6 +267,7 @@ export default function GroupSchedulePage() {
     }>
     title?: string
     location?: string
+    type?: string
     isAttendanceRequired?: boolean
   }) => {
     setGenerating(true)
@@ -354,9 +360,48 @@ export default function GroupSchedulePage() {
     }
   }
 
+  const [editingEvent, setEditingEvent] = useState<GroupScheduleEvent | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    type: EVENT_TYPES.LESSON,
+    location: '',
+    isAttendanceRequired: false
+  })
+
   const handleEditEvent = (event: GroupScheduleEvent) => {
-    // TODO: Реализовать редактирование события
-    console.log('Edit event:', event)
+    setEditingEvent(event)
+    setEditFormData({
+      title: event.title,
+      description: event.description || '',
+      type: event.type,
+      location: event.location || '',
+      isAttendanceRequired: event.isAttendanceRequired
+    })
+  }
+
+  const handleUpdateEvent = async () => {
+    if (!editingEvent) return
+
+    try {
+      const response = await fetch(`/api/events/${editingEvent.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData)
+      })
+
+      if (response.ok) {
+        await fetchGroupEvents()
+        setEditingEvent(null)
+        alert('Событие обновлено успешно')
+      } else {
+        const error = await response.json()
+        alert(`Ошибка: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error updating event:', error)
+      alert('Ошибка обновления события')
+    }
   }
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -607,6 +652,21 @@ export default function GroupSchedulePage() {
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Тип занятия</label>
+                  <select
+                    value={newSchedule.type}
+                    onChange={(e) => setNewSchedule({...newSchedule, type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {getEventTypeOptions().map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -661,9 +721,13 @@ export default function GroupSchedulePage() {
                           {daySchedule.map((entry) => (
                             <div key={entry.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                               <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full ${getEventTypeGradientClass(entry.type as any)}`}></div>
                                 <Clock className="w-4 h-4 text-gray-500" />
                                 <span className="text-sm font-medium">
                                   {entry.startTime} - {entry.endTime}
+                                </span>
+                                <span className="text-xs text-gray-600 bg-gray-200 px-2 py-1 rounded">
+                                  {getEventTypeLabel(entry.type as any)}
                                 </span>
                               </div>
                               <button
@@ -716,6 +780,105 @@ export default function GroupSchedulePage() {
           onGenerate={generateAdvancedSchedule}
           onClose={() => setShowGenerator(false)}
         />
+      )}
+
+      {/* Модальное окно редактирования события */}
+      {editingEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Редактировать событие</h3>
+                <button
+                  onClick={() => setEditingEvent(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Название события
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Описание
+                  </label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Тип события
+                  </label>
+                  <select
+                    value={editFormData.type}
+                    onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {getEventTypeOptions().map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Место проведения
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.location}
+                    onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={editFormData.isAttendanceRequired}
+                    onChange={(e) => setEditFormData({...editFormData, isAttendanceRequired: e.target.checked})}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">Обязательная посещаемость</span>
+                </label>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setEditingEvent(null)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={handleUpdateEvent}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Сохранить изменения
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

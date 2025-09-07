@@ -13,6 +13,7 @@ import {
   X,
   Sparkles
 } from 'lucide-react'
+import { getEventTypeOptions, EVENT_TYPES } from '@/lib/event-types'
 
 interface Group {
   id: string
@@ -41,6 +42,7 @@ interface GroupScheduleGeneratorProps {
     }>
     title?: string
     location?: string
+    type?: string
     isAttendanceRequired?: boolean
   }) => Promise<void>
   onClose: () => void
@@ -69,6 +71,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
   const [endDate, setEndDate] = useState('')
   const [title, setTitle] = useState('')
   const [location, setLocation] = useState('')
+  const [type, setType] = useState(EVENT_TYPES.LESSON)
   const [isAttendanceRequired, setIsAttendanceRequired] = useState(false)
   const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([])
   const [previewData, setPreviewData] = useState<{
@@ -86,6 +89,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
     settings: {
       title: string
       location: string
+      type: string
       isAttendanceRequired: boolean
     }
     estimatedEvents: number
@@ -205,6 +209,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
       settings: {
         title: title || 'Занятие группы',
         location,
+        type,
         isAttendanceRequired
       },
       estimatedEvents: calculateEstimatedEvents()
@@ -240,6 +245,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
         scheduleDays,
         title: title || undefined,
         location: location || undefined,
+        type,
         isAttendanceRequired
       }
 
@@ -374,6 +380,22 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                       placeholder="Например: Аудитория 101"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Тип события
+                    </label>
+                    <select
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      {getEventTypeOptions().map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <label className="flex items-center gap-3">
                     <input

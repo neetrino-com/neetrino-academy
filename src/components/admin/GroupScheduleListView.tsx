@@ -15,6 +15,7 @@ import {
   ChevronDown,
   MoreVertical
 } from 'lucide-react'
+import { getEventTypeLabel, getEventTypeGradientClass } from '@/lib/event-types'
 
 interface GroupScheduleEvent {
   id: string
@@ -140,23 +141,16 @@ export default function GroupScheduleListView({
   const getEventTypeColor = (type: string) => {
     const colors: Record<string, string> = {
       'LESSON': 'bg-blue-100 text-blue-800',
-      'LECTURE': 'bg-purple-100 text-purple-800',
-      'PRACTICE': 'bg-green-100 text-green-800',
       'EXAM': 'bg-red-100 text-red-800',
+      'DEADLINE': 'bg-orange-100 text-orange-800',
+      'MEETING': 'bg-green-100 text-green-800',
+      'WORKSHOP': 'bg-purple-100 text-purple-800',
+      'SEMINAR': 'bg-indigo-100 text-indigo-800',
+      'CONSULTATION': 'bg-yellow-100 text-yellow-800',
+      'ANNOUNCEMENT': 'bg-pink-100 text-pink-800',
       'OTHER': 'bg-gray-100 text-gray-800'
     }
     return colors[type] || colors['OTHER']
-  }
-
-  const getEventTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      'LESSON': 'Урок',
-      'LECTURE': 'Лекция',
-      'PRACTICE': 'Практика',
-      'EXAM': 'Экзамен',
-      'OTHER': 'Другое'
-    }
-    return labels[type] || type
   }
 
   const formatDate = (dateString: string) => {
@@ -319,7 +313,7 @@ export default function GroupScheduleListView({
                       <div>
                         <div className="font-medium text-gray-900">{event.title}</div>
                         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEventTypeColor(event.type)}`}>
-                          {getEventTypeLabel(event.type)}
+                          {getEventTypeLabel(event.type as any)}
                         </div>
                       </div>
                     </div>

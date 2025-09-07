@@ -14,7 +14,7 @@ export async function POST(
 
     const { id: groupId } = await params
     const body = await request.json()
-    const { startDate, endDate, scheduleDays, title, location, isAttendanceRequired } = body
+    const { startDate, endDate, scheduleDays, title, location, type = 'LESSON', isAttendanceRequired } = body
 
     console.log('🔍 Генерация расписания - полученные данные:', {
       groupId,
@@ -23,6 +23,7 @@ export async function POST(
       scheduleDays,
       title,
       location,
+      type,
       isAttendanceRequired
     })
 
@@ -89,7 +90,7 @@ export async function POST(
               groupId: groupId,
               createdById: createdById,
               location: location || null,
-              type: 'LESSON' as const,
+              type: type as any,
               isActive: true,
               isAttendanceRequired: isAttendanceRequired || false
             }

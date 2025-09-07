@@ -7,9 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:test-seed": "tsx prisma/test-seed.ts",
-    "db:reset": "prisma migrate reset --force && npm run db:test-seed"
+    "db:seed": "tsx prisma/test-seed.ts",
+    "db:reset": "prisma migrate reset --force && npm run db:seed"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",

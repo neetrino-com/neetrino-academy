@@ -179,6 +179,7 @@ export async function PATCH(
       startDate,
       endDate,
       location,
+      isAttendanceRequired,
       attendeeIds
     } = body
 
@@ -197,6 +198,7 @@ export async function PATCH(
         ...(startDate !== undefined && { startDate: new Date(startDate) }),
         ...(endDate !== undefined && { endDate: new Date(endDate) }),
         ...(location !== undefined && { location: location?.trim() }),
+        ...(isAttendanceRequired !== undefined && { isAttendanceRequired }),
         updatedAt: new Date()
       },
       include: {
