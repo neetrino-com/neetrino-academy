@@ -104,18 +104,28 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   useEffect(() => {
     if (viewMode === 'calendar') {
       fetchMonthlyAttendanceData()
-    } else {
+    } else if (!data) {
+      // Загружаем данные только если их еще нет
       fetchAttendanceData()
     }
   }, [viewMode, currentDate, groupId])
 
+  // Отдельный useEffect для первоначальной загрузки данных
+  useEffect(() => {
+    if (!data && viewMode !== 'calendar') {
+      fetchAttendanceData()
+    }
+  }, [groupId])
+
   const fetchAttendanceData = async () => {
     try {
+      console.log('🔄 Загрузка данных для табличного/карточного вида...')
       setLoading(true)
       const response = await fetch(`/api/admin/groups/${groupId}/attendance`)
       if (response.ok) {
         const attendanceData = await response.json()
         setData(attendanceData)
+        console.log('✅ Данные для табличного/карточного вида загружены')
       } else {
         console.error('Ошибка загрузки данных посещаемости')
       }
@@ -128,6 +138,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
   const fetchMonthlyAttendanceData = async () => {
     try {
+      console.log('🔄 Загрузка данных для календарного вида...')
       setCalendarLoading(true)
       const year = currentDate.getFullYear()
       const month = currentDate.getMonth() + 1
@@ -137,6 +148,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       if (response.ok) {
         const attendanceData = await response.json()
         setMonthlyData(attendanceData)
+        console.log('✅ Данные для календарного вида загружены')
       } else {
         console.error('Ошибка загрузки месячных данных посещаемости')
       }
