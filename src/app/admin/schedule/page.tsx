@@ -147,15 +147,6 @@ export default function OptimizedScheduleDashboard() {
     setMounted(true)
   }, [])
 
-  // Принудительная перезагрузка при смене фильтра
-  useEffect(() => {
-    if (mounted) {
-      console.log(`🔄 [Schedule] Фильтр изменен на: ${timeFilter}`)
-      setCache(new Map()) // Очищаем кэш
-      fetchScheduleData().catch(console.error)
-    }
-  }, [timeFilter, mounted, fetchScheduleData])
-
   // Функция для получения данных из кэша или API
   const getCachedData = useCallback(async (key: string, fetcher: () => Promise<any>) => {
     const cached = cache.get(key)
@@ -223,6 +214,15 @@ export default function OptimizedScheduleDashboard() {
       setLoading(false)
     }
   }, [getCachedData, stats])
+
+  // Принудительная перезагрузка при смене фильтра
+  useEffect(() => {
+    if (mounted) {
+      console.log(`🔄 [Schedule] Фильтр изменен на: ${timeFilter}`)
+      setCache(new Map()) // Очищаем кэш
+      fetchScheduleData().catch(console.error)
+    }
+  }, [timeFilter, mounted, fetchScheduleData])
 
   // Удалена функция loadNextMonth - загружаем только по кнопке
 
