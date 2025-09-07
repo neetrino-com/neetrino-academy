@@ -29,8 +29,8 @@ function StudentLayoutComponent({ children, userRole, isLoading }: StudentLayout
       <AppHeader />
       
       {/* Информационная панель о роли */}
-      <div className="bg-gradient-to-r from-emerald-600 to-blue-600 text-white py-3">
-        <div className="container mx-auto px-4">
+      <div className="bg-gradient-to-r from-emerald-600 to-blue-600 text-white py-3 rounded-b-2xl mx-6 mt-6">
+        <div className="w-full px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="bg-white/20 rounded-full p-2">

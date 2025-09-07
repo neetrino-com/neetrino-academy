@@ -688,7 +688,7 @@ export default function OptimizedScheduleDashboard() {
   return (
     <div className="bg-white min-h-[calc(100vh-100px)]">
       {/* Хедер */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-b-2xl">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-3">

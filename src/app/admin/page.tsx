@@ -130,8 +130,8 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Современный хедер */}
-      <div className="border-b border-slate-200/40">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="border-b border-slate-200/40 rounded-b-2xl mx-6 mt-6">
+        <div className="w-full px-6 py-6">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">

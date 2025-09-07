@@ -26,8 +26,8 @@ function SecurityPageComponent({ userRole, isLoading }: WithRoleProtectionProps)
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Заголовок страницы */}
-      <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-8">
-        <div className="container mx-auto px-4">
+      <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white py-8 rounded-b-2xl mx-6 mt-6">
+        <div className="w-full px-4">
           <div className="flex items-center space-x-4">
             <div className="bg-white/10 rounded-full p-3">
               <span className="text-3xl">🛡️</span>
