@@ -802,30 +802,30 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
                                       {getStatusIcon(status)}
                                     </div>
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-2">
                                       <button
                                         onClick={() => updateMonthlyAttendance(student.id, dayInfo.dateString, 'ATTENDED')}
                                         disabled={saving}
-                                        className={`p-1 rounded transition-colors ${
+                                        className={`flex items-center justify-center w-12 h-12 rounded-lg text-sm font-medium transition-all duration-200 ${
                                           status === 'ATTENDED'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
-                                        } disabled:opacity-50`}
+                                            ? 'bg-green-500 text-white shadow-md'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700 hover:shadow-sm'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                                         title="Присутствовал"
                                       >
-                                        <UserCheck className="w-3 h-3" />
+                                        <UserCheck className="w-5 h-5" />
                                       </button>
                                       <button
                                         onClick={() => updateMonthlyAttendance(student.id, dayInfo.dateString, 'ABSENT')}
                                         disabled={saving}
-                                        className={`p-1 rounded transition-colors ${
+                                        className={`flex items-center justify-center w-12 h-12 rounded-lg text-sm font-medium transition-all duration-200 ${
                                           status === 'ABSENT'
-                                            ? 'bg-red-100 text-red-700'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700'
-                                        } disabled:opacity-50`}
+                                            ? 'bg-red-500 text-white shadow-md'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700 hover:shadow-sm'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                                         title="Отсутствовал"
                                       >
-                                        <UserX className="w-3 h-3" />
+                                        <UserX className="w-5 h-5" />
                                       </button>
                                     </div>
                                   </div>
@@ -997,24 +997,26 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                         <button
                                           onClick={() => updateAttendance(event.id, student.id, 'ATTENDED')}
                                           disabled={saving}
-                                          className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                                          className={`flex items-center justify-center w-12 h-12 text-sm font-medium rounded-lg transition-all duration-200 ${
                                             currentStatus === 'ATTENDED'
-                                              ? 'bg-green-100 text-green-700 border border-green-200'
-                                              : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
-                                          }`}
+                                              ? 'bg-green-500 text-white shadow-md'
+                                              : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700 hover:shadow-sm'
+                                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                          title="Присутствовал"
                                         >
-                                          <Check className="w-3 h-3" />
+                                          <Check className="w-5 h-5" />
                                         </button>
                                         <button
                                           onClick={() => updateAttendance(event.id, student.id, 'ABSENT')}
                                           disabled={saving}
-                                          className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                                          className={`flex items-center justify-center w-12 h-12 text-sm font-medium rounded-lg transition-all duration-200 ${
                                             currentStatus === 'ABSENT'
-                                              ? 'bg-red-100 text-red-700 border border-red-200'
-                                              : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700'
-                                          }`}
+                                              ? 'bg-red-500 text-white shadow-md'
+                                              : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700 hover:shadow-sm'
+                                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                          title="Отсутствовал"
                                         >
-                                          <X className="w-3 h-3" />
+                                          <X className="w-5 h-5" />
                                         </button>
                                       </div>
                                     </td>
@@ -1075,25 +1077,27 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                       <button
                                         onClick={() => updateAttendance(event.id, student.id, 'ATTENDED')}
                                         disabled={saving}
-                                        className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${
+                                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                                           currentStatus === 'ATTENDED'
-                                            ? 'bg-green-100 text-green-700 border border-green-200'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
-                                        }`}
+                                            ? 'bg-green-500 text-white shadow-md'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700 hover:shadow-sm'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        title="Присутствовал"
                                       >
-                                        <Check className="w-3 h-3 inline mr-1" />
+                                        <Check className="w-5 h-5" />
                                         Присутствовал
                                       </button>
                                       <button
                                         onClick={() => updateAttendance(event.id, student.id, 'ABSENT')}
                                         disabled={saving}
-                                        className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${
+                                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                                           currentStatus === 'ABSENT'
-                                            ? 'bg-red-100 text-red-700 border border-red-200'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700'
-                                        }`}
+                                            ? 'bg-red-500 text-white shadow-md'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700 hover:shadow-sm'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        title="Отсутствовал"
                                       >
-                                        <X className="w-3 h-3 inline mr-1" />
+                                        <X className="w-5 h-5" />
                                         Отсутствовал
                                       </button>
                                     </div>
