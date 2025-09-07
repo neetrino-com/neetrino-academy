@@ -110,16 +110,28 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
 
   const addScheduleDay = () => {
     setScheduleDays([...scheduleDays, { dayOfWeek: 1, startTime: '09:00', endTime: '10:30' }])
+    // Очищаем ошибки при добавлении нового дня
+    if (errors.length > 0) {
+      setErrors([])
+    }
   }
 
   const removeScheduleDay = (index: number) => {
     setScheduleDays(scheduleDays.filter((_, i) => i !== index))
+    // Очищаем ошибки при удалении дня
+    if (errors.length > 0) {
+      setErrors([])
+    }
   }
 
   const updateScheduleDay = (index: number, field: keyof ScheduleDay, value: string | number) => {
     const updated = [...scheduleDays]
     updated[index] = { ...updated[index], [field]: value }
     setScheduleDays(updated)
+    // Очищаем ошибки при изменении дня
+    if (errors.length > 0) {
+      setErrors([])
+    }
   }
 
   const validateForm = (): string[] => {
@@ -192,6 +204,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
       return
     }
 
+    // Очищаем ошибки и показываем предварительный просмотр
     setErrors([])
     setShowPreview(true)
 
@@ -327,7 +340,13 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                     <input
                       type="date"
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={(e) => {
+                        setStartDate(e.target.value)
+                        // Очищаем ошибки при изменении даты
+                        if (errors.length > 0) {
+                          setErrors([])
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -338,7 +357,13 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                     <input
                       type="date"
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
+                      onChange={(e) => {
+                        setEndDate(e.target.value)
+                        // Очищаем ошибки при изменении даты
+                        if (errors.length > 0) {
+                          setErrors([])
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -364,7 +389,13 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                     <input
                       type="text"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) => {
+                        setTitle(e.target.value)
+                        // Очищаем ошибки при изменении названия
+                        if (errors.length > 0) {
+                          setErrors([])
+                        }
+                      }}
                       placeholder="Например: Занятие по WordPress"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -376,7 +407,13 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                     <input
                       type="text"
                       value={location}
-                      onChange={(e) => setLocation(e.target.value)}
+                      onChange={(e) => {
+                        setLocation(e.target.value)
+                        // Очищаем ошибки при изменении места
+                        if (errors.length > 0) {
+                          setErrors([])
+                        }
+                      }}
                       placeholder="Например: Аудитория 101"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -387,7 +424,13 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                     </label>
                     <select
                       value={type}
-                      onChange={(e) => setType(e.target.value)}
+                      onChange={(e) => {
+                        setType(e.target.value)
+                        // Очищаем ошибки при изменении типа
+                        if (errors.length > 0) {
+                          setErrors([])
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       {getEventTypeOptions().map((option) => (
@@ -401,7 +444,13 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                     <input
                       type="checkbox"
                       checked={isAttendanceRequired}
-                      onChange={(e) => setIsAttendanceRequired(e.target.checked)}
+                      onChange={(e) => {
+                        setIsAttendanceRequired(e.target.checked)
+                        // Очищаем ошибки при изменении чекбокса
+                        if (errors.length > 0) {
+                          setErrors([])
+                        }
+                      }}
                       className="rounded border-gray-300"
                     />
                     <span className="text-sm text-gray-700">Обязательная посещаемость</span>
@@ -552,7 +601,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
             </button>
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || errors.length > 0}
+              disabled={isGenerating}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
             >
               {isGenerating ? (
