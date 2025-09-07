@@ -72,7 +72,6 @@ interface AttendanceJournalProps {
 export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [data, setData] = useState<AttendanceData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [calendarLoading, setCalendarLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -84,48 +83,30 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [dateRange, setDateRange] = useState('week') // week, month, all
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [monthlyData, setMonthlyData] = useState<{
-    group: Group
-    students: Student[]
-    attendanceRecords: Array<{
-      id: string
-      userId: string
-      eventId: string
-      status: 'ATTENDED' | 'ABSENT' | 'PENDING' | 'ATTENDING' | 'NOT_ATTENDING' | 'MAYBE'
-      date: string
-      eventTitle: string
-    }>
-    currentMonth: string
-    daysWithLessons: string[]
-    monthStartDate: string
-    monthEndDate: string
-  } | null>(null)
 
   useEffect(() => {
-    if (viewMode === 'calendar') {
-      fetchMonthlyAttendanceData()
-    } else if (!data) {
-      // Загружаем данные только если их еще нет
-      fetchAttendanceData()
-    }
+    fetchAttendanceData()
   }, [viewMode, currentDate, groupId])
-
-  // Отдельный useEffect для первоначальной загрузки данных
-  useEffect(() => {
-    if (!data && viewMode !== 'calendar') {
-      fetchAttendanceData()
-    }
-  }, [groupId])
 
   const fetchAttendanceData = async () => {
     try {
-      console.log('🔄 Загрузка данных для табличного/карточного вида...')
+      console.log(`🔄 Загрузка данных для режима: ${viewMode}`)
       setLoading(true)
-      const response = await fetch(`/api/admin/groups/${groupId}/attendance`)
+      
+      let url = `/api/admin/groups/${groupId}/attendance`
+      
+      // Для календарного режима добавляем параметры месяца
+      if (viewMode === 'calendar') {
+        const year = currentDate.getFullYear()
+        const month = currentDate.getMonth() + 1
+        url += `?view=calendar&year=${year}&month=${month}`
+      }
+      
+      const response = await fetch(url)
       if (response.ok) {
         const attendanceData = await response.json()
         setData(attendanceData)
-        console.log('✅ Данные для табличного/карточного вида загружены')
+        console.log(`✅ Данные для режима ${viewMode} загружены`)
       } else {
         console.error('Ошибка загрузки данных посещаемости')
       }
@@ -133,29 +114,6 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       console.error('Ошибка загрузки данных посещаемости:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const fetchMonthlyAttendanceData = async () => {
-    try {
-      console.log('🔄 Загрузка данных для календарного вида...')
-      setCalendarLoading(true)
-      const year = currentDate.getFullYear()
-      const month = currentDate.getMonth() + 1
-      
-      const response = await fetch(`/api/admin/groups/${groupId}/attendance?view=calendar&year=${year}&month=${month}`)
-      
-      if (response.ok) {
-        const attendanceData = await response.json()
-        setMonthlyData(attendanceData)
-        console.log('✅ Данные для календарного вида загружены')
-      } else {
-        console.error('Ошибка загрузки месячных данных посещаемости')
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки месячных данных посещаемости:', error)
-    } finally {
-      setCalendarLoading(false)
     }
   }
 
@@ -192,8 +150,8 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   }
 
   const generateDaysWithLessons = () => {
-    if (!monthlyData) return []
-    return monthlyData.daysWithLessons.map((dateString: string) => {
+    if (!data || !data.daysWithLessons) return []
+    return data.daysWithLessons.map((dateString: string) => {
       const date = new Date(dateString)
       return {
         dateString,
@@ -205,8 +163,8 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   }
 
   const getMonthlyAttendanceStatus = (userId: string, date: string) => {
-    if (!monthlyData) return 'PENDING'
-    const record = monthlyData.attendanceRecords.find(
+    if (!data || !data.attendanceRecords) return 'PENDING'
+    const record = data.attendanceRecords.find(
       (record) => record.userId === userId && record.date === date
     )
     return record?.status || 'PENDING'
@@ -229,15 +187,15 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
       if (response.ok) {
         // Обновляем локальное состояние
-        if (monthlyData) {
-          const updatedData = { ...monthlyData }
-          const existingRecord = updatedData.attendanceRecords.find(
+        if (data) {
+          const updatedData = { ...data }
+          const existingRecord = updatedData.attendanceRecords?.find(
             (record) => record.userId === userId && record.date === date
           )
           
           if (existingRecord) {
             existingRecord.status = status
-          } else {
+          } else if (updatedData.attendanceRecords) {
             updatedData.attendanceRecords.push({
               id: `temp-${Date.now()}`,
               userId,
@@ -248,7 +206,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
             })
           }
           
-          setMonthlyData(updatedData)
+          setData(updatedData)
         }
       } else {
         alert('Ошибка при обновлении посещаемости')
@@ -742,12 +700,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       <div className="p-6">
         {viewMode === 'calendar' ? (
           <div>
-            {calendarLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mr-3"></div>
-                <p className="text-gray-600">Загрузка календаря посещаемости...</p>
-              </div>
-            ) : monthlyData ? (
+            {data ? (
               <div>
                 {/* Навигация по месяцам */}
                 <div className="bg-white border-b border-gray-200 p-4 mb-6">
@@ -805,7 +758,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                         </tr>
                                       </thead>
                       <tbody>
-                        {monthlyData.students.map((student) => (
+                        {data.students.map((student) => (
                           <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-4 px-4">
                               <div>
