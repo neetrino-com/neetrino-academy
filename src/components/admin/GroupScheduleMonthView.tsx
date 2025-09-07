@@ -155,6 +155,15 @@ export default function GroupScheduleMonthView({
   const calendarDays = generateCalendarDays()
 
   const formatTime = (timeString: string) => {
+    // Если это ISO строка даты, извлекаем время
+    if (timeString.includes('T')) {
+      const date = new Date(timeString)
+      return date.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+    // Если это уже время в формате HH:MM, возвращаем как есть
     return timeString.slice(0, 5)
   }
 
