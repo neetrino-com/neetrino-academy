@@ -49,12 +49,19 @@ export async function GET(
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
+    // Ограничиваем выборку только прошедшими днями и сегодняшним днем
+    const today = new Date()
+    today.setHours(23, 59, 59, 999) // Конец сегодняшнего дня
+
     // Получаем события группы с обязательной посещаемостью
     const events = await prisma.event.findMany({
       where: {
         groupId: groupId,
         isAttendanceRequired: true,
-        isActive: true
+        isActive: true,
+        startDate: {
+          lte: today
+        }
       },
       include: {
         attendees: {
