@@ -14,7 +14,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  MoreHorizontal,
+  Eye,
   ChevronDown,
   ChevronUp
 } from 'lucide-react'
@@ -470,7 +470,7 @@ export default function ScheduleListView({
               <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[160px]">Преподаватель</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[140px]">Дата и время</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[100px]">Статус</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700 w-24">Действия</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 w-24">Операции</th>
             </tr>
           </thead>
           <tbody>
@@ -583,24 +583,30 @@ export default function ScheduleListView({
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => onEventClick?.(event)}
-                        className="p-1 text-gray-400 hover:text-gray-600"
-                        title="Просмотр"
+                        onClick={() => {
+                          console.log('👁️ [ScheduleListView] Кнопка "просмотр" нажата для события:', event.id)
+                          onEventClick?.(event)
+                        }}
+                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                        title="Просмотр информации"
                       >
-                        <MoreHorizontal className="w-4 h-4" />
+                        <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onEditEvent?.(event)}
-                        className="p-1 text-blue-400 hover:text-blue-600"
-                        title="Редактировать"
+                        className="p-1 text-blue-400 hover:text-blue-600 transition-colors"
+                        title="Редактировать событие"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       {!isPast && (
                         <button
-                          onClick={() => onDeleteEvent?.(event.id)}
-                          className="p-1 text-red-400 hover:text-red-600"
-                          title="Удалить"
+                          onClick={() => {
+                            console.log('🗑️ [ScheduleListView] Кнопка "удалить" нажата для события:', event.id)
+                            onDeleteEvent?.(event.id)
+                          }}
+                          className="p-1 text-red-400 hover:text-red-600 transition-colors"
+                          title="Удалить событие"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

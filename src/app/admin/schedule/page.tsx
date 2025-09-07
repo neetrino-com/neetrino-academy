@@ -48,6 +48,8 @@ import ScheduleCalendar from '@/components/admin/ScheduleCalendar'
 import ScheduleListView from '@/components/admin/ScheduleListView'
 import ScheduleWeekView from '@/components/admin/ScheduleWeekView'
 import EditEventModal from '@/components/admin/EditEventModal'
+import EventDetailsModal from '@/components/admin/EventDetailsModal'
+import DeleteConfirmModal from '@/components/admin/DeleteConfirmModal'
 
 interface Group {
   id: string
@@ -121,6 +123,11 @@ export default function OptimizedScheduleDashboard() {
   const [timeFilter, setTimeFilter] = useState<'current' | 'past'>('current')
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [viewingEvent, setViewingEvent] = useState<CalendarEvent | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [deletingEvent, setDeletingEvent] = useState<CalendarEvent | null>(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [stats, setStats] = useState<ScheduleStats>({
     totalEvents: 0,
     totalSchedules: 0,
@@ -412,22 +419,19 @@ export default function OptimizedScheduleDashboard() {
 
   // Обработчики событий
   const handleEventClick = useCallback((event: CalendarEvent) => {
-    console.log('Просмотр события:', event)
+    console.log('👁️ [EventClick] Кнопка "просмотр" нажата!')
+    console.log('👁️ [EventClick] Событие:', event)
     
-    // Показываем детальную информацию о событии
-    const eventInfo = `
-Событие: ${event.title}
-Группа: ${event.groupName}
-Преподаватель: ${event.teacherName}
-Дата: ${new Date(event.startDate).toLocaleDateString('ru-RU')}
-Время: ${new Date(event.startDate).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.endDate).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-Место: ${event.location || 'Не указано'}
-Тип: ${event.type}
-Статус: ${event.isActive ? 'Активно' : 'Неактивно'}
-Посещаемость: ${event.isAttendanceRequired ? 'Обязательна' : 'Не обязательна'}
-    `.trim()
-    
-    alert(eventInfo)
+    try {
+      // Устанавливаем событие для просмотра и открываем модальное окно
+      setViewingEvent(event)
+      setShowDetailsModal(true)
+      console.log('👁️ [EventClick] Модальное окно деталей открыто')
+      
+    } catch (error) {
+      console.error('❌ [EventClick] Ошибка при показе информации:', error)
+      alert('Ошибка при загрузке информации о событии')
+    }
   }, [])
 
   const handleEditEvent = useCallback(async (event: CalendarEvent) => {
@@ -501,48 +505,83 @@ export default function OptimizedScheduleDashboard() {
     }
   }, [])
 
-  const handleDeleteEvent = useCallback(async (eventId: string) => {
+  const handleDeleteEvent = useCallback((eventId: string) => {
+    console.log('🗑️ [DeleteEvent] Начало удаления события:', eventId)
+    
+    const event = calendarEvents.find(e => e.id === eventId)
+    if (!event) {
+      console.error('🗑️ [DeleteEvent] Событие не найдено в списке')
+      alert('Событие не найдено')
+      return
+    }
+
+    console.log('🗑️ [DeleteEvent] Найдено событие:', event.title)
+    
+    // Устанавливаем событие для удаления и открываем модальное окно
+    setDeletingEvent(event)
+    setShowDeleteModal(true)
+    console.log('🗑️ [DeleteEvent] Модальное окно удаления открыто')
+  }, [calendarEvents])
+
+  const confirmDeleteEvent = useCallback(async () => {
+    if (!deletingEvent) return
+
     try {
-      const event = calendarEvents.find(e => e.id === eventId)
-      if (!event) {
-        alert('Событие не найдено')
-        return
-      }
-
-      const confirmed = confirm(`Вы уверены, что хотите удалить занятие "${event.title}"?`)
-      if (!confirmed) return
-
-      console.log('Удаление события:', eventId)
+      setIsDeleting(true)
+      console.log('🗑️ [DeleteEvent] Пользователь подтвердил удаление')
+      console.log('🗑️ [DeleteEvent] Отправляем запрос на удаление...')
       
-      const response = await fetch(`/api/admin/schedule/event/${eventId}`, {
-        method: 'DELETE'
+      const response = await fetch(`/api/admin/schedule/event/${deletingEvent.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
       })
 
+      console.log('🗑️ [DeleteEvent] Ответ сервера:', response.status, response.statusText)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Ошибка удаления события')
+        const errorText = await response.text()
+        console.error('🗑️ [DeleteEvent] Ошибка сервера:', errorText)
+        throw new Error(`Ошибка удаления события (${response.status}): ${errorText}`)
       }
 
-      console.log('Событие успешно удалено')
+      console.log('🗑️ [DeleteEvent] Событие успешно удалено на сервере')
       
       // Обновляем список событий
-      setCalendarEvents(prev => prev.filter(e => e.id !== eventId))
+      setCalendarEvents(prev => {
+        const newList = prev.filter(e => e.id !== deletingEvent.id)
+        console.log('🗑️ [DeleteEvent] Обновлен список событий, осталось:', newList.length)
+        return newList
+      })
       
       // Обновляем статистику
-      setStats(prev => ({
-        ...prev,
-        totalEvents: prev.totalEvents - 1,
-        upcomingEvents: prev.upcomingEvents - (new Date(event.startDate) > new Date() ? 1 : 0),
-        pastEvents: prev.pastEvents - (new Date(event.startDate) <= new Date() ? 1 : 0)
-      }))
+      setStats(prev => {
+        const newStats = {
+          ...prev,
+          totalEvents: prev.totalEvents - 1,
+          upcomingEvents: prev.upcomingEvents - (new Date(deletingEvent.startDate) > new Date() ? 1 : 0),
+          pastEvents: prev.pastEvents - (new Date(deletingEvent.startDate) <= new Date() ? 1 : 0)
+        }
+        console.log('🗑️ [DeleteEvent] Обновлена статистика:', newStats)
+        return newStats
+      })
 
-      alert('Занятие успешно удалено')
+      console.log('🗑️ [DeleteEvent] Показываем уведомление об успехе')
+      alert(`✅ Успешно удалено!\n\nЗанятие "${deletingEvent.title}" было удалено из расписания.`)
+      
+      // Закрываем модальное окно
+      setShowDeleteModal(false)
+      setDeletingEvent(null)
       
     } catch (error) {
-      console.error('Ошибка при удалении события:', error)
+      console.error('❌ [DeleteEvent] Ошибка при удалении события:', error)
       alert(`Ошибка при удалении: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+    } finally {
+      setIsDeleting(false)
     }
-  }, [calendarEvents])
+  }, [deletingEvent])
 
   const handleSaveEvent = useCallback(async (eventData: any) => {
     try {
@@ -939,6 +978,28 @@ export default function OptimizedScheduleDashboard() {
         onSave={handleSaveEvent}
         groups={groups}
         teachers={teachers}
+      />
+
+      {/* Модальное окно деталей события */}
+      <EventDetailsModal
+        event={viewingEvent}
+        isOpen={showDetailsModal}
+        onClose={() => {
+          setShowDetailsModal(false)
+          setViewingEvent(null)
+        }}
+      />
+
+      {/* Модальное окно подтверждения удаления */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setDeletingEvent(null)
+        }}
+        onConfirm={confirmDeleteEvent}
+        eventTitle={deletingEvent?.title || ''}
+        loading={isDeleting}
       />
     </div>
   )
