@@ -6,6 +6,7 @@ import {
   Clock, 
   MapPin, 
   Users, 
+  User,
   Search, 
   Filter,
   Edit,
@@ -190,6 +191,33 @@ export default function ScheduleListView({
     return labels[type] || type
   }
 
+  // Функция для обрезки длинного текста
+  const truncateText = (text: string, maxLength: number = 25) => {
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + '...'
+  }
+
+  // Функция для получения роли учителя (заглушка)
+  const getTeacherRole = (teacherName: string) => {
+    // В будущем можно получать из API
+    const roles: Record<string, string> = {
+      'Администратор': 'Админ',
+      'Алексей Шопифайский': 'Преподаватель'
+    }
+    return roles[teacherName] || 'Преподаватель'
+  }
+
+  // Функция для получения количества участников группы (заглушка)
+  const getGroupParticipants = (groupName: string) => {
+    // В будущем можно получать из API
+    const participants: Record<string, string> = {
+      'Shopify Developers Elite': '12 уч.',
+      'WordPress Pro 2024-1': '15 уч.',
+      'Frontend Masters 2024': '18 уч.'
+    }
+    return participants[groupName] || '10 уч.'
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
@@ -368,7 +396,7 @@ export default function ScheduleListView({
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">
+              <th className="text-left py-3 px-4 font-medium text-gray-700 w-12">
                 <input
                   type="checkbox"
                   checked={selectedEvents.size === filteredAndSortedEvents.length && filteredAndSortedEvents.length > 0}
@@ -382,13 +410,12 @@ export default function ScheduleListView({
                   className="rounded border-gray-300"
                 />
               </th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Событие</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Группа</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Учитель</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Дата и время</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Место</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Статус</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Действия</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[200px]">Событие</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[150px]">Группа</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[160px]">Преподаватель</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[140px]">Дата и время</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 min-w-[100px]">Статус</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700 w-24">Действия</th>
             </tr>
           </thead>
           <tbody>
@@ -413,13 +440,15 @@ export default function ScheduleListView({
                   </td>
                   
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div 
-                        className="w-3 h-3 rounded-full"
+                        className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: event.color }}
                       />
-                      <div>
-                        <div className="font-medium text-gray-900">{event.title}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-gray-900 truncate" title={event.title}>
+                          {truncateText(event.title, 30)}
+                        </div>
                         <div className={`text-xs px-2 py-1 rounded-full inline-block ${getEventTypeColor(event.type)}`}>
                           {getEventTypeLabel(event.type)}
                         </div>
@@ -429,20 +458,42 @@ export default function ScheduleListView({
                   
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-900">{event.groupName}</span>
+                      <Users className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-gray-900 truncate" title={event.groupName}>
+                          {truncateText(event.groupName, 25)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {getGroupParticipants(event.groupName)}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   
                   <td className="py-3 px-4">
-                    <span className="text-gray-900">{event.teacherName}</span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div className="text-gray-900 truncate" title={event.teacherName}>
+                          {truncateText(event.teacherName, 18)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <div className="text-xs text-gray-500 truncate" title={event.location || 'Место не указано'}>
+                          {event.location ? truncateText(event.location, 15) : '—'}
+                        </div>
+                      </div>
+                    </div>
                   </td>
                   
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                      <div>
-                        <div className="text-sm text-gray-900">{formatDate(event.startDate)}</div>
+                      <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm text-gray-900 truncate" title={formatDate(event.startDate)}>
+                          {formatDate(event.startDate)}
+                        </div>
                         <div className="text-xs text-gray-500">
                           {formatTime(event.startDate)} - {formatTime(event.endDate)}
                         </div>
@@ -451,35 +502,26 @@ export default function ScheduleListView({
                   </td>
                   
                   <td className="py-3 px-4">
-                    {event.location ? (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-900">{event.location}</span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    <div className="min-w-0">
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium inline-block ${
                         event.isActive 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-gray-100 text-gray-600'
                       }`}>
                         {event.isActive ? 'Активно' : 'Неактивно'}
                       </div>
-                      {event.isAttendanceRequired && (
-                        <div className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                          Посещаемость
-                        </div>
-                      )}
-                      {isPast && (
-                        <div className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                          Прошло
-                        </div>
-                      )}
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {event.isAttendanceRequired && (
+                          <div className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                            Посещаемость
+                          </div>
+                        )}
+                        {isPast && (
+                          <div className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                            Прошло
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   
