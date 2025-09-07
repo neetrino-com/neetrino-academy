@@ -23,6 +23,8 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Settings,
   FileText,
   MapPin,
@@ -116,10 +118,19 @@ export default function AttendancePage() {
   const [showExportDropdown, setShowExportDropdown] = useState(false)
   const [sortBy, setSortBy] = useState<'name' | 'attendance' | 'students' | 'events'>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([])
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
 
   useEffect(() => {
     fetchAllAttendanceData()
   }, [dateRange])
+
+  useEffect(() => {
+    setCalendarEvents(generateCalendarEvents())
+  }, [groupAttendanceData, currentDate])
 
   const fetchAllAttendanceData = async () => {
     try {
@@ -317,6 +328,124 @@ export default function AttendancePage() {
 
   const clearGroupSelection = () => {
     setSelectedGroups(new Set())
+  }
+
+  // Функции для календарного режима
+  const generateCalendarEvents = () => {
+    const events: any[] = []
+    
+    groupAttendanceData.forEach(groupData => {
+      groupData.events.forEach(event => {
+        const eventDate = new Date(event.startDate)
+        const isCurrentMonth = eventDate.getMonth() === currentDate.getMonth() && 
+                              eventDate.getFullYear() === currentDate.getFullYear()
+        
+        if (isCurrentMonth) {
+          const attended = event.attendees?.filter(a => a.status === 'ATTENDED').length || 0
+          const total = groupData.totalStudents
+          const attendanceRate = total > 0 ? Math.round((attended / total) * 100) : 0
+          
+          events.push({
+            id: event.id,
+            title: event.title,
+            groupName: groupData.group.name,
+            groupId: groupData.group.id,
+            date: eventDate,
+            startTime: event.startDate,
+            endTime: event.endDate,
+            type: event.type,
+            location: event.location,
+            attended,
+            total,
+            attendanceRate,
+            color: getEventTypeColor(event.type).split(' ')[0].replace('bg-', ''),
+            description: event.description
+          })
+        }
+      })
+    })
+    
+    return events.sort((a, b) => a.date.getTime() - b.date.getTime())
+  }
+
+  const goToPreviousMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() - 1)
+      return newDate
+    })
+  }
+
+  const goToNextMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() + 1)
+      return newDate
+    })
+  }
+
+  const goToCurrentMonth = () => {
+    setCurrentDate(new Date())
+  }
+
+  const formatCalendarDate = (date: Date) => {
+    return date.toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long'
+    })
+  }
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = firstDay.getDay()
+    
+    const days = []
+    
+    // Добавляем пустые ячейки для начала месяца
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null)
+    }
+    
+    // Добавляем дни месяца
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day))
+    }
+    
+    return days
+  }
+
+  const getEventsForDate = (date: Date) => {
+    return calendarEvents.filter(event => {
+      const eventDate = new Date(event.date)
+      return eventDate.toDateString() === date.toDateString()
+    })
+  }
+
+  const isToday = (date: Date) => {
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
+  }
+
+  const isSelectedDate = (date: Date) => {
+    return selectedDate && date.toDateString() === selectedDate.toDateString()
+  }
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date)
+    const events = getEventsForDate(date)
+    if (events.length > 0) {
+      setSelectedEvent(events[0])
+      setShowEventModal(true)
+    }
+  }
+
+  const handleEventClick = (event: any) => {
+    setSelectedEvent(event)
+    setShowEventModal(true)
   }
 
   // Фильтрация и сортировка данных
@@ -928,13 +1057,240 @@ export default function AttendancePage() {
         )}
 
         {viewMode === 'calendar' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="text-center py-12">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Календарный режим в разработке</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Используйте детальный просмотр группы для календарного режима
-              </p>
+          <div className="space-y-6">
+            {/* Навигация по месяцам */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={goToPreviousMonth}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {formatCalendarDate(currentDate)}
+                  </h3>
+                  <button
+                    onClick={goToNextMonth}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+                <button
+                  onClick={goToCurrentMonth}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                >
+                  Текущий месяц
+                </button>
+              </div>
+            </div>
+
+            {/* Календарная сетка */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="grid grid-cols-7 gap-px bg-gray-200">
+                {/* Заголовки дней недели */}
+                {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
+                  <div key={day} className="bg-gray-50 p-4 text-center text-sm font-medium text-gray-700">
+                    {day}
+                  </div>
+                ))}
+                
+                {/* Дни месяца */}
+                {getDaysInMonth(currentDate).map((day, index) => {
+                  if (!day) {
+                    return <div key={index} className="bg-white p-4 min-h-[120px]" />
+                  }
+                  
+                  const events = getEventsForDate(day)
+                  const isCurrentDay = isToday(day)
+                  const isSelected = isSelectedDate(day)
+                  
+                  return (
+                    <div
+                      key={day.getTime()}
+                      className={`bg-white p-2 min-h-[120px] border-r border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        isCurrentDay ? 'bg-blue-50 border-blue-200' : ''
+                      } ${isSelected ? 'bg-emerald-50 border-emerald-200' : ''}`}
+                      onClick={() => handleDateClick(day)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-sm font-medium ${
+                          isCurrentDay ? 'text-blue-600' : isSelected ? 'text-emerald-600' : 'text-gray-900'
+                        }`}>
+                          {day.getDate()}
+                        </span>
+                        {events.length > 0 && (
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            {events.length}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* События дня */}
+                      <div className="space-y-1">
+                        {events.slice(0, 3).map((event) => (
+                          <div
+                            key={event.id}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEventClick(event)
+                            }}
+                            className={`text-xs p-1 rounded cursor-pointer hover:shadow-sm transition-all ${
+                              event.color === 'blue' ? 'bg-blue-100 text-blue-800' :
+                              event.color === 'red' ? 'bg-red-100 text-red-800' :
+                              event.color === 'green' ? 'bg-green-100 text-green-800' :
+                              event.color === 'purple' ? 'bg-purple-100 text-purple-800' :
+                              event.color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            <div className="font-medium truncate">{event.title}</div>
+                            <div className="text-xs opacity-75">{event.groupName}</div>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-xs">
+                                {event.attended}/{event.total}
+                              </span>
+                              <span className={`text-xs font-medium ${
+                                event.attendanceRate >= 80 ? 'text-green-600' :
+                                event.attendanceRate >= 60 ? 'text-yellow-600' :
+                                'text-red-600'
+                              }`}>
+                                {event.attendanceRate}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {events.length > 3 && (
+                          <div className="text-xs text-gray-500 text-center">
+                            +{events.length - 3} еще
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Легенда */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h4 className="text-sm font-medium text-gray-900 mb-4">Типы событий</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { type: 'LESSON', label: 'Занятие', color: 'blue' },
+                  { type: 'EXAM', label: 'Экзамен', color: 'red' },
+                  { type: 'MEETING', label: 'Встреча', color: 'green' },
+                  { type: 'WORKSHOP', label: 'Мастер-класс', color: 'purple' }
+                ].map(({ type, label, color }) => (
+                  <div key={type} className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded ${
+                      color === 'blue' ? 'bg-blue-100' :
+                      color === 'red' ? 'bg-red-100' :
+                      color === 'green' ? 'bg-green-100' :
+                      'bg-purple-100'
+                    }`}></div>
+                    <span className="text-sm text-gray-600">{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Модальное окно события */}
+        {showEventModal && selectedEvent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">{selectedEvent.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{selectedEvent.groupName}</p>
+                  </div>
+                  <button
+                    onClick={() => setShowEventModal(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Дата и время</label>
+                      <p className="text-sm text-gray-900">
+                        {formatDate(selectedEvent.startTime)} - {formatDate(selectedEvent.endTime)}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Тип события</label>
+                      <p className="text-sm text-gray-900">{getEventTypeLabel(selectedEvent.type)}</p>
+                    </div>
+                  </div>
+
+                  {selectedEvent.location && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Место проведения</label>
+                      <p className="text-sm text-gray-900 flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {selectedEvent.location}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Посещаемость</label>
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                        <span>Присутствовало: {selectedEvent.attended} из {selectedEvent.total}</span>
+                        <span className={`font-medium ${
+                          selectedEvent.attendanceRate >= 80 ? 'text-green-600' :
+                          selectedEvent.attendanceRate >= 60 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {selectedEvent.attendanceRate}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all ${
+                            selectedEvent.attendanceRate >= 80 ? 'bg-green-500' :
+                            selectedEvent.attendanceRate >= 60 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                          style={{ width: `${selectedEvent.attendanceRate}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedEvent.description && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Описание</label>
+                      <p className="text-sm text-gray-900 mt-1">{selectedEvent.description}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => router.push(`/admin/groups/${selectedEvent.groupId}/attendance`)}
+                      className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Подробнее
+                    </button>
+                    <button
+                      onClick={() => setShowEventModal(false)}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Закрыть
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
