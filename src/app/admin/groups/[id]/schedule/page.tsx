@@ -514,6 +514,20 @@ export default function GroupSchedulePage() {
             </div>
             <div className="flex items-center gap-3">
               <button 
+                onClick={() => router.push(`/admin/groups/${groupId}`)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors"
+              >
+                <Users className="w-4 h-4" />
+                Назад к группе
+              </button>
+              <button 
+                onClick={() => router.push('/admin/schedule')}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center gap-2 transition-colors"
+              >
+                <Calendar className="w-4 h-4" />
+                Расписание всех групп
+              </button>
+              <button 
                 onClick={() => setShowGenerator(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
               >
