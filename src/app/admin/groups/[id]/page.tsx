@@ -25,7 +25,8 @@ import {
   TrendingUp,
   Activity,
   MessageCircle,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  ClipboardList
 } from 'lucide-react'
 import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
 import StudentManagementModal from '@/components/admin/StudentManagementModal'
@@ -405,6 +406,20 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push(`/admin/groups/${resolvedParams.id}/schedule`)}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <Calendar className="w-4 h-4" />
+                Расписание
+              </button>
+              <button
+                onClick={() => router.push(`/admin/groups/${resolvedParams.id}/attendance`)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ClipboardList className="w-4 h-4" />
+                Посещаемость
+              </button>
               <button
                 onClick={() => router.push(`/admin/groups/${resolvedParams.id}/edit`)}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-all duration-200"
