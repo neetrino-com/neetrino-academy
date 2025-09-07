@@ -139,6 +139,29 @@ export async function GET(
       }
     })
 
+    // Получаем все события за месяц (включая те, что мы только что создали)
+    const allEvents = await prisma.event.findMany({
+      where: {
+        groupId: groupId,
+        isAttendanceRequired: true,
+        isActive: true,
+        startDate: {
+          gte: monthStartDate,
+          lte: monthEndDate
+        }
+      },
+      orderBy: {
+        startDate: 'asc'
+      }
+    })
+
+    // Формируем уникальные дни с занятиями
+    const daysWithLessons = [...new Set(allEvents.map(event => 
+      event.startDate.toISOString().split('T')[0]
+    ))].sort()
+
+    console.log('Days with lessons:', daysWithLessons)
+
     // Формируем данные для месячного отображения
     const monthlyData = {
       group: {
@@ -163,7 +186,7 @@ export async function GET(
         eventTitle: record.event.title
       })),
       currentMonth: `${year}-${month.toString().padStart(2, '0')}`,
-      daysInMonth,
+      daysWithLessons,
       monthStartDate: monthStartDate.toISOString(),
       monthEndDate: monthEndDate.toISOString()
     }

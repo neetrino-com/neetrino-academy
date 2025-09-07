@@ -46,7 +46,7 @@ interface MonthlyAttendanceData {
   students: Student[]
   attendanceRecords: AttendanceRecord[]
   currentMonth: string
-  daysInMonth: number
+  daysWithLessons: string[]
   monthStartDate: string
   monthEndDate: string
 }
@@ -230,13 +230,17 @@ export default function MonthlyAttendanceView({ groupId }: MonthlyAttendanceView
     setCurrentDate(new Date())
   }
 
-  const generateDaysInMonth = () => {
+  const generateDaysWithLessons = () => {
     if (!data) return []
-    const days = []
-    for (let day = 1; day <= data.daysInMonth; day++) {
-      days.push(day)
-    }
-    return days
+    return data.daysWithLessons.map(dateString => {
+      const date = new Date(dateString)
+      return {
+        dateString,
+        day: date.getDate(),
+        month: date.getMonth() + 1,
+        year: date.getFullYear()
+      }
+    })
   }
 
   const filteredStudents = data?.students.filter(student => {
@@ -267,10 +271,10 @@ export default function MonthlyAttendanceView({ groupId }: MonthlyAttendanceView
     )
   }
 
-  const daysInMonth = generateDaysInMonth()
+  const daysWithLessons = generateDaysWithLessons()
 
   return (
-    <div className="bg-white min-h-[calc(100vh-100px)]">
+    <div>
       {/* Хедер */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
         <div className="flex justify-between items-center">
@@ -350,9 +354,9 @@ export default function MonthlyAttendanceView({ groupId }: MonthlyAttendanceView
                   <th className="text-left py-4 px-4 font-medium text-gray-700 min-w-[200px]">
                     Студент
                   </th>
-                  {daysInMonth.map(day => (
-                    <th key={day} className="text-center py-4 px-2 font-medium text-gray-700 min-w-[80px]">
-                      {formatDay(day)}
+                  {daysWithLessons.map(dayInfo => (
+                    <th key={dayInfo.dateString} className="text-center py-4 px-2 font-medium text-gray-700 min-w-[80px]">
+                      {formatDay(dayInfo.day)}
                     </th>
                   ))}
                 </tr>
@@ -366,19 +370,18 @@ export default function MonthlyAttendanceView({ groupId }: MonthlyAttendanceView
                         <p className="text-sm text-gray-500">{student.email}</p>
                       </div>
                     </td>
-                    {daysInMonth.map(day => {
-                      const dateString = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${formatDay(day)}`
-                      const status = getAttendanceStatus(student.id, dateString)
+                    {daysWithLessons.map(dayInfo => {
+                      const status = getAttendanceStatus(student.id, dayInfo.dateString)
                       
                       return (
-                        <td key={day} className="py-4 px-2 text-center">
+                        <td key={dayInfo.dateString} className="py-4 px-2 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
                               {getStatusIcon(status)}
                             </div>
                             <div className="flex gap-1">
                               <button
-                                onClick={() => updateAttendance(student.id, dateString, 'ATTENDED')}
+                                onClick={() => updateAttendance(student.id, dayInfo.dateString, 'ATTENDED')}
                                 disabled={saving}
                                 className={`p-1 rounded transition-colors ${
                                   status === 'ATTENDED'
@@ -390,7 +393,7 @@ export default function MonthlyAttendanceView({ groupId }: MonthlyAttendanceView
                                 <UserCheck className="w-3 h-3" />
                               </button>
                               <button
-                                onClick={() => updateAttendance(student.id, dateString, 'ABSENT')}
+                                onClick={() => updateAttendance(student.id, dayInfo.dateString, 'ABSENT')}
                                 disabled={saving}
                                 className={`p-1 rounded transition-colors ${
                                   status === 'ABSENT'

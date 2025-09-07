@@ -385,9 +385,13 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     )
   }
 
-  // Если выбран режим месячного отображения, показываем MonthlyAttendanceView
+  // Если выбран режим месячного отображения, показываем MonthlyAttendanceView в том же контейнере
   if (displayMode === 'monthly') {
-    return <MonthlyAttendanceView groupId={groupId} />
+    return (
+      <div className="bg-white min-h-[calc(100vh-100px)]">
+        <MonthlyAttendanceView groupId={groupId} />
+      </div>
+    )
   }
 
   return (
