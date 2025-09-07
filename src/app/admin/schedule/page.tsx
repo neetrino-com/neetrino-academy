@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { 
   Calendar, 
   Users, 
@@ -143,6 +143,9 @@ export default function OptimizedScheduleDashboard() {
   // Отслеживание загруженных месяцев для ленивой загрузки
   const [loadedMonths, setLoadedMonths] = useState<Set<string>>(new Set())
 
+  // Ref для хранения актуальной функции загрузки данных
+  const fetchScheduleDataRef = useRef<() => Promise<void>>()
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -164,6 +167,7 @@ export default function OptimizedScheduleDashboard() {
   // Оптимизированная загрузка данных - ТОЛЬКО ТЕКУЩИЙ МЕСЯЦ
   const fetchScheduleData = useCallback(async () => {
     try {
+      console.log(`🚀 [Schedule] fetchScheduleData вызвана с timeFilter: ${timeFilter}`)
       setLoading(true)
       
       // Рассчитываем даты в зависимости от фильтра
@@ -230,7 +234,12 @@ export default function OptimizedScheduleDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [getCachedData])
+  }, [getCachedData, timeFilter])
+
+  // Обновляем ref при изменении fetchScheduleData
+  useEffect(() => {
+    fetchScheduleDataRef.current = fetchScheduleData
+  }, [fetchScheduleData])
 
   // Принудительная перезагрузка при смене фильтра
   useEffect(() => {
@@ -239,7 +248,7 @@ export default function OptimizedScheduleDashboard() {
       console.log(`🔄 [Schedule] Фильтр изменен на: ${timeFilter}`)
       setCache(new Map()) // Очищаем кэш
       setCalendarEvents([]) // Очищаем события
-      fetchScheduleData().catch(console.error)
+      fetchScheduleDataRef.current?.().catch(console.error)
     }
   }, [timeFilter, mounted])
 

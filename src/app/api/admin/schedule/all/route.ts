@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
 
     console.log(`🚀 [Schedule All] Фильтр: ${timeFilter}, Период: ${start.toISOString().split('T')[0]} - ${end.toISOString().split('T')[0]}`)
     console.log(`🚀 [Schedule All] Текущая дата: ${now.toISOString().split('T')[0]}`)
+    console.log(`🚀 [Schedule All] Определенный диапазон: ${timeFilter === 'past' ? 'ПРОШЕДШИЕ' : 'ТЕКУЩИЕ'} события`)
 
     // Проверяем кэш (только если не принудительная загрузка)
     const cacheKey = `schedule-all:${timeFilter}:${start.toISOString().split('T')[0]}:${end.toISOString().split('T')[0]}:${groupId || 'all'}:${teacherId || 'all'}:${page}:${limit}`
