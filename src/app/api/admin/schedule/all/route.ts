@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`🚀 [Schedule All] Фильтр: ${timeFilter}, Период: ${start.toISOString().split('T')[0]} - ${end.toISOString().split('T')[0]}`)
+    console.log(`🚀 [Schedule All] Текущая дата: ${now.toISOString().split('T')[0]}`)
 
     // Проверяем кэш (только если не принудительная загрузка)
     const cacheKey = `schedule-all:${timeFilter}:${start.toISOString().split('T')[0]}:${end.toISOString().split('T')[0]}:${groupId || 'all'}:${teacherId || 'all'}:${page}:${limit}`
@@ -222,6 +223,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`✅ [Schedule All] Найдено событий: ${events.length}, групп: ${groups.length}`)
+    console.log(`✅ [Schedule All] События:`, events.map(e => ({ id: e.id, title: e.title, startDate: e.startDate })))
 
     const response = {
       success: true,

@@ -188,6 +188,8 @@ export default function OptimizedScheduleDashboard() {
       })
 
       if (data.success) {
+        console.log(`✅ [Schedule] Получены данные: ${data.events?.length || 0} событий`)
+        console.log(`✅ [Schedule] События:`, data.events?.map((e: any) => ({ id: e.id, title: e.title, startDate: e.startDate })))
         setGroups(data.groups || [])
         setTeachers(data.teachers || [])
         // Заменяем события при основной загрузке
@@ -227,6 +229,7 @@ export default function OptimizedScheduleDashboard() {
     if (mounted) {
       console.log(`🔄 [Schedule] Фильтр изменен на: ${timeFilter}`)
       setCache(new Map()) // Очищаем кэш
+      setCalendarEvents([]) // Очищаем события
       fetchScheduleData().catch(console.error)
     }
   }, [timeFilter, mounted])
