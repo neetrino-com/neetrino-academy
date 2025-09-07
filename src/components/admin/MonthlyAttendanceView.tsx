@@ -275,32 +275,6 @@ export default function MonthlyAttendanceView({ groupId }: MonthlyAttendanceView
 
   return (
     <div>
-      {/* Хедер */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <CalendarDays className="w-8 h-8" />
-              Посещаемость по дням
-            </h2>
-            <p className="text-emerald-100 mt-1 flex items-center gap-2">
-              <span>{data.group.name}</span>
-              <span className="text-emerald-200">•</span>
-              <span>{data.students.length} студентов</span>
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchMonthlyAttendanceData}
-              disabled={loading}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Обновить
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Навигация по месяцам */}
       <div className="bg-white border-b border-gray-200 p-4">

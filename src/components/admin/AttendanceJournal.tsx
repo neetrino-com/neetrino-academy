@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import MonthlyAttendanceView from './MonthlyAttendanceView'
 import { 
   Users, 
   Calendar, 
@@ -26,6 +25,8 @@ import {
   MapPin,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   MoreHorizontal,
   Check,
   X,
@@ -88,12 +89,20 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [bulkSelection, setBulkSelection] = useState<Set<string>>(new Set())
   const [showBulkActions, setShowBulkActions] = useState(false)
   const [dateRange, setDateRange] = useState('week') // week, month, all
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
-  const [displayMode, setDisplayMode] = useState<'events' | 'monthly'>('events')
+  const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
+  const [displayMode, setDisplayMode] = useState<'events'>('events')
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [monthlyData, setMonthlyData] = useState<any>(null)
 
   useEffect(() => {
     fetchAttendanceData()
   }, [groupId])
+
+  useEffect(() => {
+    if (viewMode === 'calendar') {
+      fetchMonthlyAttendanceData()
+    }
+  }, [viewMode, currentDate, groupId])
 
   const fetchAttendanceData = async () => {
     try {
@@ -109,6 +118,129 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       console.error('Ошибка загрузки данных посещаемости:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchMonthlyAttendanceData = async () => {
+    try {
+      setLoading(true)
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+      
+      const response = await fetch(`/api/admin/groups/${groupId}/attendance/monthly?year=${year}&month=${month}`)
+      
+      if (response.ok) {
+        const attendanceData = await response.json()
+        setMonthlyData(attendanceData)
+      } else {
+        console.error('Ошибка загрузки месячных данных посещаемости')
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки месячных данных посещаемости:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Функции для календарного режима
+  const formatCalendarDate = (date: Date) => {
+    return date.toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long'
+    })
+  }
+
+  const formatDay = (day: number) => {
+    return day.toString().padStart(2, '0')
+  }
+
+  const goToPreviousMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() - 1)
+      return newDate
+    })
+  }
+
+  const goToNextMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() + 1)
+      return newDate
+    })
+  }
+
+  const goToCurrentMonth = () => {
+    setCurrentDate(new Date())
+  }
+
+  const generateDaysWithLessons = () => {
+    if (!monthlyData) return []
+    return monthlyData.daysWithLessons.map((dateString: string) => {
+      const date = new Date(dateString)
+      return {
+        dateString,
+        day: date.getDate(),
+        month: date.getMonth() + 1,
+        year: date.getFullYear()
+      }
+    })
+  }
+
+  const getMonthlyAttendanceStatus = (userId: string, date: string) => {
+    if (!monthlyData) return 'PENDING'
+    const record = monthlyData.attendanceRecords.find(
+      (record: any) => record.userId === userId && record.date === date
+    )
+    return record?.status || 'PENDING'
+  }
+
+  const updateMonthlyAttendance = async (userId: string, date: string, status: 'ATTENDED' | 'ABSENT') => {
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/admin/groups/${groupId}/attendance/monthly`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId,
+          date,
+          status
+        })
+      })
+
+      if (response.ok) {
+        // Обновляем локальное состояние
+        if (monthlyData) {
+          const updatedData = { ...monthlyData }
+          const existingRecord = updatedData.attendanceRecords.find(
+            (record: any) => record.userId === userId && record.date === date
+          )
+          
+          if (existingRecord) {
+            existingRecord.status = status
+          } else {
+            updatedData.attendanceRecords.push({
+              id: `temp-${Date.now()}`,
+              userId,
+              eventId: `daily-${date}`,
+              status,
+              date,
+              eventTitle: 'Ежедневная отметка'
+            })
+          }
+          
+          setMonthlyData(updatedData)
+        }
+      } else {
+        alert('Ошибка при обновлении посещаемости')
+      }
+    } catch (error) {
+      console.error('Ошибка обновления посещаемости:', error)
+      alert('Ошибка при обновлении посещаемости')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -385,14 +517,6 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     )
   }
 
-  // Если выбран режим месячного отображения, показываем MonthlyAttendanceView в том же контейнере
-  if (displayMode === 'monthly') {
-    return (
-      <div className="bg-white min-h-[calc(100vh-100px)]">
-        <MonthlyAttendanceView groupId={groupId} />
-      </div>
-    )
-  }
 
   return (
     <div className="bg-white min-h-[calc(100vh-100px)]">
@@ -508,55 +632,39 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setDisplayMode('events')}
+                onClick={() => setViewMode('table')}
                 className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                  displayMode === 'events' 
+                  viewMode === 'table' 
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                    : 'bg-gray-100 text-gray-700 border border-gray-200'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                Таблица
+              </button>
+              <button
+                onClick={() => setViewMode('cards')}
+                className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                  viewMode === 'cards' 
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                    : 'bg-gray-100 text-gray-700 border border-gray-200'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                Карточки
+              </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                  viewMode === 'calendar' 
                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
-                По событиям
-              </button>
-              <button
-                onClick={() => setDisplayMode('monthly')}
-                className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                  displayMode === 'monthly' 
-                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                    : 'bg-gray-100 text-gray-700 border border-gray-200'
-                }`}
-              >
-                <Table className="w-4 h-4" />
-                По дням месяца
+                Календарь
               </button>
             </div>
-
-            {displayMode === 'events' && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setViewMode('table')}
-                  className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                    viewMode === 'table' 
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                      : 'bg-gray-100 text-gray-700 border border-gray-200'
-                  }`}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Таблица
-                </button>
-                <button
-                  onClick={() => setViewMode('cards')}
-                  className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                    viewMode === 'cards' 
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
-                      : 'bg-gray-100 text-gray-700 border border-gray-200'
-                  }`}
-                >
-                  <Users className="w-4 h-4" />
-                  Карточки
-                </button>
-              </div>
-            )}
 
             <button
               onClick={fetchAttendanceData}
@@ -615,7 +723,118 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
       {/* Содержимое */}
       <div className="p-6">
-        {filteredEvents.length === 0 ? (
+        {viewMode === 'calendar' ? (
+          <div>
+            {monthlyData ? (
+              <div>
+                {/* Навигация по месяцам */}
+                <div className="bg-white border-b border-gray-200 p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={goToPreviousMonth}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-gray-600" />
+                      </button>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {formatCalendarDate(currentDate)}
+                      </h3>
+                      <button
+                        onClick={goToNextMonth}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
+                        <ChevronRight className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={goToCurrentMonth}
+                      className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                    >
+                      Текущий месяц
+                    </button>
+                  </div>
+                </div>
+
+                {/* Календарная таблица */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="text-left py-4 px-4 font-medium text-gray-700 min-w-[200px]">
+                            Студент
+                          </th>
+                          {generateDaysWithLessons().map(dayInfo => (
+                            <th key={dayInfo.dateString} className="text-center py-4 px-2 font-medium text-gray-700 min-w-[80px]">
+                              {formatDay(dayInfo.day)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {monthlyData.students.map((student: any) => (
+                          <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-4 px-4">
+                              <div>
+                                <p className="font-medium text-gray-900">{student.name}</p>
+                                <p className="text-sm text-gray-500">{student.email}</p>
+                              </div>
+                            </td>
+                            {generateDaysWithLessons().map(dayInfo => {
+                              const status = getMonthlyAttendanceStatus(student.id, dayInfo.dateString)
+                              
+                              return (
+                                <td key={dayInfo.dateString} className="py-4 px-2 text-center">
+                                  <div className="flex flex-col items-center gap-2">
+                                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
+                                      {getStatusIcon(status)}
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <button
+                                        onClick={() => updateMonthlyAttendance(student.id, dayInfo.dateString, 'ATTENDED')}
+                                        disabled={saving}
+                                        className={`p-1 rounded transition-colors ${
+                                          status === 'ATTENDED'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
+                                        } disabled:opacity-50`}
+                                        title="Присутствовал"
+                                      >
+                                        <UserCheck className="w-3 h-3" />
+                                      </button>
+                                      <button
+                                        onClick={() => updateMonthlyAttendance(student.id, dayInfo.dateString, 'ABSENT')}
+                                        disabled={saving}
+                                        className={`p-1 rounded transition-colors ${
+                                          status === 'ABSENT'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700'
+                                        } disabled:opacity-50`}
+                                        title="Отсутствовал"
+                                      >
+                                        <UserX className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-600">Загрузка календарных данных...</p>
+              </div>
+            )}
+          </div>
+        ) : filteredEvents.length === 0 ? (
           <div className="text-center py-12">
             <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">Нет событий с обязательной посещаемостью</p>
