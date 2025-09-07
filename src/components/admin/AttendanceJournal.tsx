@@ -597,7 +597,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   return (
     <div className="bg-white min-h-[calc(100vh-100px)]">
       {/* Хедер */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-b-2xl">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-3">
