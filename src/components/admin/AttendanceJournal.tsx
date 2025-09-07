@@ -777,8 +777,12 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                           <th className="text-left py-4 px-4 font-medium text-gray-700 min-w-[200px]">
                                             Студент
                                           </th>
-                                          {generateDaysWithLessons().map(dayInfo => (
-                                            <th key={dayInfo.dateString} className="text-center py-4 px-2 font-medium text-gray-700 min-w-[80px]">
+                                          {generateDaysWithLessons().map((dayInfo, index) => (
+                                            <th key={dayInfo.dateString} className={`text-center py-4 px-2 font-medium min-w-[80px] ${
+                                              index % 2 === 0 
+                                                ? 'bg-white text-gray-800 border-l-2 border-gray-200' 
+                                                : 'bg-gray-100 text-gray-800 border-l-2 border-gray-300'
+                                            }`}>
                                               {formatDay(dayInfo.day)}
                                             </th>
                                           ))}
@@ -793,11 +797,15 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                 <p className="text-sm text-gray-500">{student.email}</p>
                               </div>
                             </td>
-                            {generateDaysWithLessons().map(dayInfo => {
+                            {generateDaysWithLessons().map((dayInfo, index) => {
                               const status = getMonthlyAttendanceStatus(student.id, dayInfo.dateString)
                               
                               return (
-                                <td key={dayInfo.dateString} className="py-4 px-2 text-center">
+                                <td key={dayInfo.dateString} className={`py-4 px-2 text-center ${
+                                  index % 2 === 0 
+                                    ? 'bg-white border-l-2 border-gray-200' 
+                                    : 'bg-gray-50 border-l-2 border-gray-300'
+                                }`}>
                                   <div className="flex flex-col items-center gap-2">
                                     <div className="flex gap-2">
                                       <button
