@@ -26,6 +26,12 @@ export async function GET(
     }
 
     const { id: groupId } = await params
+    const { searchParams } = new URL(request.url)
+    
+    // Параметры для разных режимов отображения
+    const viewMode = searchParams.get('view') || 'table' // table, calendar
+    const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString())
+    const month = parseInt(searchParams.get('month') || (new Date().getMonth() + 1).toString())
 
     // Проверяем существование группы
     const group = await prisma.group.findUnique({
@@ -53,33 +59,106 @@ export async function GET(
     const today = new Date()
     today.setHours(23, 59, 59, 999) // Конец сегодняшнего дня
 
-    // Получаем события группы с обязательной посещаемостью
-    const events = await prisma.event.findMany({
-      where: {
-        groupId: groupId,
-        isAttendanceRequired: true,
-        isActive: true,
-        startDate: {
-          lte: today
-        }
-      },
-      include: {
-        attendees: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
+    let events, attendanceRecords, daysWithLessons
+
+    if (viewMode === 'calendar') {
+      // Календарный режим - получаем данные за конкретный месяц
+      const monthStartDate = new Date(year, month - 1, 1)
+      const monthEndDate = new Date(year, month, 0) // Последний день месяца
+      const maxDate = today < monthEndDate ? today : monthEndDate
+
+      // Получаем события группы с обязательной посещаемостью за указанный месяц
+      events = await prisma.event.findMany({
+        where: {
+          groupId: groupId,
+          isAttendanceRequired: true,
+          isActive: true,
+          startDate: {
+            gte: monthStartDate,
+            lte: maxDate
+          }
+        },
+        include: {
+          attendees: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true
+                }
               }
             }
           }
+        },
+        orderBy: {
+          startDate: 'asc'
         }
-      },
-      orderBy: {
-        startDate: 'desc'
-      }
-    })
+      })
+
+      // Получаем все записи о посещаемости за месяц
+      attendanceRecords = await prisma.eventAttendee.findMany({
+        where: {
+          event: {
+            groupId: groupId,
+            isAttendanceRequired: true,
+            isActive: true,
+            startDate: {
+              gte: monthStartDate,
+              lte: monthEndDate
+            }
+          }
+        },
+        include: {
+          event: {
+            select: {
+              id: true,
+              title: true,
+              startDate: true
+            }
+          }
+        },
+        orderBy: {
+          event: {
+            startDate: 'asc'
+          }
+        }
+      })
+
+      // Формируем уникальные дни с занятиями
+      daysWithLessons = [...new Set(events.map(event => 
+        event.startDate.toISOString().split('T')[0]
+      ))].sort()
+
+    } else {
+      // Обычный режим (таблица/карточки) - получаем все события
+      events = await prisma.event.findMany({
+        where: {
+          groupId: groupId,
+          isAttendanceRequired: true,
+          isActive: true,
+          startDate: {
+            lte: today
+          }
+        },
+        include: {
+          attendees: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          startDate: 'desc'
+        }
+      })
+    }
 
     // Формируем данные для журнала посещаемости
     const attendanceData = {
@@ -110,7 +189,22 @@ export async function GET(
           response: attendee.response,
           updatedAt: attendee.updatedAt
         }))
-      }))
+      })),
+      // Дополнительные данные для календарного режима
+      ...(viewMode === 'calendar' && {
+        attendanceRecords: attendanceRecords.map(record => ({
+          id: record.id,
+          userId: record.userId,
+          eventId: record.eventId,
+          status: record.status,
+          date: record.event.startDate.toISOString().split('T')[0], // YYYY-MM-DD
+          eventTitle: record.event.title
+        })),
+        currentMonth: `${year}-${month.toString().padStart(2, '0')}`,
+        daysWithLessons,
+        monthStartDate: new Date(year, month - 1, 1).toISOString(),
+        monthEndDate: new Date(year, month, 0).toISOString()
+      })
     }
 
     return NextResponse.json(attendanceData)
@@ -145,7 +239,7 @@ export async function PATCH(
 
     const { id: groupId } = await params
     const body = await request.json()
-    const { eventId, userId, status, response } = body
+    const { eventId, userId, status, response, date } = body
 
     // Валидация статуса
     const validStatuses = ['PENDING', 'ATTENDING', 'NOT_ATTENDING', 'MAYBE', 'ATTENDED', 'ABSENT']
@@ -153,17 +247,44 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid attendance status' }, { status: 400 })
     }
 
-    // Проверяем, что событие принадлежит группе
-    const event = await prisma.event.findFirst({
-      where: {
-        id: eventId,
-        groupId: groupId,
-        isAttendanceRequired: true
-      }
-    })
+    let event
 
-    if (!event) {
-      return NextResponse.json({ error: 'Event not found or not attendance required' }, { status: 404 })
+    if (date) {
+      // Календарный режим - ищем событие по дате
+      const targetDate = new Date(date)
+      const startOfDay = new Date(targetDate)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(targetDate)
+      endOfDay.setHours(23, 59, 59, 999)
+
+      event = await prisma.event.findFirst({
+        where: {
+          groupId: groupId,
+          isAttendanceRequired: true,
+          isActive: true,
+          startDate: {
+            gte: startOfDay,
+            lte: endOfDay
+          }
+        }
+      })
+
+      if (!event) {
+        return NextResponse.json({ error: 'No lesson found for this date' }, { status: 404 })
+      }
+    } else {
+      // Обычный режим - ищем событие по ID
+      event = await prisma.event.findFirst({
+        where: {
+          id: eventId,
+          groupId: groupId,
+          isAttendanceRequired: true
+        }
+      })
+
+      if (!event) {
+        return NextResponse.json({ error: 'Event not found or not attendance required' }, { status: 404 })
+      }
     }
 
     // Проверяем, что пользователь является студентом группы

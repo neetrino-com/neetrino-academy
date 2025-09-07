@@ -133,7 +133,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       const year = currentDate.getFullYear()
       const month = currentDate.getMonth() + 1
       
-      const response = await fetch(`/api/admin/groups/${groupId}/attendance/monthly?year=${year}&month=${month}`)
+      const response = await fetch(`/api/admin/groups/${groupId}/attendance?view=calendar&year=${year}&month=${month}`)
       
       if (response.ok) {
         const attendanceData = await response.json()
@@ -204,7 +204,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const updateMonthlyAttendance = async (userId: string, date: string, status: 'ATTENDED' | 'ABSENT') => {
     try {
       setSaving(true)
-      const response = await fetch(`/api/admin/groups/${groupId}/attendance/monthly`, {
+      const response = await fetch(`/api/admin/groups/${groupId}/attendance`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
