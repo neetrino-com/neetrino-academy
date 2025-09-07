@@ -10,7 +10,7 @@ interface Params {
 // Получить конкретное событие
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     const session = await auth()
@@ -125,7 +125,7 @@ export async function GET(
 // Обновить событие
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     const session = await auth()
@@ -290,7 +290,7 @@ export async function PATCH(
 // Удалить событие
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     const session = await auth()

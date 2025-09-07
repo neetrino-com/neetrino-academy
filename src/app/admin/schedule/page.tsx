@@ -47,6 +47,7 @@ import ScheduleGenerator from '@/components/admin/ScheduleGenerator'
 import ScheduleCalendar from '@/components/admin/ScheduleCalendar'
 import ScheduleListView from '@/components/admin/ScheduleListView'
 import ScheduleWeekView from '@/components/admin/ScheduleWeekView'
+import EditEventModal from '@/components/admin/EditEventModal'
 
 interface Group {
   id: string
@@ -118,6 +119,8 @@ export default function OptimizedScheduleDashboard() {
   const [mounted, setMounted] = useState(false)
   const [showGenerator, setShowGenerator] = useState(false)
   const [timeFilter, setTimeFilter] = useState<'current' | 'past'>('current')
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [stats, setStats] = useState<ScheduleStats>({
     totalEvents: 0,
     totalSchedules: 0,
@@ -409,17 +412,189 @@ export default function OptimizedScheduleDashboard() {
 
   // Обработчики событий
   const handleEventClick = useCallback((event: CalendarEvent) => {
-    console.log('Event clicked:', event)
+    console.log('Просмотр события:', event)
+    
+    // Показываем детальную информацию о событии
+    const eventInfo = `
+Событие: ${event.title}
+Группа: ${event.groupName}
+Преподаватель: ${event.teacherName}
+Дата: ${new Date(event.startDate).toLocaleDateString('ru-RU')}
+Время: ${new Date(event.startDate).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.endDate).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+Место: ${event.location || 'Не указано'}
+Тип: ${event.type}
+Статус: ${event.isActive ? 'Активно' : 'Неактивно'}
+Посещаемость: ${event.isAttendanceRequired ? 'Обязательна' : 'Не обязательна'}
+    `.trim()
+    
+    alert(eventInfo)
   }, [])
 
-  const handleEditEvent = useCallback((event: CalendarEvent) => {
-    console.log('Edit event:', event)
+  const handleEditEvent = useCallback(async (event: CalendarEvent) => {
+    try {
+      console.log('Редактирование события:', event)
+      
+      // Получаем полные данные события для редактирования
+      // Сначала попробуем использовать admin API
+      let response = await fetch(`/api/admin/schedule/event/${event.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      // Если admin API не работает, попробуем обычный events API
+      if (!response.ok && response.status === 404) {
+        console.log('Admin API не найден, пробуем обычный events API')
+        response = await fetch(`/api/events/${event.id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        })
+      }
+      
+      console.log('Response status:', response.status)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error Response:', errorText)
+        
+        if (response.status === 401) {
+          throw new Error('Ошибка авторизации. Пожалуйста, войдите в систему заново.')
+        } else if (response.status === 404) {
+          throw new Error('Событие не найдено или у вас нет прав на его редактирование.')
+        } else {
+          throw new Error(`Ошибка загрузки данных события (${response.status}): ${errorText}`)
+        }
+      }
+      
+      const eventData = await response.json()
+      console.log('Данные события для редактирования:', eventData)
+      
+      // Преобразуем данные события в формат, ожидаемый модальным окном
+      const eventForEdit = {
+        id: eventData.id,
+        title: eventData.title,
+        description: eventData.description || '',
+        type: eventData.type,
+        startDate: eventData.startDate,
+        endDate: eventData.endDate,
+        location: eventData.location || '',
+        isAttendanceRequired: eventData.isAttendanceRequired || false,
+        groupId: eventData.groupId,
+        groupName: eventData.group?.name || '',
+        teacherId: eventData.createdBy?.id || '',
+        teacherName: eventData.createdBy?.name || ''
+      }
+      
+      // Устанавливаем событие для редактирования и открываем модальное окно
+      setEditingEvent(eventForEdit)
+      setShowEditModal(true)
+      
+    } catch (error) {
+      console.error('Ошибка при редактировании события:', error)
+      alert(`Ошибка при загрузке данных события: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+    }
   }, [])
 
-  const handleDeleteEvent = useCallback((eventId: string) => {
-    if (confirm('Вы уверены, что хотите удалить это занятие?')) {
-      // Логика удаления
-      console.log('Delete event:', eventId)
+  const handleDeleteEvent = useCallback(async (eventId: string) => {
+    try {
+      const event = calendarEvents.find(e => e.id === eventId)
+      if (!event) {
+        alert('Событие не найдено')
+        return
+      }
+
+      const confirmed = confirm(`Вы уверены, что хотите удалить занятие "${event.title}"?`)
+      if (!confirmed) return
+
+      console.log('Удаление события:', eventId)
+      
+      const response = await fetch(`/api/admin/schedule/event/${eventId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Ошибка удаления события')
+      }
+
+      console.log('Событие успешно удалено')
+      
+      // Обновляем список событий
+      setCalendarEvents(prev => prev.filter(e => e.id !== eventId))
+      
+      // Обновляем статистику
+      setStats(prev => ({
+        ...prev,
+        totalEvents: prev.totalEvents - 1,
+        upcomingEvents: prev.upcomingEvents - (new Date(event.startDate) > new Date() ? 1 : 0),
+        pastEvents: prev.pastEvents - (new Date(event.startDate) <= new Date() ? 1 : 0)
+      }))
+
+      alert('Занятие успешно удалено')
+      
+    } catch (error) {
+      console.error('Ошибка при удалении события:', error)
+      alert(`Ошибка при удалении: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+    }
+  }, [calendarEvents])
+
+  const handleSaveEvent = useCallback(async (eventData: any) => {
+    try {
+      console.log('Сохранение события:', eventData)
+      
+      const response = await fetch(`/api/admin/schedule/event/${eventData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: eventData.title,
+          description: eventData.description,
+          type: eventData.type,
+          startDate: eventData.startDate,
+          endDate: eventData.endDate,
+          location: eventData.location,
+          isAttendanceRequired: eventData.isAttendanceRequired,
+          groupId: eventData.groupId
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Ошибка сохранения события')
+      }
+
+      console.log('Событие успешно сохранено')
+      
+      // Обновляем событие в локальном состоянии
+      setCalendarEvents(prev => prev.map(e => 
+        e.id === eventData.id 
+          ? {
+              ...e,
+              title: eventData.title,
+              type: eventData.type,
+              startDate: eventData.startDate,
+              endDate: eventData.endDate,
+              location: eventData.location,
+              isAttendanceRequired: eventData.isAttendanceRequired,
+              groupId: eventData.groupId,
+              groupName: eventData.groupName,
+              teacherId: eventData.teacherId,
+              teacherName: eventData.teacherName
+            }
+          : e
+      ))
+
+      alert('Событие успешно сохранено')
+      
+    } catch (error) {
+      console.error('Ошибка при сохранении события:', error)
+      alert(`Ошибка при сохранении: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+      throw error
     }
   }, [])
 
@@ -693,8 +868,38 @@ export default function OptimizedScheduleDashboard() {
             events={filteredEntries}
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
-            onBulkAction={(action, eventIds) => {
-              console.log('Bulk action:', action, eventIds)
+            onBulkAction={async (action, eventIds) => {
+              try {
+                console.log('Массовое действие:', action, eventIds)
+                
+                if (action === 'delete') {
+                  // Обновляем локальное состояние
+                  setCalendarEvents(prev => prev.filter(e => !eventIds.includes(e.id)))
+                  
+                  // Обновляем статистику
+                  const deletedEvents = calendarEvents.filter(e => eventIds.includes(e.id))
+                  setStats(prev => ({
+                    ...prev,
+                    totalEvents: prev.totalEvents - deletedEvents.length,
+                    upcomingEvents: prev.upcomingEvents - deletedEvents.filter(e => new Date(e.startDate) > new Date()).length,
+                    pastEvents: prev.pastEvents - deletedEvents.filter(e => new Date(e.startDate) <= new Date()).length
+                  }))
+                } else if (action === 'activate' || action === 'deactivate') {
+                  // Обновляем статус событий в локальном состоянии
+                  setCalendarEvents(prev => prev.map(e => 
+                    eventIds.includes(e.id) 
+                      ? { ...e, isActive: action === 'activate' }
+                      : e
+                  ))
+                }
+                
+                // Очищаем кэш для принудительной перезагрузки
+                setCache(new Map())
+                
+              } catch (error) {
+                console.error('Ошибка при массовом действии:', error)
+                alert('Ошибка при выполнении массового действия')
+              }
             }}
             onEventClick={handleEventClick}
             pagination={{
@@ -722,6 +927,19 @@ export default function OptimizedScheduleDashboard() {
           onClose={() => setShowGenerator(false)}
         />
       )}
+
+      {/* Модальное окно редактирования события */}
+      <EditEventModal
+        event={editingEvent}
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingEvent(null)
+        }}
+        onSave={handleSaveEvent}
+        groups={groups}
+        teachers={teachers}
+      />
     </div>
   )
 }

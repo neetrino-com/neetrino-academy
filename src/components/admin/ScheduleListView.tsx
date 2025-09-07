@@ -137,10 +137,65 @@ export default function ScheduleListView({
     setSelectedEvents(new Set())
   }
 
-  const handleBulkAction = (action: 'activate' | 'deactivate' | 'delete') => {
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
     if (selectedEvents.size === 0) return
-    onBulkAction?.(action, Array.from(selectedEvents))
-    setSelectedEvents(new Set())
+    
+    const selectedEventIds = Array.from(selectedEvents)
+    const selectedEventTitles = selectedEventIds.map(id => {
+      const event = events.find(e => e.id === id)
+      return event?.title || 'Неизвестное событие'
+    })
+    
+    try {
+      if (action === 'delete') {
+        const confirmed = confirm(`Вы уверены, что хотите удалить ${selectedEvents.size} занятий?\n\n${selectedEventTitles.slice(0, 3).join('\n')}${selectedEventTitles.length > 3 ? '\n...' : ''}`)
+        if (!confirmed) return
+      }
+      
+      console.log(`Массовое действие "${action}" для событий:`, selectedEventIds)
+      
+      // Выполняем массовые операции
+      if (action === 'delete') {
+        // Удаляем события по одному
+        for (const eventId of selectedEventIds) {
+          const response = await fetch(`/api/admin/schedule/event/${eventId}`, {
+            method: 'DELETE'
+          })
+          
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(`Ошибка удаления события ${eventId}: ${error.error}`)
+          }
+        }
+        
+        alert(`Успешно удалено ${selectedEvents.size} занятий`)
+      } else if (action === 'activate' || action === 'deactivate') {
+        // Используем API для массового обновления статуса
+        const response = await fetch('/api/admin/schedule/bulk-update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventIds: selectedEventIds,
+            isActive: action === 'activate'
+          })
+        })
+        
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || 'Ошибка обновления статуса')
+        }
+        
+        alert(`Статус изменен для ${selectedEvents.size} занятий`)
+      }
+      
+      // Вызываем callback для обновления родительского компонента
+      onBulkAction?.(action, selectedEventIds)
+      setSelectedEvents(new Set())
+      
+    } catch (error) {
+      console.error('Ошибка при массовом действии:', error)
+      alert(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
+    }
   }
 
   const formatDate = (dateString: string) => {
