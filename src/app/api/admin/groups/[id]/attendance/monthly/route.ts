@@ -59,6 +59,11 @@ export async function GET(
     const monthStartDate = new Date(year, month - 1, 1)
     const monthEndDate = new Date(year, month, 0) // Последний день месяца
     const daysInMonth = monthEndDate.getDate()
+    
+    // Ограничиваем выборку только прошедшими днями и сегодняшним днем
+    const today = new Date()
+    today.setHours(23, 59, 59, 999) // Конец сегодняшнего дня
+    const maxDate = today < monthEndDate ? today : monthEndDate
 
     // Получаем события группы с обязательной посещаемостью за указанный месяц
     const events = await prisma.event.findMany({
@@ -68,7 +73,7 @@ export async function GET(
         isActive: true,
         startDate: {
           gte: monthStartDate,
-          lte: monthEndDate
+          lte: maxDate
         }
       },
       include: {
@@ -128,7 +133,7 @@ export async function GET(
         isActive: true,
         startDate: {
           gte: monthStartDate,
-          lte: monthEndDate
+          lte: maxDate
         }
       },
       orderBy: {
@@ -169,7 +174,7 @@ export async function GET(
       currentMonth: `${year}-${month.toString().padStart(2, '0')}`,
       daysWithLessons,
       monthStartDate: monthStartDate.toISOString(),
-      monthEndDate: monthEndDate.toISOString()
+      monthEndDate: maxDate.toISOString()
     }
 
     return NextResponse.json(monthlyData)
