@@ -449,16 +449,19 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     
     switch (dateRange) {
       case 'week':
+        // Последние 7 дней
         const weekAgo = new Date()
         weekAgo.setDate(weekAgo.getDate() - 7)
-        return eventDate >= weekAgo
+        return eventDate >= weekAgo && eventDate <= now
       case 'month':
-        const monthAgo = new Date()
-        monthAgo.setMonth(monthAgo.getMonth() - 1)
-        return eventDate >= monthAgo
+        // Текущий месяц (с 1 по последний день месяца)
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        return eventDate >= monthStart && eventDate <= monthEnd
       case 'all':
       default:
-        return true
+        // Все прошедшие события (включая все предыдущие месяцы)
+        return eventDate <= now
     }
   }) || []
 
@@ -618,8 +621,8 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
               className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             >
               <option value="week">Последняя неделя</option>
-              <option value="month">Последний месяц</option>
-              <option value="all">Все время</option>
+              <option value="month">Текущий месяц</option>
+              <option value="all">Все прошедшие месяцы</option>
             </select>
 
             <div className="flex items-center gap-2">
