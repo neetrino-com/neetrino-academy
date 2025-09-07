@@ -75,12 +75,11 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [saving, setSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [showOnlyRecent, setShowOnlyRecent] = useState(true)
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set())
   const [bulkSelection, setBulkSelection] = useState<Set<string>>(new Set())
   const [showBulkActions, setShowBulkActions] = useState(false)
-  const [dateRange, setDateRange] = useState('week') // week, month, all
+  const [dateRange, setDateRange] = useState('month') // week, month, all
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
 
@@ -444,13 +443,23 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
   // Фильтрация событий
   const filteredEvents = data?.events.filter(event => {
-    if (showOnlyRecent) {
-      const eventDate = new Date(event.startDate)
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      return eventDate >= weekAgo
+    // Фильтр по времени
+    const eventDate = new Date(event.startDate)
+    const now = new Date()
+    
+    switch (dateRange) {
+      case 'week':
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        return eventDate >= weekAgo
+      case 'month':
+        const monthAgo = new Date()
+        monthAgo.setMonth(monthAgo.getMonth() - 1)
+        return eventDate >= monthAgo
+      case 'all':
+      default:
+        return true
     }
-    return true
   }) || []
 
   const totalSessions = data?.events.length || 0
