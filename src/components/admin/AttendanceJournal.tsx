@@ -25,7 +25,8 @@ import {
   Check,
   X,
   Settings,
-  BarChart
+  BarChart,
+  ArrowLeft
 } from 'lucide-react'
 
 interface Group {
@@ -599,16 +600,24 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       {/* Хедер */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-2xl mx-6 mt-6">
         <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <Users className="w-8 h-8" />
-              Журнал посещаемости
-            </h2>
-            <p className="text-emerald-100 mt-1 flex items-center gap-2">
-              <span>{data.group.name}</span>
-              <span className="text-emerald-200">•</span>
-              <span>{totalStudents} студентов</span>
-            </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push(`/admin/groups/${groupId}`)}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-all duration-200"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-3">
+                <Users className="w-8 h-8" />
+                Журнал посещаемости
+              </h2>
+              <p className="text-emerald-100 mt-1 flex items-center gap-2">
+                <span>{data.group.name}</span>
+                <span className="text-emerald-200">•</span>
+                <span>{totalStudents} студентов</span>
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button
