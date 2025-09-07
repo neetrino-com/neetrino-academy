@@ -799,9 +799,6 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                               return (
                                 <td key={dayInfo.dateString} className="py-4 px-2 text-center">
                                   <div className="flex flex-col items-center gap-2">
-                                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(status)}`}>
-                                      {getStatusIcon(status)}
-                                    </div>
                                     <div className="flex gap-2">
                                       <button
                                         onClick={() => updateMonthlyAttendance(student.id, dayInfo.dateString, 'ATTENDED')}
