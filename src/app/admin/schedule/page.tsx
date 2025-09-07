@@ -183,7 +183,7 @@ export default function OptimizedScheduleDashboard() {
       console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
-        const response = await fetch(`/api/admin/schedule/all?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}&page=1&limit=50&force=true&timeFilter=${timeFilter}`)
+        const response = await fetch(`/api/admin/schedule/all?page=1&limit=50&force=true&timeFilter=${timeFilter}`)
         if (!response.ok) throw new Error('Ошибка загрузки данных')
         return response.json()
       })
