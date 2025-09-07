@@ -72,6 +72,7 @@ interface AttendanceJournalProps {
 export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [data, setData] = useState<AttendanceData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [calendarLoading, setCalendarLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -101,12 +102,10 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   } | null>(null)
 
   useEffect(() => {
-    fetchAttendanceData()
-  }, [groupId])
-
-  useEffect(() => {
     if (viewMode === 'calendar') {
       fetchMonthlyAttendanceData()
+    } else {
+      fetchAttendanceData()
     }
   }, [viewMode, currentDate, groupId])
 
@@ -129,7 +128,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
   const fetchMonthlyAttendanceData = async () => {
     try {
-      setLoading(true)
+      setCalendarLoading(true)
       const year = currentDate.getFullYear()
       const month = currentDate.getMonth() + 1
       
@@ -144,7 +143,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     } catch (error) {
       console.error('Ошибка загрузки месячных данных посещаемости:', error)
     } finally {
-      setLoading(false)
+      setCalendarLoading(false)
     }
   }
 
@@ -731,7 +730,12 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       <div className="p-6">
         {viewMode === 'calendar' ? (
           <div>
-            {monthlyData ? (
+            {calendarLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mr-3"></div>
+                <p className="text-gray-600">Загрузка календаря посещаемости...</p>
+              </div>
+            ) : monthlyData ? (
               <div>
                 {/* Навигация по месяцам */}
                 <div className="bg-white border-b border-gray-200 p-4 mb-6">
@@ -847,8 +851,8 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-gray-600">Загрузка календарных данных...</p>
+                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">Нет данных для отображения календаря</p>
               </div>
             )}
           </div>
