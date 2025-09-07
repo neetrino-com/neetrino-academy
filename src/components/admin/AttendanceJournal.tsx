@@ -82,6 +82,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [dateRange, setDateRange] = useState('month') // week, month, all
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [hoveredStudentId, setHoveredStudentId] = useState<string | null>(null)
 
   // Загружаем данные при изменении группы или даты
   useEffect(() => {
@@ -218,20 +219,22 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
               date,
               eventTitle: 'Ежедневная отметка'
             })
-          }
-          
-          setData(updatedData)
         }
-      } else {
-        alert('Ошибка при обновлении посещаемости')
+        
+        setData(updatedData)
       }
-    } catch (error) {
-      console.error('Ошибка обновления посещаемости:', error)
-      alert('Ошибка при обновлении посещаемости')
-    } finally {
-      setSaving(false)
+    } else {
+      const errorData = await response.json()
+      console.error('Ошибка API при обновлении посещаемости:', errorData)
+      alert(`Ошибка при обновлении посещаемости: ${errorData.error || 'Неизвестная ошибка'}`)
     }
+  } catch (error) {
+    console.error('Ошибка обновления посещаемости:', error)
+    alert('Ошибка при обновлении посещаемости')
+  } finally {
+    setSaving(false)
   }
+}
 
   const updateAttendance = async (eventId: string, userId: string, status: string, responseText?: string) => {
     try {
@@ -474,6 +477,9 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         // Все прошедшие события (включая все предыдущие месяцы)
         return eventDate <= now
     }
+  }).sort((a, b) => {
+    // Сортируем по убыванию даты: сначала самые свежие (сегодня), потом по убыванию
+    return new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
   }) || []
 
   const totalSessions = data?.events.length || 0
@@ -805,21 +811,38 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                                       </thead>
                       <tbody>
                         {data.students.map((student) => (
-                          <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-4 px-4">
+                          <tr 
+                            key={student.id} 
+                            className={`border-b border-gray-100 transition-all duration-200 ${
+                              hoveredStudentId === student.id 
+                                ? 'bg-blue-50 shadow-md border-blue-200' 
+                                : 'hover:bg-gray-50'
+                            }`}
+                            onMouseEnter={() => setHoveredStudentId(student.id)}
+                            onMouseLeave={() => setHoveredStudentId(null)}
+                          >
+                            <td className={`py-4 px-4 transition-colors duration-200 ${
+                              hoveredStudentId === student.id ? 'bg-blue-100' : ''
+                            }`}>
                               <div>
-                                <p className="font-medium text-gray-900">{student.name}</p>
-                                <p className="text-sm text-gray-500">{student.email}</p>
+                                <p className={`font-medium transition-colors duration-200 ${
+                                  hoveredStudentId === student.id ? 'text-blue-900' : 'text-gray-900'
+                                }`}>{student.name}</p>
+                                <p className={`text-sm transition-colors duration-200 ${
+                                  hoveredStudentId === student.id ? 'text-blue-600' : 'text-gray-500'
+                                }`}>{student.email}</p>
                               </div>
                             </td>
                             {generateDaysWithLessons().map((dayInfo, index) => {
                               const status = getMonthlyAttendanceStatus(student.id, dayInfo.dateString)
                               
                               return (
-                                <td key={dayInfo.dateString} className={`py-4 px-2 text-center ${
-                                  index % 2 === 0 
-                                    ? 'bg-white border-l-2 border-gray-200' 
-                                    : 'bg-gray-50 border-l-2 border-gray-300'
+                                <td key={dayInfo.dateString} className={`py-4 px-2 text-center transition-colors duration-200 ${
+                                  hoveredStudentId === student.id 
+                                    ? 'bg-blue-50 border-l-2 border-blue-300' 
+                                    : index % 2 === 0 
+                                      ? 'bg-white border-l-2 border-gray-200' 
+                                      : 'bg-gray-50 border-l-2 border-gray-300'
                                 }`}>
                                   <div className="flex flex-col items-center gap-2">
                                     <div className="flex gap-2">

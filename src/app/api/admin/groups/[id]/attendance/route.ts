@@ -155,7 +155,7 @@ export async function GET(
           }
         },
         orderBy: {
-          startDate: 'desc'
+          startDate: 'asc'
         }
       })
     }
@@ -305,7 +305,7 @@ export async function PATCH(
     const attendanceRecord = await prisma.eventAttendee.upsert({
       where: {
         eventId_userId: {
-          eventId: eventId,
+          eventId: event.id, // Используем найденное событие
           userId: userId
         }
       },
@@ -315,7 +315,7 @@ export async function PATCH(
         updatedAt: new Date()
       },
       create: {
-        eventId: eventId,
+        eventId: event.id, // Используем найденное событие
         userId: userId,
         status: status as any,
         response: response || null
