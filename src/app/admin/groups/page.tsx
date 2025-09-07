@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   Plus, 
   Edit, 
-  Eye, 
   Trash2,
   Users, 
   Calendar,
@@ -394,14 +393,6 @@ export default function GroupsManagement() {
                       title="Редактировать"
                     >
                       <Edit className="w-5 h-5" />
-                    </button>
-                    
-                    <button
-                      onClick={() => router.push(`/admin/groups/${group.id}`)}
-                      className="w-12 h-12 flex items-center justify-center text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-emerald-200 hover:border-emerald-600 backdrop-blur-sm"
-                      title="Просмотр группы"
-                    >
-                      <Eye className="w-5 h-5" />
                     </button>
 
                     <button
