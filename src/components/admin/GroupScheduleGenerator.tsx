@@ -72,7 +72,7 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
   const [title, setTitle] = useState('')
   const [location, setLocation] = useState('')
   const [type, setType] = useState(EVENT_TYPES.LESSON)
-  const [isAttendanceRequired, setIsAttendanceRequired] = useState(false)
+  const [isAttendanceRequired, setIsAttendanceRequired] = useState(true)
   const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([])
   const [previewData, setPreviewData] = useState<{
     period: {
@@ -440,21 +440,47 @@ export default function GroupScheduleGenerator({ group, onGenerate, onClose }: G
                       ))}
                     </select>
                   </div>
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={isAttendanceRequired}
-                      onChange={(e) => {
-                        setIsAttendanceRequired(e.target.checked)
-                        // Очищаем ошибки при изменении чекбокса
-                        if (errors.length > 0) {
-                          setErrors([])
-                        }
-                      }}
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm text-gray-700">Обязательная посещаемость</span>
-                  </label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Обязательная посещаемость
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAttendanceRequired(true)
+                          // Очищаем ошибки при изменении
+                          if (errors.length > 0) {
+                            setErrors([])
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          isAttendanceRequired
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        Да
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAttendanceRequired(false)
+                          // Очищаем ошибки при изменении
+                          if (errors.length > 0) {
+                            setErrors([])
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          !isAttendanceRequired
+                            ? 'bg-red-600 text-white hover:bg-red-700'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        Нет
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
