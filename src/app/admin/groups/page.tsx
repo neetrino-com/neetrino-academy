@@ -330,7 +330,7 @@ export default function GroupsManagement() {
 
           <div className="divide-y divide-gray-100">
             {filteredGroups.map(group => (
-              <div key={group.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-emerald-200 relative overflow-hidden">
+              <div key={group.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-emerald-200 relative overflow-hidden cursor-pointer" onClick={() => router.push(`/admin/groups/${group.id}`)}>
                 {/* Декоративный элемент */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                 
@@ -387,7 +387,7 @@ export default function GroupsManagement() {
                   </div>
 
                   {/* Действия */}
-                  <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => router.push(`/admin/groups/${group.id}/edit`)}
                       className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
