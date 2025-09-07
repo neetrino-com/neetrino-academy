@@ -443,7 +443,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
   // Фильтрация событий
   const filteredEvents = data?.events.filter(event => {
-    // Фильтр по времени
+    // Фильтр по времени - ВСЕ фильтры показывают только события до сегодняшнего дня
     const eventDate = new Date(event.startDate)
     const now = new Date()
     
@@ -454,10 +454,9 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         weekAgo.setDate(weekAgo.getDate() - 7)
         return eventDate >= weekAgo && eventDate <= now
       case 'month':
-        // Текущий месяц (с 1 по последний день месяца)
+        // Текущий месяц (с 1 по сегодняшний день)
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        return eventDate >= monthStart && eventDate <= monthEnd
+        return eventDate >= monthStart && eventDate <= now
       case 'all':
       default:
         // Все прошедшие события (включая все предыдущие месяцы)
@@ -621,7 +620,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
               className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             >
               <option value="week">Последняя неделя</option>
-              <option value="month">Текущий месяц</option>
+              <option value="month">Текущий месяц (до сегодня)</option>
               <option value="all">Все прошедшие месяцы</option>
             </select>
 
