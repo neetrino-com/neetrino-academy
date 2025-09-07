@@ -239,7 +239,10 @@ export default function ScheduleListView({
           
           <select
             value={timeFilter}
-            onChange={(e) => onTimeFilterChange?.(e.target.value as 'current' | 'past')}
+            onChange={(e) => {
+              console.log(`🔄 [ScheduleListView] Фильтр изменен на: ${e.target.value}`)
+              onTimeFilterChange?.(e.target.value as 'current' | 'past')
+            }}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="current">Текущие</option>

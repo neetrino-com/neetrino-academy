@@ -223,6 +223,7 @@ export default function OptimizedScheduleDashboard() {
 
   // Принудительная перезагрузка при смене фильтра
   useEffect(() => {
+    console.log(`🔄 [Schedule] useEffect сработал. mounted: ${mounted}, timeFilter: ${timeFilter}`)
     if (mounted) {
       console.log(`🔄 [Schedule] Фильтр изменен на: ${timeFilter}`)
       setCache(new Map()) // Очищаем кэш
@@ -684,7 +685,10 @@ export default function OptimizedScheduleDashboard() {
             onLoadMore={loadMoreMonths}
             loadingMore={loadingMore}
             timeFilter={timeFilter}
-            onTimeFilterChange={setTimeFilter}
+            onTimeFilterChange={(filter) => {
+              console.log(`🔄 [Schedule] onTimeFilterChange вызван с фильтром: ${filter}`)
+              setTimeFilter(filter)
+            }}
           />
         )}
       </div>
