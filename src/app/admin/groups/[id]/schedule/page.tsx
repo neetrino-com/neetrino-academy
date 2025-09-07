@@ -366,10 +366,9 @@ export default function GroupSchedulePage() {
     description: '',
     type: EVENT_TYPES.LESSON,
     location: '',
-    startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: '',
+    eventDate: '',      // Одна дата для события
+    startTime: '',      // Время начала
+    endTime: '',        // Время окончания
     isAttendanceRequired: false
   })
 
@@ -380,14 +379,16 @@ export default function GroupSchedulePage() {
     const startDate = new Date(event.startDate)
     const endDate = new Date(event.endDate)
     
+    // Проверяем, что события в один день
+    const isSameDay = startDate.toDateString() === endDate.toDateString()
+    
     setEditFormData({
       title: event.title,
       description: event.description || '',
       type: event.type,
       location: event.location || '',
-      startDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD
+      eventDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD (дата начала)
       startTime: startDate.toTimeString().slice(0, 5), // HH:MM
-      endDate: endDate.toISOString().split('T')[0], // YYYY-MM-DD
       endTime: endDate.toTimeString().slice(0, 5), // HH:MM
       isAttendanceRequired: event.isAttendanceRequired
     })
@@ -402,19 +403,19 @@ export default function GroupSchedulePage() {
       return
     }
     
-    if (!editFormData.startDate || !editFormData.startTime || !editFormData.endDate || !editFormData.endTime) {
+    if (!editFormData.eventDate || !editFormData.startTime || !editFormData.endTime) {
       alert('Все поля даты и времени обязательны')
       return
     }
 
     try {
-      // Формируем полные даты с временем
-      const startDateTime = new Date(`${editFormData.startDate}T${editFormData.startTime}:00`)
-      const endDateTime = new Date(`${editFormData.endDate}T${editFormData.endTime}:00`)
+      // Формируем полные даты с временем (используем одну дату)
+      const startDateTime = new Date(`${editFormData.eventDate}T${editFormData.startTime}:00`)
+      const endDateTime = new Date(`${editFormData.eventDate}T${editFormData.endTime}:00`)
       
-      // Проверяем, что дата окончания после даты начала
+      // Проверяем, что время окончания после времени начала
       if (endDateTime <= startDateTime) {
-        alert('Дата окончания должна быть после даты начала')
+        alert('Время окончания должно быть после времени начала')
         return
       }
       
@@ -883,18 +884,19 @@ export default function GroupSchedulePage() {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Дата события
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.eventDate}
+                    onChange={(e) => setEditFormData({...editFormData, eventDate: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Дата начала
-                    </label>
-                    <input
-                      type="date"
-                      value={editFormData.startDate}
-                      onChange={(e) => setEditFormData({...editFormData, startDate: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Время начала
@@ -903,20 +905,6 @@ export default function GroupSchedulePage() {
                       type="time"
                       value={editFormData.startTime}
                       onChange={(e) => setEditFormData({...editFormData, startTime: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Дата окончания
-                    </label>
-                    <input
-                      type="date"
-                      value={editFormData.endDate}
-                      onChange={(e) => setEditFormData({...editFormData, endDate: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>

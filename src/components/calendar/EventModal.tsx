@@ -25,10 +25,9 @@ interface EventModalProps {
     title: string;
     description: string;
     type: string;
-    startDate: string;
-    startTime: string;
-    endDate: string;
-    endTime: string;
+    eventDate: string;    // Одна дата для события
+    startTime: string;    // Время начала
+    endTime: string;      // Время окончания
     location: string;
     groupId: string;
     courseId: string;
@@ -51,10 +50,9 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
     title: '',
     description: '',
     type: 'LESSON',
-    startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: '',
+    eventDate: '',      // Одна дата для события
+    startTime: '',      // Время начала
+    endTime: '',        // Время окончания
     location: '',
     groupId: groupId || '',
     courseId: '',
@@ -106,9 +104,8 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
       title: '',
       description: '',
       type: 'LESSON',
-      startDate: now.toISOString().split('T')[0],
+      eventDate: now.toISOString().split('T')[0],  // Одна дата
       startTime: now.toTimeString().slice(0, 5),
-      endDate: oneHourLater.toISOString().split('T')[0],
       endTime: oneHourLater.toTimeString().slice(0, 5),
       location: '',
       groupId: groupId || '',
@@ -141,9 +138,8 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
           title: event.title || '',
           description: event.description || '',
           type: event.type || 'LESSON',
-          startDate: startDate.toISOString().split('T')[0],
+          eventDate: startDate.toISOString().split('T')[0],  // Одна дата
           startTime: startDate.toTimeString().slice(0, 5),
-          endDate: endDate.toISOString().split('T')[0],
           endTime: endDate.toTimeString().slice(0, 5),
           location: event.location || '',
           groupId: event.group?.id || '',
@@ -218,9 +214,9 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
       return
     }
 
-    // Объединяем дату и время
-    const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`)
-    const endDateTime = new Date(`${formData.endDate}T${formData.endTime}`)
+    // Объединяем дату и время (используем одну дату)
+    const startDateTime = new Date(`${formData.eventDate}T${formData.startTime}`)
+    const endDateTime = new Date(`${formData.eventDate}T${formData.endTime}`)
 
     if (startDateTime >= endDateTime) {
       alert('Время окончания должно быть после времени начала')
@@ -234,8 +230,9 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
         title: formData.title.trim(),
         description: formData.description.trim(),
         type: formData.type,
-        startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
+        eventDate: formData.eventDate,    // Одна дата
+        startTime: formData.startTime,    // Время начала
+        endTime: formData.endTime,        // Время окончания
         location: formData.location.trim(),
         groupId: formData.groupId || null,
         courseId: formData.courseId || null,
@@ -359,52 +356,48 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
               </div>
             </div>
 
-            {/* Время и дата */}
+            {/* Дата события */}
+            <div>
+              <label className="block text-base font-medium text-gray-700 mb-2">
+                Дата события
+              </label>
+              <input
+                type="date"
+                value={formData.eventDate}
+                onChange={(e) => handleInputChange('eventDate', e.target.value)}
+                className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Время события */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Начало */}
+              {/* Время начала */}
               <div>
                 <label className="block text-base font-medium text-gray-700 mb-2">
-                  Начало события
+                  Время начала
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => handleInputChange('startDate', e.target.value)}
-                    className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                  <input
-                    type="time"
-                    value={formData.startTime}
-                    onChange={(e) => handleInputChange('startTime', e.target.value)}
-                    className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
+                <input
+                  type="time"
+                  value={formData.startTime}
+                  onChange={(e) => handleInputChange('startTime', e.target.value)}
+                  className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
               </div>
 
-              {/* Окончание */}
+              {/* Время окончания */}
               <div>
                 <label className="block text-base font-medium text-gray-700 mb-2">
-                  Окончание события
+                  Время окончания
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
-                    className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                  <input
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(e) => handleInputChange('endTime', e.target.value)}
-                    className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
+                <input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => handleInputChange('endTime', e.target.value)}
+                  className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
               </div>
             </div>
 
