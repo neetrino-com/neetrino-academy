@@ -384,10 +384,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Хедер */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="bg-white rounded-2xl mx-4 mt-4 shadow-sm sticky top-0 z-10">
+        <div className="w-full px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -408,17 +408,17 @@ export default function GroupDetail({ params }: GroupDetailProps) {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push(`/admin/groups/${resolvedParams.id}/schedule`)}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
+                title="Расписание"
               >
-                <Calendar className="w-4 h-4" />
-                Расписание
+                <Calendar className="w-5 h-5" />
               </button>
               <button
                 onClick={() => router.push(`/admin/groups/${resolvedParams.id}/attendance`)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-12 h-12 flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-purple-200 hover:border-purple-600 backdrop-blur-sm"
+                title="Посещаемость"
               >
-                <ClipboardList className="w-4 h-4" />
-                Посещаемость
+                <ClipboardList className="w-5 h-5" />
               </button>
               
               <div className="flex items-center gap-2 ml-2">
@@ -450,10 +450,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="w-full px-6 py-6">
         {/* Информационные карточки */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60">
+        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-emerald-600 font-semibold">Студенты</p>
@@ -471,7 +471,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
             </div>
           </div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60">
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-blue-600 font-semibold">Преподаватели</p>
@@ -482,7 +482,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
             <p className="text-xs text-gray-500 mt-2">Активные преподаватели</p>
           </div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60">
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-purple-600 font-semibold">Курсы</p>
@@ -493,7 +493,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
             <p className="text-xs text-gray-500 mt-2">Назначенные курсы</p>
           </div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60">
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-amber-600 font-semibold">Задания</p>
@@ -506,10 +506,10 @@ export default function GroupDetail({ params }: GroupDetailProps) {
         </div>
 
         {/* Основная информация о группе */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-slate-200/60 mb-8">
+        <div className="bg-white rounded-2xl p-8 mb-8 shadow-sm">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Информация о группе</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">Тип обучения</p>
               <span className={`px-3 py-1 text-sm rounded-full font-medium ${getTypeColor(group.type)}`}>
@@ -550,7 +550,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
         </div>
 
         {/* Табы */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60">
+        <div className="bg-white rounded-2xl shadow-sm">
           {/* Навигация по табам */}
           <div className="border-b border-gray-200 px-6">
             <nav className="flex space-x-8">
@@ -615,35 +615,37 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                   </button>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {group.students.map((student) => (
-                    <div key={student.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
+                    <div key={student.id} className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
                           <span className="text-emerald-700 font-semibold">
                             {student.user.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-gray-900">{student.user.name}</p>
                           <p className="text-sm text-gray-500">{student.user.email}</p>
-                          <p className="text-xs text-gray-400">Присоединился {formatDate(student.joinedAt)}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
-                          title="Просмотр профиля"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => removeStudentFromGroup(student.user.id, student.user.name)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                          title="Удалить из группы"
-                        >
-                          <UserMinus className="w-4 h-4" />
-                        </button>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-400">Присоединился {formatDate(student.joinedAt)}</p>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
+                            title="Просмотр профиля"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => removeStudentFromGroup(student.user.id, student.user.name)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                            title="Удалить из группы"
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -676,35 +678,37 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                   </button>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {group.teachers.map((teacher) => (
-                    <div key={teacher.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
+                    <div key={teacher.id} className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-blue-700 font-semibold">
                             {teacher.user.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-gray-900">{teacher.user.name}</p>
                           <p className="text-sm text-gray-500">{teacher.user.email}</p>
-                          <p className="text-xs text-gray-400">Присоединился {formatDate(teacher.joinedAt)}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
-                          title="Просмотр профиля"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => removeTeacherFromGroup(teacher.user.id, teacher.user.name)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                          title="Удалить из группы"
-                        >
-                          <UserMinus className="w-4 h-4" />
-                        </button>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-400">Присоединился {formatDate(teacher.joinedAt)}</p>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
+                            title="Просмотр профиля"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => removeTeacherFromGroup(teacher.user.id, teacher.user.name)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                            title="Удалить из группы"
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -737,44 +741,46 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                   </button>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {group.courses.map((groupCourse) => (
-                    <div key={groupCourse.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
+                    <div key={groupCourse.id} className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                           <BookOpen className="w-5 h-5 text-purple-600" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-gray-900">{groupCourse.course.title}</p>
-                          <p className="text-sm text-gray-500">{groupCourse.course.description}</p>
-                          <div className="flex items-center gap-4 mt-1">
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                              {groupCourse.course.direction}
-                            </span>
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                              {groupCourse.course.level}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              Назначен {formatDate(groupCourse.assignedAt)}
-                            </span>
-                          </div>
+                          <p className="text-sm text-gray-500 line-clamp-2">{groupCourse.course.description}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => router.push(`/courses/${groupCourse.course.id}`)}
-                          className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg"
-                          title="Просмотр курса"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => removeCourseFromGroup(groupCourse.course.id, groupCourse.course.title)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                          title="Удалить курс из группы"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                          {groupCourse.course.direction}
+                        </span>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                          {groupCourse.course.level}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">
+                          Назначен {formatDate(groupCourse.assignedAt)}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => router.push(`/courses/${groupCourse.course.id}`)}
+                            className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg"
+                            title="Просмотр курса"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => removeCourseFromGroup(groupCourse.course.id, groupCourse.course.title)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                            title="Удалить курс из группы"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -807,41 +813,43 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                   </button>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {group.assignments.map((groupAssignment) => (
-                    <div key={groupAssignment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
+                    <div key={groupAssignment.id} className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
                           <Target className="w-5 h-5 text-amber-600" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-gray-900">{groupAssignment.assignment.title}</p>
-                          <p className="text-sm text-gray-500">{groupAssignment.assignment.description}</p>
-                          <div className="flex items-center gap-4 mt-1">
-                            <span className="text-xs text-gray-600">
-                              {groupAssignment.assignment.module.course.title} • {groupAssignment.assignment.module.title}
-                            </span>
-                            <span className="text-xs text-red-600">
-                              Срок: {formatDate(groupAssignment.assignment.dueDate)}
-                            </span>
-                          </div>
+                          <p className="text-sm text-gray-500 line-clamp-2">{groupAssignment.assignment.description}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => router.push(`/admin/assignments/${groupAssignment.assignment.id}`)}
-                          className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg"
-                          title="Просмотр задания"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => removeAssignmentFromGroup(groupAssignment.assignment.id, groupAssignment.assignment.title)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                          title="Удалить задание из группы"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="space-y-2 mb-3">
+                        <p className="text-xs text-gray-600">
+                          {groupAssignment.assignment.module.course.title} • {groupAssignment.assignment.module.title}
+                        </p>
+                        <p className="text-xs text-red-600 font-medium">
+                          Срок: {formatDate(groupAssignment.assignment.dueDate)}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => router.push(`/admin/assignments/${groupAssignment.assignment.id}`)}
+                            className="p-2 text-amber-600 hover:bg-amber-100 rounded-lg"
+                            title="Просмотр задания"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => removeAssignmentFromGroup(groupAssignment.assignment.id, groupAssignment.assignment.title)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                            title="Удалить задание из группы"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

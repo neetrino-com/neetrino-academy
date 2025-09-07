@@ -190,7 +190,7 @@ export default function GroupsManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
           <p className="text-slate-600 font-medium">Загрузка групп...</p>
@@ -200,9 +200,9 @@ export default function GroupsManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Хедер */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10 rounded-b-2xl mx-6 mt-6">
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10 rounded-b-2xl mx-4 mt-4">
         <div className="w-full px-6 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -248,9 +248,9 @@ export default function GroupsManagement() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="w-full px-6 py-6">
         {/* Статистика */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
