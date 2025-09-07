@@ -156,6 +156,13 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     setCurrentDate(new Date())
   }
 
+  const loadMoreMonths = async () => {
+    // Загружаем данные за предыдущий месяц
+    const previousMonth = new Date(currentDate)
+    previousMonth.setMonth(previousMonth.getMonth() - 1)
+    setCurrentDate(previousMonth)
+  }
+
   const generateDaysWithLessons = () => {
     if (!data || !data.daysWithLessons) return []
     return data.daysWithLessons.map((dateString: string) => {
@@ -457,6 +464,11 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         // Текущий месяц (с 1 по сегодняшний день)
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
         return eventDate >= monthStart && eventDate <= now
+      case 'today':
+        // Только сегодняшние события
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+        return eventDate >= todayStart && eventDate < todayEnd
       case 'all':
       default:
         // Все прошедшие события (включая все предыдущие месяцы)
@@ -589,127 +601,97 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
           </div>
         </div>
 
-        {/* Фильтры и управление */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="flex flex-wrap items-center gap-4">
+        {/* Фильтры и управление - компактно в одну линию */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 overflow-x-auto">
             {/* Поиск */}
-            <div className="flex-1 min-w-[250px] relative">
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <div className="relative">
+              <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 transform -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Поиск студентов..."
+                placeholder="Поиск..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50"
+                className="w-32 pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 transition-all duration-300 focus:w-48"
               />
             </div>
             
             {/* Фильтр по посещаемости */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-gray-500" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[200px]"
+                className="px-2 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[160px]"
               >
                 <option value="all">Все студенты</option>
-                <option value="good">Хорошая посещаемость (≥80%)</option>
-                <option value="average">Средняя посещаемость (50-79%)</option>
-                <option value="poor">Низкая посещаемость (&lt;50%)</option>
+                <option value="good">Хорошая (≥80%)</option>
+                <option value="average">Средняя (50-79%)</option>
+                <option value="poor">Низкая (&lt;50%)</option>
               </select>
             </div>
 
             {/* Фильтр по времени */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-gray-500" />
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[200px]"
+                className="px-2 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[140px]"
               >
-                <option value="week">Последняя неделя</option>
-                <option value="month">Текущий месяц (до сегодня)</option>
-                <option value="all">Все прошедшие месяцы</option>
+                <option value="week">Неделя</option>
+                <option value="month">Месяц</option>
+                <option value="today">Сегодня</option>
+                <option value="all">Все время</option>
               </select>
             </div>
 
             {/* Переключатели режимов */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('table')}
-                className={`px-3 py-2 rounded-md flex items-center gap-2 transition-all duration-200 ${
+                className={`px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 text-xs ${
                   viewMode === 'table' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <BarChart3 className="w-4 h-4" />
-                <span className="hidden sm:inline">Таблица</span>
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">Таблица</span>
               </button>
               <button
                 onClick={() => setViewMode('cards')}
-                className={`px-3 py-2 rounded-md flex items-center gap-2 transition-all duration-200 ${
+                className={`px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 text-xs ${
                   viewMode === 'cards' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Карточки</span>
+                <Users className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">Карточки</span>
               </button>
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`px-3 py-2 rounded-md flex items-center gap-2 transition-all duration-200 ${
+                className={`px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 text-xs ${
                   viewMode === 'calendar' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Календарь</span>
+                <Calendar className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">Календарь</span>
               </button>
             </div>
 
-            {/* Навигация по месяцам */}
-            <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1">
-              <button
-                onClick={goToPreviousMonth}
-                className="p-2 rounded-md hover:bg-gray-200 transition-colors"
-                title="Предыдущий месяц"
-              >
-                <ChevronLeft className="w-4 h-4 text-gray-600" />
-              </button>
-              <span className="px-3 py-2 text-sm font-medium text-gray-700 min-w-[140px] text-center">
-                {formatCalendarDate(currentDate)}
-              </span>
-              <button
-                onClick={goToNextMonth}
-                className="p-2 rounded-md hover:bg-gray-200 transition-colors"
-                title="Следующий месяц"
-              >
-                <ChevronRight className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-
-            {/* Кнопки действий */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={goToCurrentMonth}
-                className="px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium flex items-center gap-2"
-                title="Текущий месяц"
-              >
-                <Calendar className="w-4 h-4" />
-                Сегодня
-              </button>
-              <button
-                onClick={fetchAttendanceData}
-                disabled={loading}
-                className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Обновить
-              </button>
-            </div>
+            {/* Кнопка обновления */}
+            <button
+              onClick={fetchAttendanceData}
+              disabled={loading}
+              className="px-2.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1 text-xs font-medium"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Обновить</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1148,6 +1130,20 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Кнопка загрузки дополнительных данных */}
+        {dateRange === 'all' && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={loadMoreMonths}
+              disabled={loading}
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 mx-auto text-sm font-medium"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Загрузить еще месяц
+            </button>
           </div>
         )}
       </div>
