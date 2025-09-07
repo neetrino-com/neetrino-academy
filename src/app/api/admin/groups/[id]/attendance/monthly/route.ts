@@ -91,25 +91,6 @@ export async function GET(
 
     console.log('Found events with attendance required:', events.length)
 
-    // Если нет событий с обязательной посещаемостью, создаем тестовое событие
-    if (events.length === 0) {
-      console.log('No events with attendance required found, creating test event')
-      const testEvent = await prisma.event.create({
-        data: {
-          title: `Тестовое занятие - ${monthStartDate.toLocaleDateString('ru-RU')}`,
-          description: 'Автоматически созданное тестовое событие для проверки посещаемости',
-          type: 'LESSON',
-          startDate: monthStartDate,
-          endDate: new Date(monthStartDate.getTime() + 2 * 60 * 60 * 1000), // +2 часа
-          groupId: groupId,
-          isAttendanceRequired: true,
-          isActive: true,
-          createdById: user.id
-        }
-      })
-      console.log('Test event created:', testEvent.id)
-    }
-
     // Получаем все записи о посещаемости за месяц
     const attendanceRecords = await prisma.eventAttendee.findMany({
       where: {
@@ -252,7 +233,7 @@ export async function PATCH(
     const endOfDay = new Date(targetDate)
     endOfDay.setHours(23, 59, 59, 999)
 
-    let event = await prisma.event.findFirst({
+    const event = await prisma.event.findFirst({
       where: {
         groupId: groupId,
         isAttendanceRequired: true,
@@ -264,20 +245,9 @@ export async function PATCH(
       }
     })
 
-    // Если события нет, создаем виртуальное событие для ежедневной отметки
+    // Если события нет, возвращаем ошибку
     if (!event) {
-      event = await prisma.event.create({
-        data: {
-          title: `Ежедневная отметка - ${targetDate.toLocaleDateString('ru-RU')}`,
-          description: 'Автоматически созданное событие для ежедневной отметки посещаемости',
-          startDate: startOfDay,
-          endDate: endOfDay,
-          groupId: groupId,
-          isAttendanceRequired: true,
-          isActive: true,
-          createdBy: user.id
-        }
-      })
+      return NextResponse.json({ error: 'No lesson found for this date' }, { status: 404 })
     }
 
     // Обновляем или создаем запись о посещаемости

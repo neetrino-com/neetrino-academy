@@ -762,22 +762,28 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                   </div>
                 </div>
 
-                {/* Календарная таблица */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left py-4 px-4 font-medium text-gray-700 min-w-[200px]">
-                            Студент
-                          </th>
-                          {generateDaysWithLessons().map(dayInfo => (
-                            <th key={dayInfo.dateString} className="text-center py-4 px-2 font-medium text-gray-700 min-w-[80px]">
-                              {formatDay(dayInfo.day)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
+                              {/* Календарная таблица */}
+                              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                {generateDaysWithLessons().length === 0 ? (
+                                  <div className="text-center py-12">
+                                    <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <p className="text-gray-500">В этом месяце нет занятий с обязательной посещаемостью</p>
+                                  </div>
+                                ) : (
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                      <thead className="bg-gray-50">
+                                        <tr>
+                                          <th className="text-left py-4 px-4 font-medium text-gray-700 min-w-[200px]">
+                                            Студент
+                                          </th>
+                                          {generateDaysWithLessons().map(dayInfo => (
+                                            <th key={dayInfo.dateString} className="text-center py-4 px-2 font-medium text-gray-700 min-w-[80px]">
+                                              {formatDay(dayInfo.day)}
+                                            </th>
+                                          ))}
+                                        </tr>
+                                      </thead>
                       <tbody>
                         {monthlyData.students.map((student) => (
                           <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -828,10 +834,11 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                             })}
                           </tr>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
               </div>
             ) : (
               <div className="text-center py-8">
