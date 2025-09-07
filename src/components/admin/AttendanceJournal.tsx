@@ -8,15 +8,9 @@ import {
   XCircle, 
   Clock, 
   AlertCircle,
-  Save,
   RefreshCw,
   Download,
-  Filter,
   Search,
-  Eye,
-  EyeOff,
-  Plus,
-  Settings,
   BarChart3,
   FileText,
   UserCheck,
@@ -27,11 +21,9 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
   Check,
   X,
-  Table,
-  Grid
+  Settings
 } from 'lucide-react'
 
 interface Group {
@@ -90,9 +82,23 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [showBulkActions, setShowBulkActions] = useState(false)
   const [dateRange, setDateRange] = useState('week') // week, month, all
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
-  const [displayMode, setDisplayMode] = useState<'events'>('events')
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [monthlyData, setMonthlyData] = useState<any>(null)
+  const [monthlyData, setMonthlyData] = useState<{
+    group: Group
+    students: Student[]
+    attendanceRecords: Array<{
+      id: string
+      userId: string
+      eventId: string
+      status: 'ATTENDED' | 'ABSENT' | 'PENDING' | 'ATTENDING' | 'NOT_ATTENDING' | 'MAYBE'
+      date: string
+      eventTitle: string
+    }>
+    currentMonth: string
+    daysWithLessons: string[]
+    monthStartDate: string
+    monthEndDate: string
+  } | null>(null)
 
   useEffect(() => {
     fetchAttendanceData()
@@ -190,7 +196,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const getMonthlyAttendanceStatus = (userId: string, date: string) => {
     if (!monthlyData) return 'PENDING'
     const record = monthlyData.attendanceRecords.find(
-      (record: any) => record.userId === userId && record.date === date
+      (record) => record.userId === userId && record.date === date
     )
     return record?.status || 'PENDING'
   }
@@ -215,7 +221,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         if (monthlyData) {
           const updatedData = { ...monthlyData }
           const existingRecord = updatedData.attendanceRecords.find(
-            (record: any) => record.userId === userId && record.date === date
+            (record) => record.userId === userId && record.date === date
           )
           
           if (existingRecord) {
@@ -267,13 +273,13 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
           if (event) {
             const attendee = event.attendees.find(a => a.userId === userId)
             if (attendee) {
-              attendee.status = status as any
+              attendee.status = status as 'ATTENDED' | 'ABSENT' | 'PENDING' | 'ATTENDING' | 'NOT_ATTENDING' | 'MAYBE'
               attendee.response = responseText
               attendee.updatedAt = new Date().toISOString()
             } else {
               event.attendees.push({
                 userId,
-                status: status as any,
+                status: status as 'ATTENDED' | 'ABSENT' | 'PENDING' | 'ATTENDING' | 'NOT_ATTENDING' | 'MAYBE',
                 response: responseText,
                 updatedAt: new Date().toISOString()
               })
@@ -773,7 +779,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {monthlyData.students.map((student: any) => (
+                        {monthlyData.students.map((student) => (
                           <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-4 px-4">
                               <div>
