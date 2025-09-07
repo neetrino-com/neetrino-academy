@@ -213,13 +213,13 @@ export async function GET(request: NextRequest) {
     }))
 
     // Статистика
-    const now = new Date()
+    const currentTime = new Date()
     const stats = {
       totalEvents: totalCount,
       totalSchedules: 0, // Не загружаем расписания для оптимизации
       totalGroups: groups.length,
-      upcomingEvents: events.filter(e => e.startDate > now).length,
-      pastEvents: events.filter(e => e.startDate <= now).length
+      upcomingEvents: events.filter(e => e.startDate > currentTime).length,
+      pastEvents: events.filter(e => e.startDate <= currentTime).length
     }
 
     console.log(`✅ [Schedule All] Найдено событий: ${events.length}, групп: ${groups.length}`)
