@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   X,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles
 } from 'lucide-react'
 
 interface Group {
@@ -244,7 +245,7 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
           <div className="flex items-center justify-between">
@@ -264,7 +265,7 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="flex-1 overflow-y-auto p-6">
           {/* Ошибки */}
           {errors.length > 0 && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -280,11 +281,11 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
             {/* Левая колонка - Настройки */}
-            <div className="space-y-6">
-              {/* Выбор групп */}
-              <div>
+            <div className="space-y-6 flex flex-col h-full">
+              {/* Выбор групп - фиксированная панель */}
+              <div className="flex-shrink-0">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Users className="w-5 h-5" />
                   Выбор групп
@@ -293,20 +294,20 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
                   <div className="flex gap-2">
                     <button
                       onClick={selectAllGroups}
-                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
                     >
                       Выбрать все
                     </button>
                     <button
                       onClick={deselectAllGroups}
-                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
                     >
                       Снять выбор
                     </button>
                   </div>
-                  <div className="max-h-40 overflow-y-auto space-y-2">
+                  <div className="h-48 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-2">
                     {groups.map(group => (
-                      <label key={group.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
+                      <label key={group.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
                         <input
                           type="checkbox"
                           checked={selectedGroups.includes(group.id)}
@@ -325,8 +326,10 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
                 </div>
               </div>
 
-              {/* Период */}
-              <div>
+              {/* Остальные настройки - прокручиваемые */}
+              <div className="flex-1 overflow-y-auto space-y-6">
+                {/* Период */}
+                <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
                   Период обучения
@@ -400,7 +403,13 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => setIsAttendanceRequired(true)}
+                        onClick={() => {
+                          setIsAttendanceRequired(true)
+                          // Очищаем ошибки при изменении
+                          if (errors.length > 0) {
+                            setErrors([])
+                          }
+                        }}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                           isAttendanceRequired
                             ? 'bg-green-600 text-white hover:bg-green-700'
@@ -411,7 +420,13 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
                       </button>
                       <button
                         type="button"
-                        onClick={() => setIsAttendanceRequired(false)}
+                        onClick={() => {
+                          setIsAttendanceRequired(false)
+                          // Очищаем ошибки при изменении
+                          if (errors.length > 0) {
+                            setErrors([])
+                          }
+                        }}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                           !isAttendanceRequired
                             ? 'bg-red-600 text-white hover:bg-red-700'
@@ -423,6 +438,7 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -548,8 +564,8 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
           )}
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between">
+        {/* Footer - всегда видимый */}
+        <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200 flex-shrink-0">
           <div className="text-sm text-gray-600">
             {selectedGroups.length > 0 && scheduleDays.length > 0 && (
               <span>
@@ -560,15 +576,15 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
           <div className="flex gap-3">
             <button
               onClick={generatePreview}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
             >
               <Eye className="w-4 h-4" />
               Предварительный просмотр
             </button>
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || errors.length > 0}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              disabled={isGenerating}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
             >
               {isGenerating ? (
                 <>
@@ -577,7 +593,7 @@ export default function ScheduleGenerator({ groups, onGenerate, onClose }: Sched
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4" />
                   Создать расписание
                 </>
               )}
