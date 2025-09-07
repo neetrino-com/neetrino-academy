@@ -204,6 +204,8 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         // Обновляем локальное состояние
         if (data) {
           const updatedData = { ...data }
+          
+          // Обновляем attendanceRecords для календарного режима
           const existingRecord = updatedData.attendanceRecords?.find(
             (record) => record.userId === userId && record.date === date
           )
@@ -219,10 +221,32 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
               date,
               eventTitle: 'Ежедневная отметка'
             })
-        }
+          }
+          
+          // Также обновляем events.attendees для синхронизации с другими режимами
+          const targetDate = new Date(date)
+          const event = updatedData.events.find(e => {
+            const eventDate = new Date(e.startDate)
+            return eventDate.toDateString() === targetDate.toDateString()
+          })
+          
+          if (event) {
+            const attendee = event.attendees.find(a => a.userId === userId)
+            if (attendee) {
+              attendee.status = status
+              attendee.updatedAt = new Date().toISOString()
+            } else {
+              event.attendees.push({
+                userId,
+                status: status as any,
+                response: null,
+                updatedAt: new Date().toISOString()
+              })
+            }
+          }
         
-        setData(updatedData)
-      }
+          setData(updatedData)
+        }
     } else {
       const errorData = await response.json()
       console.error('Ошибка API при обновлении посещаемости:', errorData)
@@ -268,6 +292,25 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
                 status: status as 'ATTENDED' | 'ABSENT' | 'PENDING' | 'ATTENDING' | 'NOT_ATTENDING' | 'MAYBE',
                 response: responseText,
                 updatedAt: new Date().toISOString()
+              })
+            }
+            
+            // Также обновляем attendanceRecords для синхронизации с календарным режимом
+            const eventDate = new Date(event.startDate).toISOString().split('T')[0]
+            const existingRecord = updatedData.attendanceRecords?.find(
+              (record) => record.userId === userId && record.date === eventDate
+            )
+            
+            if (existingRecord) {
+              existingRecord.status = status
+            } else if (updatedData.attendanceRecords) {
+              updatedData.attendanceRecords.push({
+                id: `temp-${Date.now()}`,
+                userId,
+                eventId: eventId,
+                status,
+                date: eventDate,
+                eventTitle: event.title
               })
             }
           }
