@@ -84,17 +84,10 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
 
-  // Загружаем данные при первой загрузке компонента
+  // Загружаем данные при изменении группы, режима или даты
   useEffect(() => {
     fetchAttendanceData()
-  }, [groupId])
-
-  // Загружаем данные только при переключении на календарь или изменении даты в календаре
-  useEffect(() => {
-    if (viewMode === 'calendar') {
-      fetchAttendanceData()
-    }
-  }, [viewMode, currentDate])
+  }, [groupId, viewMode, currentDate])
 
   const fetchAttendanceData = async () => {
     try {
@@ -105,17 +98,11 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
       })
       setLoading(true)
       
-      let url = `/api/admin/groups/${groupId}/attendance`
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+      let url = `/api/admin/groups/${groupId}/attendance?view=calendar&year=${year}&month=${month}`
       
-      // Для календарного режима добавляем параметры месяца
-      if (viewMode === 'calendar') {
-        const year = currentDate.getFullYear()
-        const month = currentDate.getMonth() + 1
-        url += `?view=calendar&year=${year}&month=${month}`
-        console.log(`📅 Календарный запрос: ${url}`)
-      } else {
-        console.log(`📊 Табличный/карточный запрос: ${url}`)
-      }
+      console.log(`📅 Запрос данных за ${year}-${month.toString().padStart(2, '0')} для режима: ${viewMode}`)
       
       const response = await fetch(url)
       if (response.ok) {
@@ -656,6 +643,34 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
               >
                 <Calendar className="w-4 h-4" />
                 Календарь
+              </button>
+            </div>
+
+            {/* Навигация по месяцам */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPreviousMonth}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Предыдущий месяц"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-600" />
+              </button>
+              <span className="px-3 py-2 text-sm font-medium text-gray-700 min-w-[120px] text-center">
+                {formatCalendarDate(currentDate)}
+              </span>
+              <button
+                onClick={goToNextMonth}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Следующий месяц"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-600" />
+              </button>
+              <button
+                onClick={goToCurrentMonth}
+                className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+                title="Текущий месяц"
+              >
+                Сегодня
               </button>
             </div>
 
