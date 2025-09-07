@@ -521,7 +521,7 @@ export default function AttendancePage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/admin/groups')}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-2 rounded-xl hover:bg-white/10 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -538,7 +538,7 @@ export default function AttendancePage() {
               <div className="relative">
                 <button
                   onClick={() => setShowExportDropdown(!showExportDropdown)}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl flex items-center gap-2 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Экспорт
@@ -546,7 +546,7 @@ export default function AttendancePage() {
                 </button>
                 
                 {showExportDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
                     <div className="py-1">
                       <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                         <Download className="w-4 h-4" />
@@ -564,7 +564,7 @@ export default function AttendancePage() {
               <button
                 onClick={fetchAllAttendanceData}
                 disabled={loading}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Обновить
@@ -578,7 +578,7 @@ export default function AttendancePage() {
         {/* Общая статистика */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Групп</p>
@@ -587,7 +587,7 @@ export default function AttendancePage() {
                 <Users className="w-8 h-8 text-blue-600" />
               </div>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Событий</p>
@@ -596,7 +596,7 @@ export default function AttendancePage() {
                 <Calendar className="w-8 h-8 text-emerald-600" />
               </div>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Студентов</p>
@@ -605,7 +605,7 @@ export default function AttendancePage() {
                 <UserCheck className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Общая посещаемость</p>
@@ -620,7 +620,7 @@ export default function AttendancePage() {
         {/* Детальная статистика */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Присутствий</p>
@@ -629,7 +629,7 @@ export default function AttendancePage() {
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Отсутствий</p>
@@ -638,7 +638,7 @@ export default function AttendancePage() {
                 <UserX className="w-8 h-8 text-red-600" />
               </div>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Опозданий</p>
@@ -651,7 +651,7 @@ export default function AttendancePage() {
         )}
 
         {/* Фильтры и управление */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Левая часть - фильтры */}
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
@@ -663,7 +663,7 @@ export default function AttendancePage() {
                   placeholder="Поиск групп..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 transition-all duration-300"
+                  className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 transition-all duration-300"
                 />
               </div>
               
@@ -673,7 +673,7 @@ export default function AttendancePage() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[200px] font-medium"
+                  className="px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[200px] font-medium"
                 >
                   <option value="all">Все группы</option>
                   <option value="excellent">Отличная посещаемость (≥90%)</option>
@@ -689,7 +689,7 @@ export default function AttendancePage() {
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[160px] font-medium"
+                  className="px-4 py-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[160px] font-medium"
                 >
                   <option value="today">Сегодня</option>
                   <option value="week">Неделя</option>
@@ -700,10 +700,10 @@ export default function AttendancePage() {
             </div>
 
             {/* Правая часть - переключатели режимов */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
               <button
                 onClick={() => setViewMode('table')}
-                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
+                className={`px-4 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'table' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -714,7 +714,7 @@ export default function AttendancePage() {
               </button>
               <button
                 onClick={() => setViewMode('cards')}
-                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
+                className={`px-4 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'cards' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -725,7 +725,7 @@ export default function AttendancePage() {
               </button>
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
+                className={`px-4 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'calendar' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -736,7 +736,7 @@ export default function AttendancePage() {
               </button>
               <button
                 onClick={() => setViewMode('analytics')}
-                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
+                className={`px-4 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'analytics' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -751,7 +751,7 @@ export default function AttendancePage() {
 
         {/* Основное содержимое */}
         {viewMode === 'table' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Группы и посещаемость</h3>
@@ -759,7 +759,7 @@ export default function AttendancePage() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                    className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="name">По названию</option>
                     <option value="attendance">По посещаемости</option>
@@ -884,7 +884,7 @@ export default function AttendancePage() {
         {viewMode === 'cards' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAndSortedData.map((groupData) => (
-              <div key={groupData.group.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div key={groupData.group.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">{groupData.group.name}</h3>
@@ -951,7 +951,7 @@ export default function AttendancePage() {
                   {/* Кнопка действий */}
                   <button
                     onClick={() => router.push(`/admin/groups/${groupData.group.id}/attendance`)}
-                    className="w-full mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-full mt-4 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                   >
                     <Eye className="w-4 h-4" />
                     Подробнее
@@ -966,7 +966,7 @@ export default function AttendancePage() {
           <div className="space-y-6">
             {/* Аналитические карточки */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-100 text-sm">Лучшая группа</p>
@@ -976,7 +976,7 @@ export default function AttendancePage() {
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
+              <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-red-100 text-sm">Требует внимания</p>
@@ -986,7 +986,7 @@ export default function AttendancePage() {
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-100 text-sm">Общая эффективность</p>
@@ -996,7 +996,7 @@ export default function AttendancePage() {
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+              <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-100 text-sm">Активность</p>
@@ -1009,7 +1009,7 @@ export default function AttendancePage() {
 
             {/* Графики и диаграммы */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Распределение посещаемости</h3>
                 <div className="space-y-3">
                   {filteredAndSortedData.map((groupData) => (
@@ -1031,7 +1031,7 @@ export default function AttendancePage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Статистика по типам групп</h3>
                 <div className="space-y-4">
                   {['ONLINE', 'OFFLINE', 'HYBRID'].map(type => {
@@ -1059,12 +1059,12 @@ export default function AttendancePage() {
         {viewMode === 'calendar' && (
           <div className="space-y-6">
             {/* Навигация по месяцам */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <button
                     onClick={goToPreviousMonth}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5 text-gray-600" />
                   </button>
@@ -1073,14 +1073,14 @@ export default function AttendancePage() {
                   </h3>
                   <button
                     onClick={goToNextMonth}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
                   >
                     <ChevronRight className="w-5 h-5 text-gray-600" />
                   </button>
                 </div>
                 <button
                   onClick={goToCurrentMonth}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors"
                 >
                   Текущий месяц
                 </button>
@@ -1088,7 +1088,7 @@ export default function AttendancePage() {
             </div>
 
             {/* Календарная сетка */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="grid grid-cols-7 gap-px bg-gray-200">
                 {/* Заголовки дней недели */}
                 {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
@@ -1175,7 +1175,7 @@ export default function AttendancePage() {
             </div>
 
             {/* Легенда */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
               <h4 className="text-sm font-medium text-gray-900 mb-4">Типы событий</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
@@ -1202,7 +1202,7 @@ export default function AttendancePage() {
         {/* Модальное окно события */}
         {showEventModal && selectedEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -1277,14 +1277,14 @@ export default function AttendancePage() {
                   <div className="flex gap-3 pt-4">
                     <button
                       onClick={() => router.push(`/admin/groups/${selectedEvent.groupId}/attendance`)}
-                      className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <Eye className="w-4 h-4" />
                       Подробнее
                     </button>
                     <button
                       onClick={() => setShowEventModal(false)}
-                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
                     >
                       Закрыть
                     </button>
