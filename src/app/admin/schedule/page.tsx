@@ -192,7 +192,13 @@ export default function OptimizedScheduleDashboard() {
         setTeachers(data.teachers || [])
         // Заменяем события при основной загрузке
         setCalendarEvents(data.events || [])
-        setStats(data.stats || stats)
+        setStats(data.stats || {
+          totalEvents: 0,
+          totalSchedules: 0,
+          totalGroups: 0,
+          upcomingEvents: 0,
+          pastEvents: 0
+        })
         
         // Отмечаем текущий месяц как загруженный
         const currentMonthKey = `${now.getFullYear()}-${now.getMonth() + 1}`
@@ -213,7 +219,7 @@ export default function OptimizedScheduleDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [getCachedData, stats])
+  }, [getCachedData])
 
   // Принудительная перезагрузка при смене фильтра
   useEffect(() => {
@@ -222,7 +228,7 @@ export default function OptimizedScheduleDashboard() {
       setCache(new Map()) // Очищаем кэш
       fetchScheduleData().catch(console.error)
     }
-  }, [timeFilter, mounted, fetchScheduleData])
+  }, [timeFilter, mounted])
 
   // Удалена функция loadNextMonth - загружаем только по кнопке
 
