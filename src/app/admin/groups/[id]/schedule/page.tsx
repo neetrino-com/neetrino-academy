@@ -506,7 +506,7 @@ export default function GroupSchedulePage() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                   <Calendar className="w-8 h-8 text-blue-600" />
-                  Расписание группы
+                  Расписание этой группы
                 </h1>
                 <p className="text-gray-600 mt-1">{group?.name || 'Загрузка...'}</p>
               </div>

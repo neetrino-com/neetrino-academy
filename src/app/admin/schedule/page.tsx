@@ -417,7 +417,7 @@ export default function OptimizedScheduleDashboard() {
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-3">
               <Calendar className="w-8 h-8" />
-              Расписание групп
+              Расписание всех групп
             </h2>
             <p className="text-blue-100 mt-1 flex items-center gap-2">
               <span>{stats.totalGroups} групп</span>
