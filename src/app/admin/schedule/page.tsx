@@ -166,20 +166,29 @@ export default function OptimizedScheduleDashboard() {
     try {
       setLoading(true)
       
-      // Загружаем ТОЛЬКО текущий месяц (1-30/31 число)
+      // Рассчитываем даты в зависимости от фильтра
       const now = new Date()
-      const startDate = new Date(now.getFullYear(), now.getMonth(), 1) // 1 число текущего месяца
-      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Последний день текущего месяца
+      let startDate: Date, endDate: Date
+      
+      if (timeFilter === 'past') {
+        // Прошедшие события: с начала предыдущего месяца до вчера
+        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59)
+      } else {
+        // Текущие события: с сегодняшнего дня до конца текущего месяца
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+      }
       
       console.log(`📅 [Schedule] Текущая дата: ${now.toISOString()}`)
       console.log(`📅 [Schedule] Начало месяца: ${startDate.toISOString()}`)
       console.log(`📅 [Schedule] Конец месяца: ${endDate.toISOString()}`)
       
       // Очищаем кэш для принудительной загрузки
-      const cacheKey = `schedule-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+      const cacheKey = `schedule-${timeFilter}-${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
       setCache(new Map()) // Очищаем кэш
       
-      console.log(`📅 [Schedule] Загружаем ТОЛЬКО текущий месяц: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
+      console.log(`📅 [Schedule] Загружаем ${timeFilter === 'past' ? 'прошедшие' : 'текущие'} события: ${startDate.toISOString().split('T')[0]} - ${endDate.toISOString().split('T')[0]}`)
       
       const data = await getCachedData(cacheKey, async () => {
         const response = await fetch(`/api/admin/schedule/all?page=1&limit=50&force=true&timeFilter=${timeFilter}`)
@@ -221,7 +230,7 @@ export default function OptimizedScheduleDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [getCachedData])
+  }, [getCachedData, timeFilter])
 
   // Принудительная перезагрузка при смене фильтра
   useEffect(() => {
@@ -232,7 +241,7 @@ export default function OptimizedScheduleDashboard() {
       setCalendarEvents([]) // Очищаем события
       fetchScheduleData().catch(console.error)
     }
-  }, [timeFilter, mounted])
+  }, [timeFilter, mounted, fetchScheduleData])
 
   // Удалена функция loadNextMonth - загружаем только по кнопке
 
