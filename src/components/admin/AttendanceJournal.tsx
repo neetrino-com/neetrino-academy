@@ -601,97 +601,100 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
           </div>
         </div>
 
-        {/* Фильтры и управление - компактно в одну линию */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 overflow-x-auto">
-            {/* Поиск */}
-            <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 transform -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Поиск..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-32 pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 transition-all duration-300 focus:w-48"
-              />
-            </div>
-            
-            {/* Фильтр по посещаемости */}
-            <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-gray-500" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-2 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[160px]"
+        {/* Фильтры и управление - улучшенный дизайн с нормальными размерами */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between gap-4">
+            {/* Левая часть - фильтры */}
+            <div className="flex items-center gap-4 flex-1">
+              {/* Поиск */}
+              <div className="relative">
+                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Поиск студентов..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-48 pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 transition-all duration-300 focus:w-64"
+                />
+              </div>
+              
+              {/* Фильтр по посещаемости */}
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-gray-500" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[180px] font-medium"
+                >
+                  <option value="all">Все студенты</option>
+                  <option value="good">Хорошая посещаемость (≥80%)</option>
+                  <option value="average">Средняя посещаемость (50-79%)</option>
+                  <option value="poor">Низкая посещаемость (&lt;50%)</option>
+                </select>
+              </div>
+
+              {/* Фильтр по времени */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-gray-500" />
+                <select
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                  className="px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[160px] font-medium"
+                >
+                  <option value="today">Сегодня</option>
+                  <option value="week">Неделя</option>
+                  <option value="month">Месяц</option>
+                  <option value="all">Все время</option>
+                </select>
+              </div>
+
+              {/* Кнопка обновления */}
+              <button
+                onClick={fetchAttendanceData}
+                disabled={loading}
+                className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-all duration-200"
               >
-                <option value="all">Все студенты</option>
-                <option value="good">Хорошая (≥80%)</option>
-                <option value="average">Средняя (50-79%)</option>
-                <option value="poor">Низкая (&lt;50%)</option>
-              </select>
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Обновить</span>
+              </button>
             </div>
 
-            {/* Фильтр по времени */}
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="px-2 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 min-w-[140px]"
-              >
-                <option value="week">Неделя</option>
-                <option value="month">Месяц</option>
-                <option value="today">Сегодня</option>
-                <option value="all">Все время</option>
-              </select>
-            </div>
-
-            {/* Переключатели режимов */}
-            <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+            {/* Правая часть - переключатели режимов */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('table')}
-                className={`px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 text-xs ${
+                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'table' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-800'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <BarChart3 className="w-3.5 h-3.5" />
+                <BarChart3 className="w-5 h-5" />
                 <span className="hidden lg:inline">Таблица</span>
               </button>
               <button
                 onClick={() => setViewMode('cards')}
-                className={`px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 text-xs ${
+                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'cards' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-800'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <Users className="w-3.5 h-3.5" />
+                <Users className="w-5 h-5" />
                 <span className="hidden lg:inline">Карточки</span>
               </button>
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`px-2 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 text-xs ${
+                className={`px-4 py-3 rounded-md flex items-center gap-2 transition-all duration-200 text-sm font-medium ${
                   viewMode === 'calendar' 
                     ? 'bg-white text-emerald-700 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-800'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-5 h-5" />
                 <span className="hidden lg:inline">Календарь</span>
               </button>
             </div>
-
-            {/* Кнопка обновления */}
-            <button
-              onClick={fetchAttendanceData}
-              disabled={loading}
-              className="px-2.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1 text-xs font-medium"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Обновить</span>
-            </button>
           </div>
         </div>
       </div>
