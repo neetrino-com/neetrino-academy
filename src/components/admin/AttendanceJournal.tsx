@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   Users, 
   Calendar, 
@@ -23,7 +24,8 @@ import {
   ChevronRight,
   Check,
   X,
-  Settings
+  Settings,
+  BarChart
 } from 'lucide-react'
 
 interface Group {
@@ -70,6 +72,7 @@ interface AttendanceJournalProps {
 }
 
 export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
+  const router = useRouter()
   const [data, setData] = useState<AttendanceData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -83,11 +86,29 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [hoveredStudentId, setHoveredStudentId] = useState<string | null>(null)
+  const [showExportDropdown, setShowExportDropdown] = useState(false)
 
   // Загружаем данные при изменении группы или даты
   useEffect(() => {
     fetchAttendanceData()
   }, [groupId, currentDate])
+
+  // Закрываем выпадающее меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showExportDropdown) {
+        const target = event.target as Element
+        if (!target.closest('.export-dropdown')) {
+          setShowExportDropdown(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showExportDropdown])
 
   // При переключении режима НЕ загружаем данные - используем уже загруженные
 
@@ -591,19 +612,51 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => exportAttendanceData('csv')}
+              onClick={() => router.push('/admin/attendance')}
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
             >
-              <Download className="w-4 h-4" />
-              Экспорт CSV
+              <BarChart className="w-4 h-4" />
+              Общая посещаемость
             </button>
-            <button
-              onClick={() => exportAttendanceData('pdf')}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <FileText className="w-4 h-4" />
-              Экспорт PDF
-            </button>
+            
+            {/* Выпадающее меню экспорта */}
+            <div className="relative export-dropdown">
+              <button
+                onClick={() => setShowExportDropdown(!showExportDropdown)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Экспорт
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {showExportDropdown && (
+                <div className="absolute right-0 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        exportAttendanceData('csv')
+                        setShowExportDropdown(false)
+                      }}
+                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      CSV
+                    </button>
+                    <button
+                      onClick={() => {
+                        exportAttendanceData('pdf')
+                        setShowExportDropdown(false)
+                      }}
+                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      PDF
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
