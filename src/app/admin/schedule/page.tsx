@@ -230,7 +230,7 @@ export default function OptimizedScheduleDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [getCachedData, timeFilter])
+  }, [getCachedData])
 
   // Принудительная перезагрузка при смене фильтра
   useEffect(() => {
@@ -241,7 +241,7 @@ export default function OptimizedScheduleDashboard() {
       setCalendarEvents([]) // Очищаем события
       fetchScheduleData().catch(console.error)
     }
-  }, [timeFilter, mounted, fetchScheduleData])
+  }, [timeFilter, mounted])
 
   // Удалена функция loadNextMonth - загружаем только по кнопке
 
