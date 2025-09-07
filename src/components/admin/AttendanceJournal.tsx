@@ -84,13 +84,25 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
 
+  // Загружаем данные при первой загрузке компонента
   useEffect(() => {
     fetchAttendanceData()
-  }, [viewMode, currentDate, groupId])
+  }, [groupId])
+
+  // Загружаем данные только при переключении на календарь или изменении даты в календаре
+  useEffect(() => {
+    if (viewMode === 'calendar') {
+      fetchAttendanceData()
+    }
+  }, [viewMode, currentDate])
 
   const fetchAttendanceData = async () => {
     try {
-      console.log(`🔄 Загрузка данных для режима: ${viewMode}`)
+      console.log(`🔄 Загрузка данных для режима: ${viewMode}`, {
+        groupId,
+        currentDate: currentDate.toISOString(),
+        hasExistingData: !!data
+      })
       setLoading(true)
       
       let url = `/api/admin/groups/${groupId}/attendance`
@@ -100,13 +112,19 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         const year = currentDate.getFullYear()
         const month = currentDate.getMonth() + 1
         url += `?view=calendar&year=${year}&month=${month}`
+        console.log(`📅 Календарный запрос: ${url}`)
+      } else {
+        console.log(`📊 Табличный/карточный запрос: ${url}`)
       }
       
       const response = await fetch(url)
       if (response.ok) {
         const attendanceData = await response.json()
         setData(attendanceData)
-        console.log(`✅ Данные для режима ${viewMode} загружены`)
+        console.log(`✅ Данные для режима ${viewMode} загружены`, {
+          eventsCount: attendanceData.events?.length || 0,
+          studentsCount: attendanceData.students?.length || 0
+        })
       } else {
         console.error('Ошибка загрузки данных посещаемости')
       }
@@ -1093,3 +1111,4 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     </div>
   )
 }
+
