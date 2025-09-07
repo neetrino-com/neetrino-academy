@@ -84,22 +84,25 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [viewMode, setViewMode] = useState<'table' | 'cards' | 'calendar'>('table')
   const [currentDate, setCurrentDate] = useState(new Date())
 
-  // Загружаем данные при изменении группы, режима или даты
+  // Загружаем данные при изменении группы или даты
   useEffect(() => {
     fetchAttendanceData()
-  }, [groupId, viewMode, currentDate])
+  }, [groupId, currentDate])
+
+  // При переключении режима НЕ загружаем данные - используем уже загруженные
 
   const fetchAttendanceData = async () => {
     try {
-      console.log(`🔄 Загрузка данных для режима: ${viewMode}`, {
-        groupId,
-        currentDate: currentDate.toISOString(),
-        hasExistingData: !!data
-      })
-      setLoading(true)
-      
       const year = currentDate.getFullYear()
       const month = currentDate.getMonth() + 1
+      
+      console.log(`🔄 Загрузка данных за ${year}-${month.toString().padStart(2, '0')}`, {
+        groupId,
+        currentDate: currentDate.toISOString(),
+        hasExistingData: !!data,
+        reason: 'Изменение группы или даты'
+      })
+      setLoading(true)
       let url = `/api/admin/groups/${groupId}/attendance?view=calendar&year=${year}&month=${month}`
       
       console.log(`📅 Запрос данных за ${year}-${month.toString().padStart(2, '0')} для режима: ${viewMode}`)
