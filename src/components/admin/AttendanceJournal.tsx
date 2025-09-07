@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import MonthlyAttendanceView from './MonthlyAttendanceView'
 import { 
   Users, 
   Calendar, 
@@ -27,7 +28,9 @@ import {
   ChevronUp,
   MoreHorizontal,
   Check,
-  X
+  X,
+  Table,
+  Grid
 } from 'lucide-react'
 
 interface Group {
@@ -86,6 +89,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
   const [showBulkActions, setShowBulkActions] = useState(false)
   const [dateRange, setDateRange] = useState('week') // week, month, all
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  const [displayMode, setDisplayMode] = useState<'events' | 'monthly'>('events')
 
   useEffect(() => {
     fetchAttendanceData()
@@ -381,6 +385,11 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
     )
   }
 
+  // Если выбран режим месячного отображения, показываем MonthlyAttendanceView
+  if (displayMode === 'monthly') {
+    return <MonthlyAttendanceView groupId={groupId} />
+  }
+
   return (
     <div className="bg-white min-h-[calc(100vh-100px)]">
       {/* Хедер */}
@@ -495,28 +504,55 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setViewMode('table')}
+                onClick={() => setDisplayMode('events')}
                 className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                  viewMode === 'table' 
+                  displayMode === 'events' 
                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}
               >
-                <BarChart3 className="w-4 h-4" />
-                Таблица
+                <Calendar className="w-4 h-4" />
+                По событиям
               </button>
               <button
-                onClick={() => setViewMode('cards')}
+                onClick={() => setDisplayMode('monthly')}
                 className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                  viewMode === 'cards' 
+                  displayMode === 'monthly' 
                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
                     : 'bg-gray-100 text-gray-700 border border-gray-200'
                 }`}
               >
-                <Users className="w-4 h-4" />
-                Карточки
+                <Table className="w-4 h-4" />
+                По дням месяца
               </button>
             </div>
+
+            {displayMode === 'events' && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                    viewMode === 'table' 
+                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Таблица
+                </button>
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                    viewMode === 'cards' 
+                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  Карточки
+                </button>
+              </div>
+            )}
 
             <button
               onClick={fetchAttendanceData}
