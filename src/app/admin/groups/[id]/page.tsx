@@ -420,26 +420,31 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                 <ClipboardList className="w-4 h-4" />
                 Посещаемость
               </button>
-              <button
-                onClick={() => router.push(`/admin/groups/${resolvedParams.id}/edit`)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-all duration-200"
-              >
-                <Edit className="w-4 h-4" />
-                Редактировать
-              </button>
-              <button
-                onClick={() => router.push(`/admin/groups/${resolvedParams.id}/analytics`)}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 flex items-center gap-2 transition-all duration-200"
-              >
-                <TrendingUp className="w-4 h-4" />
-                Аналитика
-              </button>
-              <button
-                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 flex items-center gap-2 transition-all duration-200"
-              >
-                <Settings className="w-4 h-4" />
-                Настройки
-              </button>
+              
+              <div className="flex items-center gap-2 ml-2">
+                <button
+                  onClick={() => router.push(`/admin/groups/${resolvedParams.id}/edit`)}
+                  className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
+                  title="Редактировать"
+                >
+                  <Edit className="w-5 h-5" />
+                </button>
+                
+                <button
+                  onClick={() => router.push(`/admin/groups/${resolvedParams.id}/analytics`)}
+                  className="w-12 h-12 flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-purple-200 hover:border-purple-600 backdrop-blur-sm"
+                  title="Аналитика"
+                >
+                  <TrendingUp className="w-5 h-5" />
+                </button>
+                
+                <button
+                  className="w-12 h-12 flex items-center justify-center text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-emerald-200 hover:border-emerald-600 backdrop-blur-sm"
+                  title="Настройки"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
