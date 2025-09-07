@@ -22,7 +22,9 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  ClipboardList
+  ClipboardList,
+  Pause,
+  Play
 } from 'lucide-react'
 
 
@@ -420,7 +422,7 @@ export default function GroupsManagement() {
                       }`}
                       title={group.isActive ? 'Деактивировать' : 'Активировать'}
                     >
-                      {group.isActive ? <AlertCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+                      {group.isActive ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                     </button>
                     
                     <button
