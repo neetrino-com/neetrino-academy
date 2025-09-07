@@ -117,7 +117,7 @@ export default function OptimizedScheduleDashboard() {
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set())
   const [mounted, setMounted] = useState(false)
   const [showGenerator, setShowGenerator] = useState(false)
-  const [timeFilter, setTimeFilter] = useState<'current' | 'past' | 'all'>('current')
+  const [timeFilter, setTimeFilter] = useState<'current' | 'past'>('current')
   const [stats, setStats] = useState<ScheduleStats>({
     totalEvents: 0,
     totalSchedules: 0,
@@ -145,8 +145,16 @@ export default function OptimizedScheduleDashboard() {
 
   useEffect(() => {
     setMounted(true)
-    fetchScheduleData().catch(console.error)
-  }, [timeFilter])
+  }, [])
+
+  // Принудительная перезагрузка при смене фильтра
+  useEffect(() => {
+    if (mounted) {
+      console.log(`🔄 [Schedule] Фильтр изменен на: ${timeFilter}`)
+      setCache(new Map()) // Очищаем кэш
+      fetchScheduleData().catch(console.error)
+    }
+  }, [timeFilter, mounted, fetchScheduleData])
 
   // Функция для получения данных из кэша или API
   const getCachedData = useCallback(async (key: string, fetcher: () => Promise<any>) => {

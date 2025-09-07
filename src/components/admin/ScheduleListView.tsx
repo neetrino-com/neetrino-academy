@@ -52,8 +52,8 @@ interface ScheduleListViewProps {
   onLoadMore?: () => void
   loadingMore?: boolean
   // Фильтр по времени
-  timeFilter?: 'current' | 'past' | 'all'
-  onTimeFilterChange?: (filter: 'current' | 'past' | 'all') => void
+  timeFilter?: 'current' | 'past'
+  onTimeFilterChange?: (filter: 'current' | 'past') => void
 }
 
 export default function ScheduleListView({ 
@@ -239,12 +239,11 @@ export default function ScheduleListView({
           
           <select
             value={timeFilter}
-            onChange={(e) => onTimeFilterChange?.(e.target.value as 'current' | 'past' | 'all')}
+            onChange={(e) => onTimeFilterChange?.(e.target.value as 'current' | 'past')}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="current">Текущие</option>
             <option value="past">Прошедшие</option>
-            <option value="all">Все</option>
           </select>
         </div>
 

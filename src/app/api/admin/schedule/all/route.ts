@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
       // Определяем диапазон по фильтру времени
       switch (timeFilter) {
         case 'current':
-          // Текущие события: с начала текущего месяца до конца текущего месяца
-          start = new Date(now.getFullYear(), now.getMonth(), 1)
+          // Текущие события: с сегодняшнего дня до конца текущего месяца
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
           end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
           break
         case 'past':
@@ -51,10 +51,9 @@ export async function GET(request: NextRequest) {
           start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
           end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59)
           break
-        case 'all':
         default:
-          // Все события: текущий месяц
-          start = new Date(now.getFullYear(), now.getMonth(), 1)
+          // По умолчанию: текущие события
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
           end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
           break
       }
