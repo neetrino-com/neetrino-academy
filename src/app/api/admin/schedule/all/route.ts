@@ -28,15 +28,42 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const force = searchParams.get('force') === 'true' // Принудительная загрузка без кэша
+    const timeFilter = searchParams.get('timeFilter') || 'current' // Фильтр по времени: current, past, all
 
-    // Параметры по умолчанию - загружаем только текущий месяц
-    const start = startDate ? new Date(startDate) : new Date()
-    const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    // Определяем диапазон дат в зависимости от фильтра
+    let start: Date, end: Date
+    const now = new Date()
+    
+    if (startDate && endDate) {
+      // Если даты переданы явно, используем их
+      start = new Date(startDate)
+      end = new Date(endDate)
+    } else {
+      // Определяем диапазон по фильтру времени
+      switch (timeFilter) {
+        case 'current':
+          // Текущие события: с начала текущего месяца до конца текущего месяца
+          start = new Date(now.getFullYear(), now.getMonth(), 1)
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+          break
+        case 'past':
+          // Прошедшие события: с начала предыдущего месяца до вчера
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59)
+          break
+        case 'all':
+        default:
+          // Все события: текущий месяц
+          start = new Date(now.getFullYear(), now.getMonth(), 1)
+          end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+          break
+      }
+    }
 
-    console.log(`🚀 [Schedule All] Период: ${start.toISOString().split('T')[0]} - ${end.toISOString().split('T')[0]}`)
+    console.log(`🚀 [Schedule All] Фильтр: ${timeFilter}, Период: ${start.toISOString().split('T')[0]} - ${end.toISOString().split('T')[0]}`)
 
     // Проверяем кэш (только если не принудительная загрузка)
-    const cacheKey = `schedule-all:${start.toISOString().split('T')[0]}:${end.toISOString().split('T')[0]}:${groupId || 'all'}:${teacherId || 'all'}:${page}:${limit}`
+    const cacheKey = `schedule-all:${timeFilter}:${start.toISOString().split('T')[0]}:${end.toISOString().split('T')[0]}:${groupId || 'all'}:${teacherId || 'all'}:${page}:${limit}`
     
     if (!force) {
       const cached = memoryCache.get(cacheKey)
@@ -213,7 +240,8 @@ export async function GET(request: NextRequest) {
       period: {
         start: start.toISOString(),
         end: end.toISOString()
-      }
+      },
+      timeFilter: timeFilter
     }
 
     // Сохраняем в кэш на 5 минут

@@ -51,6 +51,9 @@ interface ScheduleListViewProps {
   }
   onLoadMore?: () => void
   loadingMore?: boolean
+  // Фильтр по времени
+  timeFilter?: 'current' | 'past' | 'all'
+  onTimeFilterChange?: (filter: 'current' | 'past' | 'all') => void
 }
 
 export default function ScheduleListView({ 
@@ -61,7 +64,9 @@ export default function ScheduleListView({
   onEventClick,
   pagination,
   onLoadMore,
-  loadingMore = false
+  loadingMore = false,
+  timeFilter = 'current',
+  onTimeFilterChange
 }: ScheduleListViewProps) {
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
@@ -230,6 +235,16 @@ export default function ScheduleListView({
             <option value="all">Все статусы</option>
             <option value="active">Активные</option>
             <option value="inactive">Неактивные</option>
+          </select>
+          
+          <select
+            value={timeFilter}
+            onChange={(e) => onTimeFilterChange?.(e.target.value as 'current' | 'past' | 'all')}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="current">Текущие</option>
+            <option value="past">Прошедшие</option>
+            <option value="all">Все</option>
           </select>
         </div>
 
@@ -532,7 +547,7 @@ export default function ScheduleListView({
             ) : (
               <>
                 <Calendar className="w-4 h-4" />
-                Загрузить еще месяц
+                {timeFilter === 'past' ? 'Загрузить предыдущий месяц' : 'Загрузить еще месяц'}
               </>
             )}
           </button>
