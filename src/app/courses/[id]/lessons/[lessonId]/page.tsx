@@ -3,14 +3,24 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { File, Image } from 'lucide-react'
 import VideoPlayer from '@/components/ui/VideoPlayer'
 import Quiz from '@/components/ui/Quiz'
 import ChecklistLesson from '@/components/lessons/ChecklistLesson'
 import { AccessControl } from '@/components/courses/AccessControl'
 
+interface UploadedFile {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  publicId?: string;
+}
+
 interface ContentBlock {
   id?: string;
-  type: 'text' | 'image' | 'video' | 'code' | 'link' | 'file' | 'checklist';
+  type: 'text' | 'video' | 'code' | 'link' | 'file' | 'checklist';
   content?: string;
   metadata?: {
     url?: string;
@@ -19,6 +29,7 @@ interface ContentBlock {
     language?: string;
     description?: string;
     fileSize?: number;
+    files?: UploadedFile[];
   };
 }
 
@@ -165,16 +176,44 @@ export default function LessonStudyPage() {
                 {block.content}
               </div>
             )}
-            {block.type === 'image' && block.metadata?.url && (
+            {block.type === 'file' && block.metadata?.files && block.metadata.files.length > 0 && (
               <div className="my-6">
-                <img 
-                  src={block.metadata.url} 
-                  alt={block.metadata.alt || 'Изображение'} 
-                  className="max-w-full h-auto rounded-lg shadow-lg"
-                />
-                {block.metadata.alt && (
-                  <p className="text-sm text-gray-500 mt-3 italic text-center">{block.metadata.alt}</p>
-                )}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <File className="w-5 h-5 text-blue-600" />
+                    Файлы для скачивания ({block.metadata.files.length})
+                  </h4>
+                  <div className="grid gap-3">
+                    {block.metadata.files.map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          {file.type.startsWith('image/') ? (
+                            <Image className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <File className="w-5 h-5 text-blue-600" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                            <div className="text-sm text-gray-500">
+                              {Math.round(file.size / 1024)} KB
+                            </div>
+                          </div>
+                        </div>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                          Скачать
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                  {block.content && (
+                    <p className="text-gray-600 mt-3 text-sm">{block.content}</p>
+                  )}
+                </div>
               </div>
             )}
             {block.type === 'video' && block.metadata?.url && (

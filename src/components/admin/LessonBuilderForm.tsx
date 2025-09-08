@@ -14,7 +14,6 @@ import {
   BarChart3,
   GripVertical,
   FileText,
-  Image,
   Video,
   Link,
   Code,
@@ -23,12 +22,23 @@ import {
   Play,
   Clock,
   BookOpen,
-  Lightbulb
+  Lightbulb,
+  File
 } from 'lucide-react';
+import MultiFileUpload from '@/components/ui/MultiFileUpload';
+
+interface UploadedFile {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  publicId?: string;
+}
 
 interface LessonBlock {
   id: string;
-  type: 'text' | 'image' | 'video' | 'link' | 'code' | 'checklist' | 'file';
+  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file';
   content: string;
   metadata?: {
     url?: string;
@@ -36,6 +46,7 @@ interface LessonBlock {
     filename?: string;
     language?: string;
     description?: string;
+    files?: UploadedFile[];
   };
 }
 
@@ -92,10 +103,10 @@ export default function LessonBuilderForm({
       color: 'text-blue-600 bg-blue-50 border-blue-200'
     },
     { 
-      type: 'image', 
-      icon: Image, 
-      title: 'Изображение', 
-      description: 'Вставить изображение с подписью',
+      type: 'file', 
+      icon: File, 
+      title: 'Файлы', 
+      description: 'Загрузить файлы и изображения',
       color: 'text-green-600 bg-green-50 border-green-200'
     },
     { 
@@ -206,45 +217,25 @@ export default function LessonBuilderForm({
           />
         );
 
-      case 'image':
+      case 'file':
         return (
           <div className="space-y-3">
-            <input
-              type="url"
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
+            <MultiFileUpload
+              onFilesUpload={(files) => updateBlock(block.id, { 
+                metadata: { ...block.metadata, files: files }
               })}
-              placeholder="URL изображения"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.metadata?.alt || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, alt: e.target.value }
-              })}
-              placeholder="Описание изображения (alt текст)"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              onError={(error) => console.error('Ошибка загрузки файлов:', error)}
+              acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi"
+              maxSize={10}
+              maxFiles={20}
+              initialFiles={block.metadata?.files || []}
             />
             <textarea
               value={block.content}
               onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Подпись к изображению (необязательно)"
+              placeholder="Описание файлов (необязательно)"
               className="w-full h-20 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
             />
-            {block.metadata?.url && (
-              <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
-                <img
-                  src={block.metadata.url}
-                  alt={block.metadata.alt || 'Изображение'}
-                  className="w-full max-h-64 object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
           </div>
         );
 
@@ -821,7 +812,33 @@ export default function LessonBuilderForm({
                             </div>
                           )}
                           
-                          {block.metadata?.url && (
+                          {block.type === 'file' && block.metadata?.files && block.metadata.files.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-sm font-medium text-gray-700 mb-2">
+                                Файлы ({block.metadata.files.length}):
+                              </div>
+                              <div className="space-y-1">
+                                {block.metadata.files.map((file) => (
+                                  <div key={file.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                                    <File size={14} className="text-gray-500" />
+                                    <a 
+                                      href={file.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-sm flex-1"
+                                    >
+                                      {file.name}
+                                    </a>
+                                    <span className="text-xs text-gray-500">
+                                      {Math.round(file.size / 1024)} KB
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {block.type !== 'file' && block.metadata?.url && (
                             <div className="mt-2">
                               <a 
                                 href={block.metadata.url} 

@@ -6,18 +6,26 @@
 Система поддерживает следующие типы блоков контента в уроках и лекциях:
 
 1. **text** - Текстовый блок с форматированием
-2. **image** - Изображение с подписью
+2. **file** - Универсальный блок для загрузки файлов и изображений (поддерживает множественную загрузку)
 3. **video** - Видео с встроенным плеером
 4. **code** - Блок кода с подсветкой синтаксиса
 5. **link** - Внешняя ссылка
-6. **file** - Файл для скачивания
-7. **checklist** - Чек-лист задач
+6. **checklist** - Чек-лист задач
 
 ### Структура блока контента
 ```typescript
+interface UploadedFile {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  publicId?: string;
+}
+
 interface ContentBlock {
   id?: string;
-  type: 'text' | 'image' | 'video' | 'code' | 'link' | 'file' | 'checklist';
+  type: 'text' | 'video' | 'code' | 'link' | 'file' | 'checklist';
   content?: string;
   metadata?: {
     url?: string;
@@ -26,6 +34,7 @@ interface ContentBlock {
     language?: string;
     description?: string;
     fileSize?: number;
+    files?: UploadedFile[];
   };
 }
 ```

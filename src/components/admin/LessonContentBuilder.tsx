@@ -8,7 +8,6 @@ import {
   ArrowDown,
   GripVertical,
   FileText,
-  Image,
   Video,
   Link,
   Code,
@@ -17,10 +16,20 @@ import {
   X,
   File
 } from 'lucide-react';
+import MultiFileUpload from '@/components/ui/MultiFileUpload';
+
+interface UploadedFile {
+  id: string;
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+  publicId?: string;
+}
 
 interface LessonBlock {
   id: string;
-  type: 'text' | 'image' | 'video' | 'link' | 'code' | 'checklist' | 'file';
+  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file';
   content: string;
   metadata?: {
     url?: string;
@@ -29,6 +38,7 @@ interface LessonBlock {
     description?: string;
     filename?: string;
     fileSize?: number;
+    files?: UploadedFile[];
   };
 }
 
@@ -56,10 +66,10 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       color: 'text-blue-600 bg-blue-50 border-blue-200'
     },
     { 
-      type: 'image', 
-      icon: Image, 
-      title: 'Изображение', 
-      description: 'Вставить изображение',
+      type: 'file', 
+      icon: File, 
+      title: 'Файлы', 
+      description: 'Загрузить файлы и изображения',
       color: 'text-green-600 bg-green-50 border-green-200'
     },
     { 
@@ -82,13 +92,6 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       title: 'Ссылка', 
       description: 'Добавить ссылку',
       color: 'text-yellow-600 bg-yellow-50 border-yellow-200'
-    },
-    { 
-      type: 'file', 
-      icon: File, 
-      title: 'Файл', 
-      description: 'Прикрепить файл',
-      color: 'text-indigo-600 bg-indigo-50 border-indigo-200'
     },
     { 
       type: 'checklist', 
@@ -169,31 +172,23 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
           />
         );
 
-      case 'image':
+      case 'file':
         return (
           <div className="space-y-3">
-            <input
-              type="url"
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
+            <MultiFileUpload
+              onFilesUpload={(files) => updateBlock(block.id, { 
+                metadata: { ...block.metadata, files: files }
               })}
-              placeholder="URL изображения"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.metadata?.alt || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, alt: e.target.value }
-              })}
-              placeholder="Описание изображения"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              onError={(error) => console.error('Ошибка загрузки файлов:', error)}
+              acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi"
+              maxSize={10}
+              maxFiles={20}
+              initialFiles={block.metadata?.files || []}
             />
             <textarea
               value={block.content}
               onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Подпись к изображению"
+              placeholder="Описание файлов (необязательно)"
               className="w-full h-16 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
             />
           </div>
