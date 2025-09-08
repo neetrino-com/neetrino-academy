@@ -18,6 +18,7 @@ import {
   Image
 } from 'lucide-react';
 import MultiFileUpload from '@/components/ui/MultiFileUpload';
+import RichTextEditor from '@/components/ui/RichTextEditor';
 
 interface UploadedFile {
   id: string;
@@ -172,11 +173,11 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
     switch (block.type) {
       case 'text':
         return (
-          <textarea
+          <RichTextEditor
             value={block.content}
-            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-            placeholder="Введите текст урока..."
-            className="w-full h-24 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            onChange={(value) => updateBlock(block.id, { content: value })}
+            placeholder="Введите текст урока с форматированием..."
+            className="w-full"
           />
         );
 

@@ -172,9 +172,10 @@ export default function LessonStudyPage() {
         {blocks.map((block: ContentBlock, index: number) => (
           <div key={block.id || index} className="border-l-4 border-cyan-200 pl-6">
             {block.type === 'text' && (
-              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
-                {block.content}
-              </div>
+              <div 
+                className="text-gray-700 leading-relaxed text-lg prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: block.content }}
+              />
             )}
             {block.type === 'gallery' && block.metadata?.files && block.metadata.files.length > 0 && (
               <div className="my-6">
