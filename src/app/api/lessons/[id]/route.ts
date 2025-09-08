@@ -44,6 +44,14 @@ export async function GET(
             createdAt: 'asc'
           }
         },
+        checklist: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            direction: true
+          }
+        },
         quiz: {
           select: {
             id: true,

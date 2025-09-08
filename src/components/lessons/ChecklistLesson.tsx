@@ -104,16 +104,25 @@ export default function ChecklistLesson({ checklistId, lessonId }: ChecklistLess
 
   const fetchChecklist = async () => {
     try {
+      console.log('Загружаем чеклист с ID:', checklistId);
       const response = await fetch(`/api/student/checklists/${checklistId}`);
+      console.log('Ответ API чеклиста:', response.status, response.ok);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Данные чеклиста:', data);
         setChecklist(data);
         // По умолчанию разворачиваем все группы
-        setExpandedGroups(new Set(data.groups.map((g: { id: string }) => g.id)));
+        if (data.groups && data.groups.length > 0) {
+          setExpandedGroups(new Set(data.groups.map((g: { id: string }) => g.id)));
+        }
       } else {
-        toast.error('Ошибка загрузки чеклиста');
+        const errorData = await response.json();
+        console.error('Ошибка загрузки чеклиста:', errorData);
+        toast.error('Ошибка загрузки чеклиста: ' + (errorData.error || 'Неизвестная ошибка'));
       }
     } catch (error) {
+      console.error('Ошибка загрузки чеклиста:', error);
       toast.error('Ошибка загрузки чеклиста');
     } finally {
       setLoading(false);

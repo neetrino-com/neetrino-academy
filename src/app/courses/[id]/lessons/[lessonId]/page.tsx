@@ -369,6 +369,8 @@ export default function LessonStudyPage() {
       }
 
       setLesson(data.lesson)
+      console.log('Загружен урок:', data.lesson);
+      console.log('Чеклист урока:', data.lesson.checklist);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки урока')
     } finally {
