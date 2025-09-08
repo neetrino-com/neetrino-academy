@@ -528,7 +528,7 @@ export default function LessonStudyPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Хлебные крошки */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-500">
@@ -566,9 +566,9 @@ export default function LessonStudyPage() {
           </ol>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Основной контент */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             {/* Заголовок урока */}
             <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
               <div className="flex items-start justify-between">
