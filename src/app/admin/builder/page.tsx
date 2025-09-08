@@ -241,8 +241,17 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                 dueDate?: string;
               }>;
             }) => {
-              const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
-              const quiz = quizResponse.ok ? await quizResponse.json() : null
+              let quiz = null
+              try {
+                const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
+                if (quizResponse.ok) {
+                  quiz = await quizResponse.json()
+                }
+                // Если 404 - это нормально, теста просто нет
+              } catch (error) {
+                // Игнорируем ошибки загрузки тестов
+                console.log(`Тест для урока ${lesson.id} не найден (это нормально)`)
+              }
               
               // Проверяем, есть ли задания для этого урока
               const hasAssignment = (lesson.assignments && lesson.assignments.length > 0)
