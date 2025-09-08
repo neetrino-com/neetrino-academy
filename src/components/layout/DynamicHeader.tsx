@@ -1,11 +1,22 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { PublicHeader } from './PublicHeader'
 import { AppHeader } from './AppHeader'
 
 export function DynamicHeader() {
   const pathname = usePathname()
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Показываем заглушку на сервере для предотвращения несоответствия гидратации
+  if (!isClient) {
+    return <PublicHeader />
+  }
 
   // Приложение (дашборд + админ-панель) - все маршруты начинающиеся с /app
   if (pathname.startsWith('/app')) {

@@ -2,6 +2,7 @@
 
 import { useSessionValidator } from '@/hooks/useSessionValidator'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface SessionGuardProps {
   children: React.ReactNode
@@ -9,9 +10,15 @@ interface SessionGuardProps {
 
 export default function SessionGuard({ children }: SessionGuardProps) {
   const pathname = usePathname()
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   // Определяем тип страницы для оптимизации
   const getPageType = (): 'admin' | 'student' | 'public' => {
+    if (!isClient) return 'public' // На сервере всегда считаем публичной страницей
     if (pathname.startsWith('/admin')) return 'admin'
     if (pathname.startsWith('/dashboard') || 
         pathname.startsWith('/assignments') ||
@@ -22,7 +29,7 @@ export default function SessionGuard({ children }: SessionGuardProps) {
   }
 
   const pageType = getPageType()
-  const shouldValidate = pageType !== 'public'
+  const shouldValidate = pageType !== 'public' && isClient
 
   const { isValidating } = useSessionValidator({
     disabled: !shouldValidate,
