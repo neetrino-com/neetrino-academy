@@ -84,42 +84,57 @@ export async function POST(
       }
     })
 
-    // Автоматически создаем платежи в зависимости от типа оплаты курса
-    if (course.paymentType === 'ONE_TIME') {
-      // Для разовой оплаты - создаем один платеж на полную стоимость
-      await prisma.payment.create({
-        data: {
-          userId,
-          courseId,
-          amount: course.totalPrice || 0,
-          currency: course.currency || 'AMD',
-          status: 'PENDING',
-          paymentType: 'ONE_TIME',
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней на оплату
-          notes: 'Разовая оплата за весь курс'
-        }
-      })
-    } else if (course.paymentType === 'MONTHLY') {
-      // Для ежемесячной оплаты - создаем первый платеж
-      const firstPayment = await prisma.payment.create({
-        data: {
-          userId,
-          courseId,
-          amount: course.monthlyPrice || 0,
-          currency: course.currency || 'AMD',
-          status: 'PENDING',
-          paymentType: 'MONTHLY',
-          monthNumber: 1,
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней на оплату
-          notes: `Ежемесячный платеж 1/${course.duration || 1}`
-        }
-      })
+    // Проверяем, нужна ли оплата
+    const coursePrice = parseFloat(course.price?.toString() || '0')
+    const needsPayment = coursePrice > 0
 
-      // Обновляем запись на курс с датой следующего платежа
+    if (needsPayment) {
+      // Автоматически создаем платежи в зависимости от типа оплаты курса
+      if (course.paymentType === 'ONE_TIME') {
+        // Для разовой оплаты - создаем один платеж на полную стоимость
+        await prisma.payment.create({
+          data: {
+            userId,
+            courseId,
+            amount: coursePrice,
+            currency: course.currency || 'RUB',
+            status: 'PENDING',
+            paymentType: 'ONE_TIME',
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней на оплату
+            notes: 'Разовая оплата за весь курс'
+          }
+        })
+      } else if (course.paymentType === 'MONTHLY') {
+        // Для ежемесячной оплаты - создаем первый платеж
+        const monthlyAmount = course.monthlyPrice || coursePrice
+        const firstPayment = await prisma.payment.create({
+          data: {
+            userId,
+            courseId,
+            amount: monthlyAmount,
+            currency: course.currency || 'RUB',
+            status: 'PENDING',
+            paymentType: 'MONTHLY',
+            monthNumber: 1,
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней на оплату
+            notes: `Ежемесячный платеж 1/${course.duration || 1}`
+          }
+        })
+
+        // Обновляем запись на курс с датой следующего платежа
+        await prisma.enrollment.update({
+          where: { id: enrollment.id },
+          data: {
+            nextPaymentDue: firstPayment.dueDate
+          }
+        })
+      }
+    } else {
+      // Для бесплатных курсов - сразу активируем доступ
       await prisma.enrollment.update({
         where: { id: enrollment.id },
         data: {
-          nextPaymentDue: firstPayment.dueDate
+          paymentStatus: 'COMPLETED'
         }
       })
     }
@@ -127,7 +142,7 @@ export async function POST(
     return NextResponse.json({
       message: "Вы успешно записались на курс",
       enrollment,
-      paymentRequired: true,
+      paymentRequired: needsPayment,
       paymentType: course.paymentType
     }, { status: 201 })
   } catch (error) {

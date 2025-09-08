@@ -115,12 +115,14 @@ export default function CourseDetailPage() {
       
       if (data.paymentRequired) {
         setShowPaymentModal(true)
-        // Перенаправляем на страницу платежей
+        // Перенаправляем на страницу платежей с параметром курса
         setTimeout(() => {
-          router.push('/payments')
+          router.push(`/payments?courseId=${courseId}`)
         }, 2000)
       } else {
         alert('Вы успешно записались на курс!')
+        // Обновляем статус записи
+        setIsEnrolled(true)
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Ошибка записи на курс')
