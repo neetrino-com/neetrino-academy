@@ -4,6 +4,17 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+interface ContentBlock {
+  id?: string;
+  type: string;
+  content?: string;
+  metadata?: {
+    url?: string;
+    alt?: string;
+    filename?: string;
+  };
+}
+
 interface Lesson {
   id: string
   title: string
@@ -44,6 +55,46 @@ export default function ModuleStudyPage() {
   useEffect(() => {
     fetchModule()
   }, [moduleId])
+
+  // Функция для парсинга JSON контента уроков
+  const parseLessonContent = (content: string | null): ContentBlock[] => {
+    try {
+      if (!content) return [];
+      
+      // Проверяем, является ли контент JSON
+      if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
+        return JSON.parse(content);
+      }
+      
+      // Если это не JSON, возвращаем как текстовый блок
+      return [{
+        id: 'text-1',
+        type: 'text',
+        content: content
+      }];
+    } catch (error) {
+      console.error('Error parsing lesson content:', error);
+      // Если JSON невалидный, возвращаем как текстовый блок
+      return [{
+        id: 'text-1',
+        type: 'text',
+        content: content || ''
+      }];
+    }
+  }
+
+  // Функция для извлечения текстового контента из блоков
+  const getTextContent = (content: string | null): string => {
+    if (!content) return '';
+    
+    const blocks = parseLessonContent(content);
+    if (blocks.length === 0) return '';
+    
+    const textBlocks = blocks.filter(block => block.type === 'text' && block.content);
+    if (textBlocks.length === 0) return '';
+    
+    return textBlocks.map(block => block.content || '').join(' ').trim();
+  }
 
   const fetchModule = async () => {
     try {
@@ -235,7 +286,7 @@ export default function ModuleStudyPage() {
                         </h3>
                         {lesson.content && (
                           <p className="text-gray-600 mt-1 line-clamp-2">
-                            {lesson.content}
+                            {getTextContent(lesson.content)}
                           </p>
                         )}
                       </div>
