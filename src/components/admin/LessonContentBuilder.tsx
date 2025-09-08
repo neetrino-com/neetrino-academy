@@ -441,15 +441,6 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                     
                     <button
                       type="button"
-                      onClick={() => duplicateBlock(block.id)}
-                      className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                      title="Дублировать блок"
-                    >
-                      <Copy size={14} />
-                    </button>
-                    
-                    <button
-                      type="button"
                       onClick={() => moveBlock(block.id, 'up')}
                       disabled={index === 0}
                       className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -466,6 +457,15 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                       title="Переместить вниз"
                     >
                       <ArrowDown size={14} />
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => duplicateBlock(block.id)}
+                      className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                      title="Дублировать блок"
+                    >
+                      <Copy size={14} />
                     </button>
                     
                     <button
