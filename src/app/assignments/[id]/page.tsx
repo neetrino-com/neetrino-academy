@@ -90,10 +90,16 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
   const fetchAssignment = async () => {
     try {
       console.log('🔍 [Assignment Page] Starting fetch for assignment:', resolvedParams.id)
+      console.log('🔍 [Assignment Page] Assignment ID type:', typeof resolvedParams.id)
+      console.log('🔍 [Assignment Page] Assignment ID length:', resolvedParams.id?.length)
       setLoading(true)
       
-      const response = await fetch(`/api/student/assignments/${resolvedParams.id}/submission`)
+      const apiUrl = `/api/student/assignments/${resolvedParams.id}/submission`
+      console.log('🔍 [Assignment Page] API URL:', apiUrl)
+      
+      const response = await fetch(apiUrl)
       console.log('📡 [Assignment Page] Response status:', response.status)
+      console.log('📡 [Assignment Page] Response statusText:', response.statusText)
       console.log('📡 [Assignment Page] Response headers:', Object.fromEntries(response.headers.entries()))
       
       if (response.ok) {
@@ -136,7 +142,13 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
         }
         
         console.error('❌ [Assignment Page] Final error data:', errorData)
-        alert(`Ошибка загрузки задания: ${errorData.error || `HTTP ${response.status}`}`)
+        console.error('❌ [Assignment Page] Error data keys:', Object.keys(errorData))
+        console.error('❌ [Assignment Page] Error data values:', Object.values(errorData))
+        
+        const errorMessage = errorData.error || `HTTP ${response.status}`
+        console.error('❌ [Assignment Page] Final error message:', errorMessage)
+        
+        alert(`Ошибка загрузки задания: ${errorMessage}`)
         router.push('/assignments')
       }
     } catch (error) {
