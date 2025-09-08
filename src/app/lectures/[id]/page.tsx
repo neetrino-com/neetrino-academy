@@ -110,7 +110,7 @@ export default function LecturePage() {
         return (
           <div className="prose max-w-none">
             <div 
-              className="whitespace-pre-wrap text-gray-800 leading-relaxed text-lg"
+              className="whitespace-pre-wrap text-gray-800 leading-relaxed text-xl"
               dangerouslySetInnerHTML={{ __html: block.content || '' }}
             />
           </div>
@@ -120,8 +120,8 @@ export default function LecturePage() {
         return (
           <div className="my-6">
             <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Image className="w-4 h-4 text-green-600" />
+                <h4 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <Image className="w-5 h-5 text-green-600" />
                 Галерея изображений ({block.metadata?.files?.length || 0})
               </h4>
               
@@ -169,7 +169,7 @@ export default function LecturePage() {
         return (
           <div className="my-6">
             <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <h4 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <File className="w-4 h-4 text-indigo-600" />
                 Файлы для скачивания ({block.metadata?.files?.length || 0})
               </h4>
@@ -190,7 +190,7 @@ export default function LecturePage() {
                       href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3007'}${file.url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                      className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-base font-medium"
                     >
                       Скачать
                     </a>
@@ -240,9 +240,9 @@ export default function LecturePage() {
                 href={block.metadata?.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-lg font-medium"
+                className="inline-flex items-center px-8 py-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-xl font-medium"
               >
-                <LinkIcon className="w-4 h-4 mr-2" />
+                <LinkIcon className="w-5 h-5 mr-2" />
                 {block.content || 'Открыть ссылку'}
               </a>
           </div>
@@ -291,7 +291,7 @@ export default function LecturePage() {
             </p>
             <Link
               href="/courses"
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 text-white px-8 py-4 rounded-md hover:bg-blue-700 transition-colors text-lg"
             >
               Вернуться к курсам
             </Link>
@@ -303,7 +303,7 @@ export default function LecturePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+      <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 xl:px-20">
         {/* Хлебные крошки */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-500">
@@ -321,22 +321,22 @@ export default function LecturePage() {
           </ol>
         </nav>
 
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Основной контент */}
           <div>
             {/* Заголовок лекции */}
-            <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-sm p-12 mb-8 border border-gray-200">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center">
                   <div className="bg-gradient-to-br from-cyan-400 to-blue-500 p-4 rounded-2xl mr-6 shadow-lg">
                     <BookOpen className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">
                       {lecture.title}
                     </h1>
                     {lecture.description && (
-                      <p className="text-gray-600 text-lg leading-relaxed">{lecture.description}</p>
+                      <p className="text-gray-600 text-xl leading-relaxed">{lecture.description}</p>
                     )}
                   </div>
                 </div>
@@ -371,24 +371,24 @@ export default function LecturePage() {
             </div>
 
             {/* Контент лекции */}
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-sm p-12 border border-gray-200">
               {lecture.content && lecture.content.length > 0 ? (
                 <div className="space-y-8">
                   {lecture.content.map((block, index) => (
                     <div key={block.id || index} className="group/block">
-                      <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+                      <div className="p-8 bg-gray-50 rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-sm font-semibold">
+                          <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-base font-semibold">
                             {index + 1}
                           </div>
                           <div className="flex items-center gap-2">
-                            {block.type === 'text' && <File className="w-4 h-4 text-gray-500" />}
-                            {block.type === 'gallery' && <Image className="w-4 h-4 text-gray-500" />}
-                            {block.type === 'video' && <Video className="w-4 h-4 text-gray-500" />}
-                            {block.type === 'file' && <Download className="w-4 h-4 text-gray-500" />}
-                            {block.type === 'link' && <LinkIcon className="w-4 h-4 text-gray-500" />}
-                            {block.type === 'code' && <Code className="w-4 h-4 text-gray-500" />}
-                            <span className="text-sm font-medium text-gray-600 capitalize">
+                            {block.type === 'text' && <File className="w-5 h-5 text-gray-500" />}
+                            {block.type === 'gallery' && <Image className="w-5 h-5 text-gray-500" />}
+                            {block.type === 'video' && <Video className="w-5 h-5 text-gray-500" />}
+                            {block.type === 'file' && <Download className="w-5 h-5 text-gray-500" />}
+                            {block.type === 'link' && <LinkIcon className="w-5 h-5 text-gray-500" />}
+                            {block.type === 'code' && <Code className="w-5 h-5 text-gray-500" />}
+                            <span className="text-base font-medium text-gray-600 capitalize">
                               {block.type === 'text' ? 'Текст' : 
                                block.type === 'gallery' ? 'Галерея' :
                                block.type === 'video' ? 'Видео' :
@@ -398,7 +398,7 @@ export default function LecturePage() {
                             </span>
                           </div>
                         </div>
-                        <div className="ml-11">
+                        <div className="ml-14">
                           {renderBlock(block, index)}
                         </div>
                       </div>
