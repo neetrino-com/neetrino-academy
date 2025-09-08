@@ -189,14 +189,16 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
           const itemProgress = prev.itemProgress || [];
           const existingIndex = itemProgress.findIndex(p => p.itemId === itemId);
           if (existingIndex >= 0) {
-            const newProgress = { ...prev };
-            newProgress.itemProgress = [...itemProgress];
-            newProgress.itemProgress[existingIndex] = {
-              ...newProgress.itemProgress[existingIndex],
-              status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'IN_PROGRESS',
+            const newItemProgress = [...itemProgress];
+            newItemProgress[existingIndex] = {
+              ...newItemProgress[existingIndex],
+              status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS',
               updatedAt: new Date().toISOString()
             };
-            return newProgress;
+            return {
+              ...prev,
+              itemProgress: newItemProgress
+            };
           } else {
             return {
               ...prev,
@@ -205,7 +207,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
                 {
                   id: `temp-${Date.now()}`,
                   itemId,
-                  status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'IN_PROGRESS',
+                  status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS',
                   updatedAt: new Date().toISOString()
                 }
               ]
@@ -214,8 +216,6 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
         });
 
         toast.success('Статус обновлен');
-        // Перезагружаем прогресс после обновления
-        await fetchProgress();
       } else {
         toast.error('Ошибка обновления статуса');
       }
