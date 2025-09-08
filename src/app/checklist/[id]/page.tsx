@@ -150,10 +150,15 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
   const fetchProgress = async () => {
     try {
+      console.log('Загружаем прогресс для чеклиста:', resolvedParams.id);
       const response = await fetch(`/api/student/checklists/${resolvedParams.id}/progress`);
+      console.log('Ответ загрузки прогресса:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Данные прогресса:', data);
         setProgress(data);
+      } else {
+        console.log('Ошибка загрузки прогресса:', response.status);
       }
     } catch (error) {
       console.error('Ошибка загрузки прогресса:', error);
@@ -165,13 +170,17 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
     setUpdating(true);
     try {
+      console.log('Обновляем статус:', { itemId, status });
       const response = await fetch(`/api/student/checklists/${resolvedParams.id}/progress`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemId, status })
       });
 
+      console.log('Ответ API:', response.status);
       if (response.ok) {
+        const result = await response.json();
+        console.log('Результат обновления:', result);
         // Обновляем локальное состояние
         setProgress(prev => {
           if (!prev) return prev;
