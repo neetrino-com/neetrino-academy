@@ -457,10 +457,10 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                     <button
                       type="button"
                       onClick={() => toggleBlockCollapse(block.id)}
-                      className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors"
+                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 border border-gray-200 hover:border-gray-300"
                       title={block.collapsed ? "Развернуть блок" : "Свернуть блок"}
                     >
-                      {block.collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                      {block.collapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
                     </button>
                     
                     <button
