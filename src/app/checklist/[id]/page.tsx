@@ -213,6 +213,8 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
         });
 
         toast.success('Статус обновлен');
+        // Перезагружаем прогресс после обновления
+        await fetchProgress();
       } else {
         toast.error('Ошибка обновления статуса');
       }
