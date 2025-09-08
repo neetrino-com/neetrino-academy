@@ -570,95 +570,121 @@ export default function LessonStudyPage() {
 
         <div className="max-w-6xl mx-auto">
           {/* Заголовок урока */}
-          <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex-1">
-                <div className="flex items-center mb-4">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full mr-4">
-                    Урок {lesson.order}
-                  </span>
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    {lesson.title}
-                  </h1>
-                </div>
-
-                <div className="flex items-center space-x-6 text-sm text-gray-500">
-                  <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {formatDuration(lesson.duration)}
-                  </span>
-                  {lesson.videoUrl && (
-                    <span className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Видео включено
-                    </span>
-                  )}
-                  {lesson.checklist && (
-                    <span className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                      </svg>
-                      Чеклист
-                    </span>
-                  )}
-                </div>
-              </div>
-
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-lg p-8 mb-8 border border-blue-200">
+            {/* Навигация */}
+            <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-4">
                 <Link
                   href={`/courses/${courseId}/modules/${lesson.module.id}`}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium shadow-sm"
                 >
-                  ← К модулю
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  К модулю
                 </Link>
                 <Link
                   href={`/courses/${courseId}`}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium shadow-sm"
                 >
-                  ← К курсу
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  К курсу
                 </Link>
+              </div>
+              
+              <div className="flex items-center">
+                {!isCompleted ? (
+                  <button
+                    onClick={handleCompleteLesson}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Завершить урок
+                  </button>
+                ) : (
+                  <div className="flex items-center bg-green-100 text-green-700 px-6 py-3 rounded-xl font-semibold">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Урок завершен!
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Центрированный заголовок */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center mb-4">
+                <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
+                  Урок {lesson.order}
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                {lesson.title}
+              </h1>
+              
+              {/* Информация об уроке */}
+              <div className="flex flex-wrap justify-center items-center gap-6 text-gray-600">
+                <div className="flex items-center bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+                  <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">{formatDuration(lesson.duration)}</span>
+                </div>
+                
+                {lesson.videoUrl && (
+                  <div className="flex items-center bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+                    <svg className="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">Видео включено</span>
+                  </div>
+                )}
+                
+                {lesson.checklist && (
+                  <div className="flex items-center bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+                    <svg className="w-5 h-5 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span className="font-medium">Чеклист</span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Статус урока */}
-            <div className="border-t pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-6">
                   <div className="flex items-center">
-                    <span className="text-gray-600 mr-2">Статус:</span>
-                    <span className={`font-medium ${isCompleted ? 'text-green-600' : 'text-yellow-600'}`}>
+                    <span className="text-gray-600 mr-2 font-medium">Статус:</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      isCompleted 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}>
                       {isCompleted ? 'Завершен' : 'В процессе'}
                     </span>
                   </div>
                   
                   {lesson.videoUrl && (
                     <div className="flex items-center">
-                      <span className="text-gray-600 mr-2">Прогресс видео:</span>
-                      <span className="font-medium text-gray-900">
-                        {Math.round(videoProgress)}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                <div>
-                  {!isCompleted ? (
-                    <button
-                      onClick={handleCompleteLesson}
-                      className="bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
-                    >
-                      Завершить урок
-                    </button>
-                  ) : (
-                    <div className="flex items-center text-green-600">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-sm font-medium">Урок завершен!</span>
+                      <span className="text-gray-600 mr-2 font-medium">Прогресс видео:</span>
+                      <div className="flex items-center bg-gray-100 rounded-full px-3 py-1">
+                        <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${Math.round(videoProgress)}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">
+                          {Math.round(videoProgress)}%
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
