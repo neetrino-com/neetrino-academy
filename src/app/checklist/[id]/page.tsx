@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { 
@@ -119,6 +119,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [updating, setUpdating] = useState(false);
+  const [retryCount, setRetryCount] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     if (!session?.user) {
@@ -166,63 +167,150 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const updateItemStatus = async (itemId: string, status: string) => {
+  const updateItemStatus = async (itemId: string, status: string, retryAttempt = 0) => {
     if (!progress) return;
 
+    const maxRetries = 3;
+    const retryKey = `${itemId}-${status}`;
+    
+    console.log('🔄 Обновляем статус пункта:', { itemId, status, attempt: retryAttempt + 1 });
+    
+    // Сохраняем предыдущее состояние для отката
+    const previousProgress = progress;
+
+    // Оптимистичное обновление UI (сразу показываем изменения)
+    setProgress(prev => {
+      if (!prev) return prev;
+      
+      const itemProgress = prev.itemProgress || [];
+      const existingIndex = itemProgress.findIndex(p => p.itemId === itemId);
+      
+      if (existingIndex >= 0) {
+        const newItemProgress = [...itemProgress];
+        newItemProgress[existingIndex] = {
+          ...newItemProgress[existingIndex],
+          status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS',
+          updatedAt: new Date().toISOString()
+        };
+        return {
+          ...prev,
+          itemProgress: newItemProgress
+        };
+      } else {
+        return {
+          ...prev,
+          itemProgress: [
+            ...itemProgress,
+            {
+              id: `temp-${Date.now()}`,
+              itemId,
+              status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS',
+              updatedAt: new Date().toISOString()
+            }
+          ]
+        };
+      }
+    });
+
     setUpdating(true);
+    
     try {
-      console.log('Обновляем статус:', { itemId, status });
       const response = await fetch(`/api/student/checklists/${resolvedParams.id}/progress`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemId, status })
       });
 
-      console.log('Ответ API:', response.status);
+      console.log('📡 Ответ API:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
-        console.log('Результат обновления:', result);
-        // Обновляем локальное состояние
-        setProgress(prev => {
-          if (!prev) return prev;
-          
-          const itemProgress = prev.itemProgress || [];
-          const existingIndex = itemProgress.findIndex(p => p.itemId === itemId);
-          if (existingIndex >= 0) {
-            const newItemProgress = [...itemProgress];
-            newItemProgress[existingIndex] = {
-              ...newItemProgress[existingIndex],
-              status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS',
-              updatedAt: new Date().toISOString()
-            };
-            return {
-              ...prev,
-              itemProgress: newItemProgress
-            };
-          } else {
-            return {
-              ...prev,
-              itemProgress: [
-                ...itemProgress,
-                {
-                  id: `temp-${Date.now()}`,
-                  itemId,
-                  status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS',
-                  updatedAt: new Date().toISOString()
-                }
-              ]
-            };
-          }
+        console.log('✅ Статус успешно обновлен:', result);
+        
+        // Сбрасываем счетчик попыток при успехе
+        setRetryCount(prev => {
+          const newCount = { ...prev };
+          delete newCount[retryKey];
+          return newCount;
         });
-
-        toast.success('Статус обновлен');
+        
+        // Обновляем с серверными данными
+        if (result.itemProgress) {
+          setProgress(prev => {
+            if (!prev) return prev;
+            
+            const itemProgress = prev.itemProgress || [];
+            const existingIndex = itemProgress.findIndex(p => p.itemId === itemId);
+            
+            if (existingIndex >= 0) {
+              const newItemProgress = [...itemProgress];
+              newItemProgress[existingIndex] = {
+                ...newItemProgress[existingIndex],
+                ...result.itemProgress
+              };
+              return {
+                ...prev,
+                itemProgress: newItemProgress
+              };
+            }
+            return prev;
+          });
+        }
+        
+        toast.success('Статус сохранен');
       } else {
-        toast.error('Ошибка обновления статуса');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Ошибка API:', errorData);
+        
+        // Откатываем изменения при ошибке
+        setProgress(previousProgress);
+        
+        if (retryAttempt < maxRetries) {
+          // Пробуем еще раз с экспоненциальной задержкой
+          const delay = Math.pow(2, retryAttempt) * 1000; // 1s, 2s, 4s
+          console.log(`🔄 Повторная попытка через ${delay}ms`);
+          
+          setRetryCount(prev => ({
+            ...prev,
+            [retryKey]: retryAttempt + 1
+          }));
+          
+          setTimeout(() => {
+            updateItemStatus(itemId, status, retryAttempt + 1);
+          }, delay);
+          
+          toast.error(`Ошибка сохранения. Повторная попытка ${retryAttempt + 1}/${maxRetries}...`);
+        } else {
+          toast.error(errorData.error || 'Не удалось сохранить статус после нескольких попыток');
+        }
       }
-    } catch {
-      toast.error('Ошибка обновления статуса');
+    } catch (error) {
+      console.error('❌ Ошибка сети:', error);
+      
+      // Откатываем изменения при ошибке сети
+      setProgress(previousProgress);
+      
+      if (retryAttempt < maxRetries) {
+        const delay = Math.pow(2, retryAttempt) * 1000;
+        console.log(`🔄 Повторная попытка через ${delay}ms`);
+        
+        setRetryCount(prev => ({
+          ...prev,
+          [retryKey]: retryAttempt + 1
+        }));
+        
+        setTimeout(() => {
+          updateItemStatus(itemId, status, retryAttempt + 1);
+        }, delay);
+        
+        toast.error(`Ошибка соединения. Повторная попытка ${retryAttempt + 1}/${maxRetries}...`);
+      } else {
+        toast.error('Ошибка соединения. Проверьте интернет и попробуйте еще раз.');
+      }
     } finally {
-      setUpdating(false);
+      if (retryAttempt === 0) {
+        setUpdating(false);
+      }
     }
   };
 
@@ -238,14 +326,23 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     });
   };
 
-  const getItemStatus = (itemId: string) => {
-    if (!progress || !progress.itemProgress) return 'NOT_COMPLETED';
-    const itemProgress = progress.itemProgress.find(p => p.itemId === itemId);
-    console.log(`Статус для ${itemId}:`, itemProgress?.status || 'NOT_COMPLETED');
-    return itemProgress?.status || 'NOT_COMPLETED';
-  };
+  // Мемоизируем статусы для оптимизации
+  const getItemStatus = useMemo(() => {
+    if (!progress || !progress.itemProgress) return () => 'NOT_COMPLETED';
+    
+    const statusMap = new Map(
+      progress.itemProgress.map(p => [p.itemId, p.status])
+    );
+    
+    return (itemId: string) => {
+      const status = statusMap.get(itemId) || 'NOT_COMPLETED';
+      console.log(`Статус для ${itemId}:`, status);
+      return status;
+    };
+  }, [progress?.itemProgress]);
 
-  const getProgressStats = () => {
+  // Мемоизируем статистику прогресса
+  const progressStats = useMemo(() => {
     if (!checklist || !progress) return { completed: 0, total: 0, percentage: 0 };
 
     const total = checklist.groups.reduce((sum, group) => sum + group.items.length, 0);
@@ -253,7 +350,23 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return { completed, total, percentage };
-  };
+  }, [checklist, progress]);
+
+  // Мемоизируем статистику по группам
+  const groupStats = useMemo(() => {
+    if (!checklist || !progress) return new Map();
+    
+    const stats = new Map();
+    checklist.groups.forEach(group => {
+      const groupCompleted = group.items.filter(item => getItemStatus(item.id) === 'COMPLETED').length;
+      const groupTotal = group.items.length;
+      const groupPercentage = groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 0;
+      
+      stats.set(group.id, { groupCompleted, groupTotal, groupPercentage });
+    });
+    
+    return stats;
+  }, [checklist, progress, getItemStatus]);
 
   if (loading) {
     return (
@@ -291,7 +404,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     );
   }
 
-  const { completed, total, percentage } = getProgressStats();
+  const { completed, total, percentage } = progressStats;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -328,6 +441,12 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
                 <div className="flex items-center space-x-2 mb-1">
                   <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500" />
                   <p className="text-xs sm:text-sm text-slate-600 font-medium">Прогресс</p>
+                  {updating && (
+                    <div className="flex items-center space-x-1">
+                      <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-500 border-t-transparent"></div>
+                      <span className="text-xs text-blue-600">Сохранение...</span>
+                    </div>
+                  )}
                 </div>
                 <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">
                   {completed} / {total}
@@ -373,9 +492,8 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {checklist.groups.map((group) => {
-            const groupCompleted = group.items.filter(item => getItemStatus(item.id) === 'COMPLETED').length;
-            const groupTotal = group.items.length;
-            const groupPercentage = groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 0;
+            const groupStat = groupStats.get(group.id) || { groupCompleted: 0, groupTotal: group.items.length, groupPercentage: 0 };
+            const { groupCompleted, groupTotal, groupPercentage } = groupStat;
             
             return (
               <Card key={group.id} className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
@@ -471,6 +589,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
                               {Object.entries(statusConfig).map(([status, config]) => {
                                 const StatusIcon = config.icon;
                                 const isActive = currentStatus === status;
+                                const isUpdating = updating;
                                 
                                 return (
                                   <Button
@@ -478,16 +597,25 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
                                     variant={isActive ? "default" : "outline"}
                                     size="sm"
                                     onClick={() => updateItemStatus(item.id, status)}
-                                    disabled={updating}
-                                    className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all duration-200 text-xs sm:text-sm ${
+                                    disabled={isUpdating}
+                                    className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all duration-200 text-xs sm:text-sm relative ${
                                       isActive 
                                         ? `${config.buttonColor} shadow-lg transform scale-105` 
                                         : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
-                                    }`}
+                                    } ${isUpdating ? 'opacity-70 cursor-not-allowed' : ''}`}
                                   >
-                                    <StatusIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-                                    <span className="hidden sm:inline">{config.label}</span>
-                                    <span className="sm:hidden">{config.label.split(' ')[0]}</span>
+                                    {isUpdating && isActive && (
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white border-t-transparent"></div>
+                                      </div>
+                                    )}
+                                    <StatusIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${isUpdating && isActive ? 'opacity-0' : ''}`} />
+                                    <span className={`hidden sm:inline ${isUpdating && isActive ? 'opacity-0' : ''}`}>
+                                      {config.label}
+                                    </span>
+                                    <span className={`sm:hidden ${isUpdating && isActive ? 'opacity-0' : ''}`}>
+                                      {config.label.split(' ')[0]}
+                                    </span>
                                   </Button>
                                 );
                               })}

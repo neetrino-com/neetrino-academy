@@ -29,37 +29,33 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json()
     const validatedData = updateProgressSchema.parse(body)
 
-    // Проверяем существование чеклиста и пункта
-    const checklist = await prisma.checklist.findUnique({
-      where: { id, isActive: true },
-      include: {
-        groups: {
-          include: {
-            items: {
-              where: { id: validatedData.itemId }
-            }
-          }
-        }
-      }
+    console.log('🔄 Обновляем статус пункта:', { 
+      userId: session.user.id, 
+      checklistId: id, 
+      itemId: validatedData.itemId, 
+      status: validatedData.status 
     })
 
-    if (!checklist) {
-      return NextResponse.json(
-        { error: 'Чеклист не найден или неактивен' },
-        { status: 404 }
-      )
-    }
+    // Быстрая проверка существования пункта в чеклисте
+    const itemExists = await prisma.checklistItem.findFirst({
+      where: {
+        id: validatedData.itemId,
+        group: {
+          checklistId: id
+        }
+      },
+      select: { id: true }
+    })
 
-    // Проверяем, что пункт принадлежит этому чеклисту
-    const item = checklist.groups.flatMap(g => g.items).find(i => i.id === validatedData.itemId)
-    if (!item) {
+    if (!itemExists) {
+      console.log('❌ Пункт не найден в чеклисте')
       return NextResponse.json(
         { error: 'Пункт не найден в этом чеклисте' },
         { status: 404 }
       )
     }
 
-    // Создаем или обновляем прогресс по пункту
+    // Обновляем только прогресс по пункту (оптимистично)
     const itemProgress = await prisma.checklistItemProgress.upsert({
       where: {
         userId_itemId: {
@@ -80,78 +76,30 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     })
 
-    // Пересчитываем общий прогресс чеклиста
-    const allItems = await prisma.checklistItem.findMany({
-      where: {
-        group: {
-          checklistId: id
-        }
-      },
-      include: {
-        progress: {
-          where: { userId: session.user.id }
-        }
+    console.log('✅ Статус пункта обновлен:', itemProgress)
+
+    // Асинхронно обновляем общий прогресс (не блокируем ответ)
+    setImmediate(async () => {
+      try {
+        await updateChecklistProgress(session.user.id, id)
+      } catch (error) {
+        console.error('Ошибка обновления общего прогресса:', error)
       }
     })
-
-    const totalItems = allItems.length
-    const completedItems = allItems.filter(item => 
-      item.progress[0]?.status === 'COMPLETED' || item.progress[0]?.status === 'NOT_NEEDED'
-    ).length
-
-    const progressPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
-    const isCompleted = progressPercentage === 100
-
-    // Обновляем общий прогресс чеклиста
-    await prisma.checklistProgress.upsert({
-      where: {
-        userId_checklistId: {
-          userId: session.user.id,
-          checklistId: id
-        }
-      },
-      update: {
-        progress: progressPercentage,
-        completedAt: isCompleted ? new Date() : null
-      },
-      create: {
-        userId: session.user.id,
-        checklistId: id,
-        progress: progressPercentage,
-        completedAt: isCompleted ? new Date() : null
-      }
-    })
-
-    // Создаем уведомление при завершении чеклиста
-    if (isCompleted) {
-      await prisma.notification.create({
-        data: {
-          userId: checklist.createdBy,
-          type: 'ASSIGNMENT_SUBMITTED', // Используем существующий тип
-          title: 'Чеклист завершен',
-          message: `Студент ${session.user.name} завершил чеклист "${checklist.title}"`,
-          data: JSON.stringify({
-            checklistId: id,
-            studentId: session.user.id,
-            studentName: session.user.name
-          })
-        }
-      })
-    }
 
     return NextResponse.json({
-      message: 'Прогресс обновлен',
-      itemProgress,
-      checklistProgress: {
-        totalItems,
-        completedItems,
-        progress: progressPercentage,
-        isCompleted
+      success: true,
+      message: 'Статус обновлен',
+      itemProgress: {
+        id: itemProgress.id,
+        itemId: itemProgress.itemId,
+        status: itemProgress.status,
+        updatedAt: itemProgress.updatedAt
       }
     })
 
   } catch (error) {
-    console.error('Ошибка обновления прогресса:', error)
+    console.error('❌ Ошибка обновления прогресса:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -164,6 +112,78 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
     )
+  }
+}
+
+// Функция для обновления общего прогресса чеклиста (вызывается асинхронно)
+async function updateChecklistProgress(userId: string, checklistId: string) {
+  console.log('🔄 Обновляем общий прогресс чеклиста:', { userId, checklistId })
+  
+  const allItems = await prisma.checklistItem.findMany({
+    where: {
+      group: {
+        checklistId: checklistId
+      }
+    },
+    include: {
+      progress: {
+        where: { userId }
+      }
+    }
+  })
+
+  const totalItems = allItems.length
+  const completedItems = allItems.filter(item => 
+    item.progress[0]?.status === 'COMPLETED' || item.progress[0]?.status === 'NOT_NEEDED'
+  ).length
+
+  const progressPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+  const isCompleted = progressPercentage === 100
+
+  console.log('📊 Прогресс чеклиста:', { totalItems, completedItems, progressPercentage, isCompleted })
+
+  // Обновляем общий прогресс чеклиста
+  await prisma.checklistProgress.upsert({
+    where: {
+      userId_checklistId: {
+        userId,
+        checklistId
+      }
+    },
+    update: {
+      progress: progressPercentage,
+      completedAt: isCompleted ? new Date() : null
+    },
+    create: {
+      userId,
+      checklistId,
+      progress: progressPercentage,
+      completedAt: isCompleted ? new Date() : null
+    }
+  })
+
+  // Создаем уведомление при завершении чеклиста
+  if (isCompleted) {
+    const checklist = await prisma.checklist.findUnique({
+      where: { id: checklistId },
+      select: { title: true, createdBy: true }
+    })
+
+    if (checklist) {
+      await prisma.notification.create({
+        data: {
+          userId: checklist.createdBy,
+          type: 'ASSIGNMENT_SUBMITTED',
+          title: 'Чеклист завершен',
+          message: `Студент завершил чеклист "${checklist.title}"`,
+          data: JSON.stringify({
+            checklistId,
+            studentId: userId
+          })
+        }
+      })
+      console.log('🎉 Уведомление о завершении чеклиста создано')
+    }
   }
 }
 
