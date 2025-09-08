@@ -15,7 +15,9 @@ import {
   Copy,
   X,
   File,
-  Image
+  Image,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import MultiFileUpload from '@/components/ui/MultiFileUpload';
 import SimpleRichEditor from '@/components/ui/SimpleRichEditor';
@@ -33,6 +35,7 @@ interface LessonBlock {
   id: string;
   type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file' | 'gallery';
   content: string;
+  collapsed?: boolean;
   metadata?: {
     url?: string;
     alt?: string;
@@ -121,6 +124,7 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       id: `block-${Date.now()}`,
       type,
       content: '',
+      collapsed: false,
       metadata: {}
     };
     updateBlocks([...blocks, newBlock]);
@@ -133,6 +137,7 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
     const newBlock: LessonBlock = {
       ...block,
       id: `block-${Date.now()}`,
+      collapsed: false, // Дублированные блоки всегда развернуты
     };
     
     const blockIndex = blocks.findIndex(b => b.id === blockId);
@@ -163,6 +168,12 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
     }
     
     updateBlocks(newBlocks);
+  };
+
+  const toggleBlockCollapse = (blockId: string) => {
+    updateBlocks(blocks.map(b => 
+      b.id === blockId ? { ...b, collapsed: !b.collapsed } : b
+    ));
   };
 
   const getBlockTypeInfo = (type: LessonBlock['type']) => {
@@ -403,10 +414,10 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
             return (
               <div 
                 key={block.id} 
-                className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow"
+                className="border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow"
               >
                 {/* Заголовок блока */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     <GripVertical className="text-gray-400 cursor-move" size={16} />
                     <div className={`p-2 rounded-lg ${blockInfo.color}`}>
@@ -419,6 +430,15 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                   </div>
                   
                   <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleBlockCollapse(block.id)}
+                      className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors"
+                      title={block.collapsed ? "Развернуть блок" : "Свернуть блок"}
+                    >
+                      {block.collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                    </button>
+                    
                     <button
                       type="button"
                       onClick={() => duplicateBlock(block.id)}
@@ -459,8 +479,14 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                   </div>
                 </div>
 
-                {/* Содержимое блока */}
-                {renderBlockEditor(block)}
+                {/* Содержимое блока с анимацией */}
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  block.collapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+                }`}>
+                  <div className="px-4 pb-4">
+                    {renderBlockEditor(block)}
+                  </div>
+                </div>
               </div>
             );
           })}
