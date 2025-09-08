@@ -192,7 +192,7 @@ export default function LessonStudyPage() {
                     {block.metadata.files.map((file) => (
                       <div key={file.id} className="group">
                         <a
-                          href={file.url}
+                          href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block"
@@ -201,7 +201,7 @@ export default function LessonStudyPage() {
                             {/* Простое превью изображения */}
                             <div className="aspect-video bg-gray-100 flex items-center justify-center">
                               <img
-                                src={file.url}
+                                src={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
                                 alt={file.name}
                                 className="max-w-full max-h-full object-contain rounded-lg"
                                 onError={(e) => {
@@ -276,7 +276,7 @@ export default function LessonStudyPage() {
                           </div>
                         </div>
                         <a
-                          href={file.url}
+                          href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
