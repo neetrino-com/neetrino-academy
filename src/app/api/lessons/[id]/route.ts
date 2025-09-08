@@ -19,17 +19,6 @@ export async function GET(
                 id: true,
                 title: true
               }
-            },
-            assignments: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                dueDate: true
-              },
-              orderBy: {
-                createdAt: 'asc'
-              }
             }
           }
         },
@@ -39,6 +28,29 @@ export async function GET(
             title: true,
             description: true,
             content: true
+          }
+        },
+        assignments: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            dueDate: true,
+            type: true,
+            status: true,
+            maxScore: true
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        },
+        quiz: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            timeLimit: true,
+            passingScore: true
           }
         }
       }

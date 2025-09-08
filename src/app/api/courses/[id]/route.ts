@@ -38,14 +38,27 @@ export async function GET(
                     timeLimit: true,
                     passingScore: true
                   }
+                },
+                assignments: {
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    dueDate: true,
+                    type: true,
+                    status: true,
+                    maxScore: true
+                  },
+                  orderBy: {
+                    createdAt: 'asc'
+                  }
                 }
               }
             },
             
             _count: {
               select: {
-                lessons: true,
-                assignments: true
+                lessons: true
               }
             }
           },

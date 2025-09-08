@@ -47,6 +47,8 @@ model User {
   checklistProgress ChecklistProgress[]
   checklistItemProgress ChecklistItemProgress[]
   payments       Payment[]
+  groupQuizAttempts GroupQuizAttempt[]
+  createdGroupQuizzes GroupQuiz[]
 }
 
 model Course {
@@ -87,7 +89,6 @@ model Module {
   courseId    String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  assignments Assignment[]
   lessons     Lesson[]
   course      Course       @relation(fields: [courseId], references: [id])
 }
@@ -125,6 +126,7 @@ model Lesson {
   checklist   Checklist?       @relation(fields: [checklistId], references: [id])
   progress    LessonProgress[]
   quiz        Quiz?
+  assignments Assignment[]     // Задания привязанные к уроку
 }
 
 model Quiz {
@@ -182,16 +184,19 @@ model QuizAttempt {
 }
 
 model Assignment {
-  id          String       @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
   description String?
   dueDate     DateTime?
-  moduleId    String
+  lessonId    String           // Привязка к уроку вместо модуля
+  type        AssignmentType   @default(HOMEWORK)
+  status      AssignmentStatus @default(DRAFT)
+  maxScore    Int?             // Максимальный балл
   createdBy   String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  creator     User         @relation(fields: [createdBy], references: [id])
-  module      Module       @relation(fields: [moduleId], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  creator     User             @relation(fields: [createdBy], references: [id])
+  lesson      Lesson           @relation(fields: [lessonId], references: [id])
   submissions Submission[]
   groupAssignments GroupAssignment[]
   events      Event[]
@@ -367,6 +372,7 @@ model Group {
   messages    GroupMessage[]
   events      Event[]
   schedule    GroupSchedule[] // расписание занятий
+  quizzes     GroupQuiz[]     // групповые тесты
 }
 
 model GroupStudent {
@@ -414,6 +420,63 @@ model GroupAssignment {
   assignment  Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, assignmentId])
+}
+
+// Групповые тесты (независимые от уроков)
+model GroupQuiz {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  groupId      String
+  timeLimit    Int?
+  passingScore Int            @default(70)
+  isActive     Boolean        @default(true)
+  createdBy    String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  group        Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  creator      User           @relation(fields: [createdBy], references: [id])
+  attempts     GroupQuizAttempt[]
+  questions    GroupQuizQuestion[]
+}
+
+model GroupQuizQuestion {
+  id        String       @id @default(cuid())
+  question  String
+  type      QuestionType
+  order     Int
+  points    Int          @default(1)
+  quizId    String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  options   GroupQuizOption[]
+  quiz      GroupQuiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model GroupQuizOption {
+  id         String       @id @default(cuid())
+  text       String
+  isCorrect  Boolean      @default(false)
+  order      Int
+  questionId String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  question   GroupQuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model GroupQuizAttempt {
+  id          String    @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Float?
+  maxScore    Int
+  passed      Boolean   @default(false)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  quiz        GroupQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, quizId])
 }
 
 model Notification {
@@ -628,6 +691,23 @@ enum ChecklistItemStatus {
   NOT_COMPLETED // ❌ Не выполнено  
   NOT_NEEDED    // 🚫 Не нужно
   HAS_QUESTIONS // ❓ Есть вопросы
+}
+
+enum AssignmentType {
+  HOMEWORK      // Домашнее задание
+  PROJECT       // Проект
+  EXAM          // Экзамен
+  QUIZ          // Тест
+  PRACTICAL     // Практическая работа
+  ESSAY         // Эссе
+  OTHER         // Другое
+}
+
+enum AssignmentStatus {
+  DRAFT         // Черновик
+  PUBLISHED     // Опубликовано
+  CLOSED        // Закрыто
+  ARCHIVED      // Архивировано
 }
 
 // Новая модель для отслеживания платежей

@@ -1906,14 +1906,14 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         },
         modules: modules.map(module => ({
           ...module,
-          lessons: module.lessons,
-          assignments: assignments.filter(a => 
-            module.lessons.some(l => l.id === a.lessonId)
-          ).map(a => ({
-            title: a.title,
-            description: a.description,
-            dueDate: a.dueDate
-            // maxScore убрано - поля нет в схеме базы данных
+          lessons: module.lessons.map(lesson => ({
+            ...lesson,
+            assignments: assignments.filter(a => a.lessonId === lesson.id).map(a => ({
+              title: a.title,
+              description: a.description,
+              dueDate: a.dueDate,
+              maxScore: 100 // Добавляем maxScore по умолчанию
+            }))
           }))
         }))
       }

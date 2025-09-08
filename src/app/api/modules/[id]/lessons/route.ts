@@ -28,20 +28,36 @@ export async function GET(
       )
     }
 
-    // Получаем уроки модуля
+    // Получаем уроки модуля с заданиями
     const lessons = await prisma.lesson.findMany({
       where: { moduleId },
       orderBy: {
         order: 'asc'
       },
-             select: {
-         id: true,
-         title: true,
-         content: true,
-         duration: true,
-         order: true,
-         videoUrl: true
-       }
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        duration: true,
+        order: true,
+        isActive: true,
+        lectureId: true,
+        checklistId: true,
+        assignments: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            dueDate: true,
+            type: true,
+            status: true,
+            maxScore: true
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
     })
 
     return NextResponse.json({ 

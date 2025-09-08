@@ -36,8 +36,8 @@ export async function GET(
 
     if (!quiz) {
       return NextResponse.json(
-        { error: 'Тест для этого урока не найден' },
-        { status: 404 }
+        { quiz: null, userAttempt: null },
+        { status: 200 }
       );
     }
 

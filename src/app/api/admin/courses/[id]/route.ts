@@ -34,14 +34,14 @@ const updateCourseSchema = z.object({
       type: z.enum(['video', 'text', 'mixed', 'lecture']).optional().default('text'),
       duration: z.number().nullable().optional().default(null),
       order: z.number(),
-      lectureId: z.string().nullable().optional().default(null)
-    })),
-    assignments: z.array(z.object({
-      title: z.string(),
-      description: z.string().optional().default(''),
-      dueDate: z.string().optional(),
-      maxScore: z.number().optional()
-    })).optional()
+      lectureId: z.string().nullable().optional().default(null),
+      assignments: z.array(z.object({
+        title: z.string(),
+        description: z.string().optional().default(''),
+        dueDate: z.string().optional(),
+        maxScore: z.number().optional()
+      })).optional()
+    }))
   })).optional()
 })
 
@@ -96,13 +96,26 @@ export async function GET(
                     title: true,
                     description: true
                   }
+                },
+                assignments: {
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    dueDate: true,
+                    type: true,
+                    status: true,
+                    maxScore: true
+                  },
+                  orderBy: {
+                    createdAt: 'asc'
+                  }
                 }
               }
             },
             _count: {
               select: {
-                lessons: true,
-                assignments: true
+                lessons: true
               }
             }
           },
@@ -304,27 +317,32 @@ export async function PUT(
           }
         }
 
-        // Обрабатываем задания для модуля
-        if (moduleData.assignments && moduleData.assignments.length > 0) {
-          console.log(`Обрабатываем ${moduleData.assignments.length} заданий для модуля ${moduleData.title}`)
-          
-          // Удаляем старые задания модуля
-          await prisma.assignment.deleteMany({
-            where: { moduleId: currentModule.id }
-          })
-          
-          // Создаем новые задания
-          for (const assignmentData of moduleData.assignments) {
-            console.log('Создаём задание:', assignmentData.title)
-            await prisma.assignment.create({
-              data: {
-                title: assignmentData.title,
-                description: assignmentData.description || '',
-                dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
-                moduleId: currentModule.id,
-                createdBy: user.id
-              }
+        // Обрабатываем задания для каждого урока модуля
+        for (const lessonData of moduleData.lessons) {
+          if (lessonData.assignments && lessonData.assignments.length > 0) {
+            console.log(`Обрабатываем ${lessonData.assignments.length} заданий для урока ${lessonData.title}`)
+            
+            // Удаляем старые задания урока
+            await prisma.assignment.deleteMany({
+              where: { lessonId: lessonData.id }
             })
+            
+            // Создаем новые задания для урока
+            for (const assignmentData of lessonData.assignments) {
+              console.log('Создаём задание для урока:', assignmentData.title, 'в уроке:', lessonData.title)
+              await prisma.assignment.create({
+                data: {
+                  title: assignmentData.title,
+                  description: assignmentData.description || '',
+                  dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
+                  lessonId: lessonData.id,
+                  type: 'HOMEWORK',
+                  status: 'PUBLISHED',
+                  maxScore: assignmentData.maxScore || 100,
+                  createdBy: user.id
+                }
+              })
+            }
           }
         }
       }
@@ -358,8 +376,7 @@ export async function PUT(
           include: {
             _count: {
               select: {
-                lessons: true,
-                assignments: true
+                lessons: true
               }
             }
           },

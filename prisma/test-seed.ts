@@ -440,6 +440,27 @@ console.log(greet(name));`
                   duration: 25,
                   order: 2,
                   isActive: true
+                },
+                {
+                  title: 'Административная панель WordPress',
+                  description: 'Изучаем интерфейс админки',
+                  content: JSON.stringify([
+                    {
+                      id: 'admin-intro',
+                      type: 'text',
+                      content: 'Административная панель WordPress - это центр управления вашим сайтом.',
+                      metadata: {}
+                    },
+                    {
+                      id: 'admin-sections',
+                      type: 'text',
+                      content: 'Основные разделы:\n• Дашборд - общая информация\n• Записи - управление статьями\n• Медиафайлы - изображения и документы\n• Страницы - статические страницы\n• Комментарии - отзывы пользователей\n• Внешний вид - темы и виджеты\n• Плагины - расширения функциональности\n• Пользователи - управление аккаунтами\n• Инструменты - дополнительные функции\n• Настройки - конфигурация сайта',
+                      metadata: {}
+                    }
+                  ]),
+                  duration: 20,
+                  order: 3,
+                  isActive: true
                 }
               ]
             }
@@ -617,6 +638,53 @@ const result = numbers
                   duration: 40,
                   order: 2,
                   isActive: true
+                },
+                {
+                  title: 'Асинхронное программирование',
+                  description: 'Promises, async/await, fetch API',
+                  content: JSON.stringify([
+                    {
+                      id: 'async-intro',
+                      type: 'text',
+                      content: 'Асинхронное программирование позволяет выполнять операции без блокировки основного потока выполнения.',
+                      metadata: {}
+                    },
+                    {
+                      id: 'promises-example',
+                      type: 'code',
+                      content: 'javascript',
+                      metadata: {
+                        url: `// Promises
+const fetchData = () => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve('Данные получены!');
+        }, 1000);
+    });
+};
+
+// async/await
+const getData = async () => {
+    try {
+        const data = await fetchData();
+        console.log(data);
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+};
+
+// Fetch API
+const fetchUser = async (id) => {
+    const response = await fetch(\`/api/users/\${id}\`);
+    const user = await response.json();
+    return user;
+};`
+                      }
+                    }
+                  ]),
+                  duration: 35,
+                  order: 3,
+                  isActive: true
                 }
               ]
             }
@@ -677,6 +745,56 @@ function App() {
                   ]),
                   duration: 45,
                   order: 1,
+                  isActive: true
+                },
+                {
+                  title: 'Хуки React',
+                  description: 'useState, useEffect, useContext и другие',
+                  content: JSON.stringify([
+                    {
+                      id: 'hooks-intro',
+                      type: 'text',
+                      content: 'Хуки позволяют использовать состояние и другие возможности React в функциональных компонентах.',
+                      metadata: {}
+                    },
+                    {
+                      id: 'hooks-examples',
+                      type: 'code',
+                      content: 'jsx',
+                      metadata: {
+                        url: `import { useState, useEffect, useContext } from 'react';
+
+// useState - управление состоянием
+function Counter() {
+    const [count, setCount] = useState(0);
+    return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+
+// useEffect - побочные эффекты
+function DataFetcher() {
+    const [data, setData] = useState(null);
+    
+    useEffect(() => {
+        fetch('/api/data')
+            .then(res => res.json())
+            .then(setData);
+    }, []); // Пустой массив = выполнить только при монтировании
+    
+    return <div>{data ? data.message : 'Загрузка...'}</div>;
+}
+
+// useContext - работа с контекстом
+const ThemeContext = createContext();
+
+function ThemedButton() {
+    const theme = useContext(ThemeContext);
+    return <button style={{ background: theme.primary }}>Кнопка</button>;
+}`
+                      }
+                    }
+                  ]),
+                  duration: 50,
+                  order: 2,
                   isActive: true
                 }
               ]
@@ -771,6 +889,65 @@ fetch('/admin/api/2023-04/products.json', {
                   order: 1,
                   isActive: true,
                   lectureId: lecture3.id
+                },
+                {
+                  title: 'GraphQL Admin API',
+                  description: 'Работа с GraphQL API Shopify',
+                  content: JSON.stringify([
+                    {
+                      id: 'graphql-intro',
+                      type: 'text',
+                      content: 'GraphQL API предоставляет более гибкий способ работы с данными Shopify.',
+                      metadata: {}
+                    },
+                    {
+                      id: 'graphql-example',
+                      type: 'code',
+                      content: 'javascript',
+                      metadata: {
+                        url: `// GraphQL запрос для получения продуктов
+const query = \`
+  query getProducts($first: Int!) {
+    products(first: $first) {
+      edges {
+        node {
+          id
+          title
+          description
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+        }
+      }
+    }
+  }
+\`;
+
+// Выполнение запроса
+fetch('/admin/api/2023-04/graphql.json', {
+    method: 'POST',
+    headers: {
+        'X-Shopify-Access-Token': 'your-access-token',
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        query,
+        variables: { first: 10 }
+    })
+})
+.then(response => response.json())
+.then(data => {
+    console.log('Продукты:', data.data.products.edges);
+});`
+                      }
+                    }
+                  ]),
+                  duration: 45,
+                  order: 2,
+                  isActive: true
                 }
               ]
             }
@@ -880,16 +1057,29 @@ fetch('/admin/api/2023-04/products.json', {
   console.log('🗓️ Создаем расписание групп и события...')
 
   // Базовое расписание: Пн/Ср/Сб 19:00-21:00 для group1, Вт/Чт 19:00-21:00 для group2, Сб 11:00-14:00 для group3
-  await prisma.groupSchedule.createMany({
-    data: [
-      { groupId: 'group1', dayOfWeek: 1, startTime: '19:00', endTime: '21:00', isActive: true },
-      { groupId: 'group1', dayOfWeek: 3, startTime: '19:00', endTime: '21:00', isActive: true },
-      { groupId: 'group1', dayOfWeek: 6, startTime: '11:00', endTime: '13:00', isActive: true },
-      { groupId: 'group2', dayOfWeek: 2, startTime: '19:00', endTime: '21:00', isActive: true },
-      { groupId: 'group2', dayOfWeek: 4, startTime: '19:00', endTime: '21:00', isActive: true },
-      { groupId: 'group3', dayOfWeek: 6, startTime: '11:00', endTime: '14:00', isActive: true }
-    ]
-  })
+  const scheduleData = [
+    { groupId: 'group1', dayOfWeek: 1, startTime: '19:00', endTime: '21:00', isActive: true },
+    { groupId: 'group1', dayOfWeek: 3, startTime: '19:00', endTime: '21:00', isActive: true },
+    { groupId: 'group1', dayOfWeek: 6, startTime: '11:00', endTime: '13:00', isActive: true },
+    { groupId: 'group2', dayOfWeek: 2, startTime: '19:00', endTime: '21:00', isActive: true },
+    { groupId: 'group2', dayOfWeek: 4, startTime: '19:00', endTime: '21:00', isActive: true },
+    { groupId: 'group3', dayOfWeek: 6, startTime: '11:00', endTime: '14:00', isActive: true }
+  ]
+
+  // Создаем расписание по одному элементу, чтобы избежать дублирования
+  for (const schedule of scheduleData) {
+    await prisma.groupSchedule.upsert({
+      where: {
+        groupId_dayOfWeek_startTime: {
+          groupId: schedule.groupId,
+          dayOfWeek: schedule.dayOfWeek,
+          startTime: schedule.startTime
+        }
+      },
+      update: schedule,
+      create: schedule
+    })
+  }
 
   // Генерация событий на 8 недель вперёд для каждой группы
   const start = new Date()
@@ -1012,40 +1202,382 @@ fetch('/admin/api/2023-04/products.json', {
   console.log('📋 Создаем задания...')
 
   // Задания для WordPress курса
-  const wpModule = await prisma.module.findFirst({
-    where: { courseId: course1.id }
+  const wpLessons = await prisma.lesson.findMany({
+    where: {
+      module: {
+        courseId: course1.id
+      }
+    },
+    orderBy: { order: 'asc' }
   })
 
-  if (wpModule) {
+  if (wpLessons.length > 0) {
+    // Основное задание
     await prisma.assignment.create({
       data: {
         title: 'Создание первой темы WordPress',
         description: 'Создайте простую тему WordPress с главной страницей и страницей записи. Требования: 1. Создать файлы index.php, single.php, header.php, footer.php 2. Добавить базовые стили в style.css 3. Подключить поддержку миниатюр постов 4. Сделать адаптивную верстку',
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // через неделю
-        moduleId: wpModule.id,
+        lessonId: wpLessons[0].id, // Привязываем к первому уроку
+        type: 'PROJECT',
+        status: 'PUBLISHED',
+        maxScore: 100,
         createdBy: teacher1.id
       }
     })
+
+    // Дополнительное задание для второго урока
+    if (wpLessons.length > 1) {
+      await prisma.assignment.create({
+        data: {
+          title: 'Установка и настройка WordPress',
+          description: 'Установите WordPress локально и настройте базовые параметры. Требования: 1. Установить XAMPP/MAMP 2. Скачать WordPress 3. Создать базу данных 4. Настроить wp-config.php 5. Выполнить установку через браузер',
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // через 3 дня
+          lessonId: wpLessons[1].id,
+          type: 'HOMEWORK',
+          status: 'PUBLISHED',
+          maxScore: 50,
+          createdBy: teacher1.id
+        }
+      })
+    }
   }
 
   // Задания для Frontend курса
-  const frontendModule = await prisma.module.findFirst({
-    where: { courseId: course2.id }
+  const frontendLessons = await prisma.lesson.findMany({
+    where: {
+      module: {
+        courseId: course2.id
+      }
+    },
+    orderBy: { order: 'asc' }
   })
 
-  if (frontendModule) {
+  if (frontendLessons.length > 0) {
+    // Основное задание
     await prisma.assignment.create({
       data: {
         title: 'React Counter приложение',
         description: 'Создайте приложение-счетчик на React с дополнительным функционалом. Функционал: 1. Кнопки +1, -1, +10, -10 2. Кнопка сброса 3. История изменений 4. Сохранение состояния в localStorage 5. Стилизация с CSS modules',
         dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // через 5 дней
-        moduleId: frontendModule.id,
+        lessonId: frontendLessons[0].id, // Привязываем к первому уроку
+        type: 'PROJECT',
+        status: 'PUBLISHED',
+        maxScore: 100,
         createdBy: teacher2.id
+      }
+    })
+
+    // Дополнительное задание для второго урока
+    if (frontendLessons.length > 1) {
+      await prisma.assignment.create({
+        data: {
+          title: 'Практика с массивами JavaScript',
+          description: 'Решите задачи по работе с массивами. Задачи: 1. Создать массив чисел от 1 до 100 2. Найти все четные числа 3. Умножить каждое число на 2 4. Найти сумму всех чисел 5. Создать новый массив с квадратами чисел',
+          dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // через 2 дня
+          lessonId: frontendLessons[1].id,
+          type: 'HOMEWORK',
+          status: 'PUBLISHED',
+          maxScore: 75,
+          createdBy: teacher2.id
+        }
+      })
+    }
+  }
+
+  // Задания для Shopify курса
+  const shopifyLessons = await prisma.lesson.findMany({
+    where: {
+      module: {
+        courseId: course3.id
+      }
+    },
+    orderBy: { order: 'asc' }
+  })
+
+  if (shopifyLessons.length > 0) {
+    // Основное задание
+    await prisma.assignment.create({
+      data: {
+        title: 'Shopify App с REST API',
+        description: 'Создайте приложение для Shopify, которое работает с REST API. Требования: 1. Настройка Shopify App 2. Аутентификация через OAuth 2. Получение списка продуктов через API 3. Создание нового продукта 4. Обработка ошибок API 5. Документация кода',
+        dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // через 10 дней
+        lessonId: shopifyLessons[0].id, // Привязываем к первому уроку
+        type: 'PROJECT',
+        status: 'PUBLISHED',
+        maxScore: 100,
+        createdBy: teacher3.id
+      }
+    })
+
+    // Дополнительное задание
+    await prisma.assignment.create({
+      data: {
+        title: 'Изучение Shopify API документации',
+        description: 'Изучите официальную документацию Shopify API и создайте краткий отчет. Требования: 1. Прочитать раздел "Getting Started" 2. Изучить основные endpoints 3. Понять систему аутентификации 4. Создать примеры запросов 5. Написать отчет на 2-3 страницы',
+        dueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // через 4 дня
+        lessonId: shopifyLessons[0].id,
+        type: 'ESSAY',
+        status: 'PUBLISHED',
+        maxScore: 60,
+        createdBy: teacher3.id
       }
     })
   }
 
   console.log('✅ Задания созданы!')
+
+  // 7.5. Создание тестов для уроков
+  console.log('🧪 Создаем тесты для уроков...')
+
+  // Тест для WordPress урока
+  if (wpLessons.length > 0) {
+    const wpQuiz = await prisma.quiz.create({
+      data: {
+        title: 'Тест по основам WordPress',
+        description: 'Проверьте свои знания основ WordPress',
+        timeLimit: 15, // 15 минут
+        passingScore: 70,
+        isActive: true,
+        lessonId: wpLessons[0].id,
+        questions: {
+          create: [
+            {
+              question: 'Что такое WordPress?',
+              type: 'SINGLE_CHOICE',
+              points: 10,
+              order: 1,
+              options: {
+                create: [
+                  {
+                    text: 'Система управления контентом',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'Язык программирования',
+                    isCorrect: false,
+                    order: 2
+                  },
+                  {
+                    text: 'База данных',
+                    isCorrect: false,
+                    order: 3
+                  },
+                  {
+                    text: 'Веб-сервер',
+                    isCorrect: false,
+                    order: 4
+                  }
+                ]
+              }
+            },
+            {
+              question: 'Какие файлы обязательны для темы WordPress?',
+              type: 'MULTIPLE_CHOICE',
+              points: 15,
+              order: 2,
+              options: {
+                create: [
+                  {
+                    text: 'style.css',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'index.php',
+                    isCorrect: true,
+                    order: 2
+                  },
+                  {
+                    text: 'functions.php',
+                    isCorrect: false,
+                    order: 3
+                  },
+                  {
+                    text: 'header.php',
+                    isCorrect: false,
+                    order: 4
+                  }
+                ]
+              }
+            },
+            {
+              question: 'WordPress использует PHP для работы',
+              type: 'TRUE_FALSE',
+              points: 10,
+              order: 3,
+              options: {
+                create: [
+                  {
+                    text: 'Правда',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'Ложь',
+                    isCorrect: false,
+                    order: 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    })
+    console.log(`✅ Создан тест для WordPress: ${wpQuiz.title}`)
+  }
+
+  // Тест для Frontend урока
+  if (frontendLessons.length > 0) {
+    const frontendQuiz = await prisma.quiz.create({
+      data: {
+        title: 'Тест по JavaScript ES6+',
+        description: 'Проверьте знания современного JavaScript',
+        timeLimit: 20,
+        passingScore: 75,
+        isActive: true,
+        lessonId: frontendLessons[0].id,
+        questions: {
+          create: [
+            {
+              question: 'Что такое let в JavaScript?',
+              type: 'SINGLE_CHOICE',
+              points: 10,
+              order: 1,
+              options: {
+                create: [
+                  {
+                    text: 'Ключевое слово для объявления переменной с блочной областью видимости',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'Функция для создания объектов',
+                    isCorrect: false,
+                    order: 2
+                  },
+                  {
+                    text: 'Метод массива',
+                    isCorrect: false,
+                    order: 3
+                  }
+                ]
+              }
+            },
+            {
+              question: 'Какие из перечисленных являются arrow functions?',
+              type: 'MULTIPLE_CHOICE',
+              points: 15,
+              order: 2,
+              options: {
+                create: [
+                  {
+                    text: 'const add = (a, b) => a + b',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'function add(a, b) { return a + b; }',
+                    isCorrect: false,
+                    order: 2
+                  },
+                  {
+                    text: 'const greet = name => `Hello ${name}`',
+                    isCorrect: true,
+                    order: 3
+                  },
+                  {
+                    text: 'var add = function(a, b) { return a + b; }',
+                    isCorrect: false,
+                    order: 4
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    })
+    console.log(`✅ Создан тест для Frontend: ${frontendQuiz.title}`)
+  }
+
+  // Тест для Shopify урока
+  if (shopifyLessons.length > 0) {
+    const shopifyQuiz = await prisma.quiz.create({
+      data: {
+        title: 'Тест по Shopify REST API',
+        description: 'Проверьте знания работы с Shopify API',
+        timeLimit: 25,
+        passingScore: 80,
+        isActive: true,
+        lessonId: shopifyLessons[0].id,
+        questions: {
+          create: [
+            {
+              question: 'Какой базовый URL используется для Shopify REST API?',
+              type: 'SINGLE_CHOICE',
+              points: 10,
+              order: 1,
+              options: {
+                create: [
+                  {
+                    text: 'https://your-shop.myshopify.com/admin/api/2023-04/',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'https://api.shopify.com/v1/',
+                    isCorrect: false,
+                    order: 2
+                  },
+                  {
+                    text: 'https://your-shop.com/api/',
+                    isCorrect: false,
+                    order: 3
+                  }
+                ]
+              }
+            },
+            {
+              question: 'Какие методы HTTP используются в Shopify REST API?',
+              type: 'MULTIPLE_CHOICE',
+              points: 15,
+              order: 2,
+              options: {
+                create: [
+                  {
+                    text: 'GET',
+                    isCorrect: true,
+                    order: 1
+                  },
+                  {
+                    text: 'POST',
+                    isCorrect: true,
+                    order: 2
+                  },
+                  {
+                    text: 'PUT',
+                    isCorrect: true,
+                    order: 3
+                  },
+                  {
+                    text: 'DELETE',
+                    isCorrect: true,
+                    order: 4
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    })
+    console.log(`✅ Создан тест для Shopify: ${shopifyQuiz.title}`)
+  }
+
+  console.log('✅ Тесты для уроков созданы!')
 
   // 8. Создание уведомлений
   console.log('🔔 Создаем уведомления...')
@@ -1082,7 +1614,7 @@ fetch('/admin/api/2023-04/products.json', {
   console.log('📊 Создаем прогресс обучения...')
 
   // Прогресс для WordPress студентов
-  const wpLessons = await prisma.lesson.findMany({
+  const wpLessonsForProgress = await prisma.lesson.findMany({
     where: {
       module: {
         courseId: course1.id
@@ -1091,20 +1623,20 @@ fetch('/admin/api/2023-04/products.json', {
   })
 
   for (const student of students.slice(0, 10)) {
-    for (let i = 0; i < wpLessons.length; i++) {
+    for (let i = 0; i < wpLessonsForProgress.length; i++) {
       // Случайный прогресс - некоторые уроки завершены, некоторые нет
       if (Math.random() > 0.3) {
         await prisma.lessonProgress.upsert({
           where: {
             userId_lessonId: {
               userId: student.id,
-              lessonId: wpLessons[i].id
+              lessonId: wpLessonsForProgress[i].id
             }
           },
           update: {},
           create: {
             userId: student.id,
-            lessonId: wpLessons[i].id,
+            lessonId: wpLessonsForProgress[i].id,
             completed: Math.random() > 0.2, // 80% завершены
             progress: Math.random() * 100 // прогресс от 0 до 100%
           }
