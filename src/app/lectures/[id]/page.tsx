@@ -3,18 +3,59 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { File, Image } from 'lucide-react'
+import { File, Image, Link as LinkIcon, Video, Code, Download, ArrowLeft, Calendar, User, BookOpen, Clock } from 'lucide-react'
 import VideoPlayer from '@/components/ui/VideoPlayer'
+
+interface LectureBlock {
+  id: string;
+  type: 'text' | 'video' | 'code' | 'link' | 'file' | 'gallery';
+  content?: string;
+  metadata?: {
+    url?: string;
+    alt?: string;
+    filename?: string;
+    language?: string;
+    description?: string;
+    fileSize?: number;
+    files?: Array<{
+      id: string;
+      url: string;
+      name: string;
+      size: number;
+      type: string;
+      publicId?: string;
+    }>;
+  };
+}
 
 interface Lecture {
   id: string
   title: string
   description?: string | null
-  content: Array<{
-    type: string;
-    data: unknown;
-  }>
+  thumbnail?: string | null
+  content: LectureBlock[]
   isActive: boolean
+  createdAt: string
+  creator: {
+    id: string
+    name: string
+    email: string
+  }
+  lessons: Array<{
+    id: string
+    title: string
+    module: {
+      id: string
+      title: string
+      course: {
+        id: string
+        title: string
+      }
+    }
+  }>
+  _count: {
+    lessons: number
+  }
 }
 
 interface LectureResponse {
@@ -53,23 +94,173 @@ export default function LecturePage() {
     }
   }
 
-  const parseLectureContent = (content: Array<{
-    type: string;
-    data: unknown;
-  }> | string | null) => {
-    try {
-      if (!content) return [];
-      return typeof content === 'string' ? JSON.parse(content) : content;
-    } catch (error) {
-      console.error('Error parsing lecture content:', error);
-      return [];
-    }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
+
+  const renderBlock = (block: LectureBlock, index: number) => {
+    switch (block.type) {
+      case 'text':
+        return (
+          <div className="prose max-w-none">
+            <div 
+              className="whitespace-pre-wrap text-gray-800 leading-relaxed text-lg"
+              dangerouslySetInnerHTML={{ __html: block.content || '' }}
+            />
+          </div>
+        );
+
+      case 'gallery':
+        return (
+          <div className="my-6">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <Image className="w-5 h-5 text-green-600" />
+                Галерея изображений ({block.metadata?.files?.length || 0})
+              </h4>
+              
+              <div className={`grid gap-4 ${
+                (block.metadata?.files?.length || 0) === 1 
+                  ? 'grid-cols-1' 
+                  : 'grid-cols-2'
+              }`}>
+                {block.metadata?.files?.map((file) => (
+                  <div key={file.id} className="group relative">
+                    <a
+                      href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3007'}${file.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <div className={`w-full rounded-lg border border-gray-200 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg bg-gray-100 flex items-center justify-center ${
+                        (block.metadata?.files?.length || 0) === 1 
+                          ? 'h-64' 
+                          : 'h-48'
+                      }`}>
+                        <img
+                          src={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3007'}${file.url}`}
+                          alt={file.name}
+                          className="w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            console.error('Ошибка загрузки изображения:', file.url, e);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+              
+              {block.content && (
+                <p className="text-gray-600 mt-3 text-sm">{block.content}</p>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'file':
+        return (
+          <div className="my-6">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <File className="w-5 h-5 text-indigo-600" />
+                Файлы для скачивания ({block.metadata?.files?.length || 0})
+              </h4>
+              
+              <div className="space-y-2">
+                {block.metadata?.files?.map((file) => (
+                  <div key={file.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <File className="w-5 h-5 text-indigo-600" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                        <div className="text-sm text-gray-500">
+                          {Math.round(file.size / 1024)} KB
+                        </div>
+                      </div>
+                    </div>
+                    <a
+                      href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3007'}${file.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                    >
+                      Скачать
+                    </a>
+                  </div>
+                ))}
+              </div>
+              
+              {block.content && (
+                <p className="text-gray-600 mt-3 text-sm">{block.content}</p>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'video':
+        return (
+          <div className="my-6">
+            <VideoPlayer
+              videoUrl={block.metadata?.url || ''}
+              title={block.content || 'Видео'}
+              className="w-full"
+            />
+            {block.content && (
+              <p className="text-gray-600 mt-3 text-center">{block.content}</p>
+            )}
+          </div>
+        );
+
+      case 'code':
+        return (
+          <div className="my-6">
+            <div className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto">
+              <div className="text-sm text-gray-400 mb-3 font-medium">
+                {block.metadata?.language || 'Код'}
+              </div>
+              <pre className="text-sm leading-relaxed">
+                <code>{block.content || block.metadata?.url || ''}</code>
+              </pre>
+            </div>
+          </div>
+        );
+
+      case 'link':
+        return (
+          <div className="my-6">
+            <a 
+              href={block.metadata?.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-lg font-medium"
+            >
+              <LinkIcon className="w-5 h-5 mr-3" />
+              {block.content || 'Открыть ссылку'}
+            </a>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="my-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800">Неизвестный тип блока: {block.type}</p>
+          </div>
+        );
+    }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Загрузка лекции...</p>
@@ -82,7 +273,7 @@ export default function LecturePage() {
   if (error || !lecture) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="text-red-600 mb-4">
               <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,9 +281,14 @@ export default function LecturePage() {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Ошибка загрузки лекции
+              {error === 'Access denied' ? 'Доступ запрещен' : 'Ошибка загрузки лекции'}
             </h3>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <p className="text-gray-600 mb-4">
+              {error === 'Access denied' 
+                ? 'У вас нет доступа к этой лекции. Убедитесь, что вы записаны на соответствующий курс.'
+                : error
+              }
+            </p>
             <Link
               href="/courses"
               className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
@@ -105,14 +301,9 @@ export default function LecturePage() {
     )
   }
 
-  const contentBlocks = parseLectureContent(lecture.content) as Array<{
-    type: string;
-    data: unknown;
-  }>
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Хлебные крошки */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-500">
@@ -130,241 +321,183 @@ export default function LecturePage() {
           </ol>
         </nav>
 
-        {/* Заголовок лекции */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <div className="flex items-center mb-6">
-            <div className="bg-cyan-100 text-cyan-800 p-3 rounded-lg mr-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Основной контент */}
+          <div className="lg:col-span-3">
+            {/* Заголовок лекции */}
+            <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-200">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex items-center">
+                  <div className="bg-gradient-to-br from-cyan-400 to-blue-500 p-4 rounded-2xl mr-6 shadow-lg">
+                    <BookOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      {lecture.title}
+                    </h1>
+                    {lecture.description && (
+                      <p className="text-gray-600 text-lg leading-relaxed">{lecture.description}</p>
+                    )}
+                  </div>
+                </div>
+                <Link
+                  href="/courses"
+                  className="flex items-center text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Назад
+                </Link>
+              </div>
+
+              {/* Информация о лекции */}
+              <div className="flex flex-wrap gap-6 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Автор: {lecture.creator.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Создано: {formatDate(lecture.createdAt)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span>{lecture._count.lessons} уроков</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${lecture.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span>{lecture.isActive ? 'Активна' : 'Неактивна'}</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {lecture.title}
-              </h1>
-              {lecture.description && (
-                <p className="text-gray-600 mt-2 text-lg">{lecture.description}</p>
+
+            {/* Контент лекции */}
+            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+              {lecture.content && lecture.content.length > 0 ? (
+                <div className="space-y-8">
+                  {lecture.content.map((block, index) => (
+                    <div key={block.id || index} className="group/block">
+                      <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-sm font-semibold">
+                            {index + 1}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {block.type === 'text' && <File className="w-4 h-4 text-gray-500" />}
+                            {block.type === 'gallery' && <Image className="w-4 h-4 text-gray-500" />}
+                            {block.type === 'video' && <Video className="w-4 h-4 text-gray-500" />}
+                            {block.type === 'file' && <Download className="w-4 h-4 text-gray-500" />}
+                            {block.type === 'link' && <LinkIcon className="w-4 h-4 text-gray-500" />}
+                            {block.type === 'code' && <Code className="w-4 h-4 text-gray-500" />}
+                            <span className="text-sm font-medium text-gray-600 capitalize">
+                              {block.type === 'text' ? 'Текст' : 
+                               block.type === 'gallery' ? 'Галерея' :
+                               block.type === 'video' ? 'Видео' :
+                               block.type === 'file' ? 'Файл' :
+                               block.type === 'link' ? 'Ссылка' :
+                               block.type === 'code' ? 'Код' : block.type}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-11">
+                          {renderBlock(block, index)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <BookOpen className="mx-auto h-16 w-16" />
+                  </div>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">
+                    Контент лекции пока не добавлен
+                  </h3>
+                  <p className="text-gray-600">
+                    Содержание лекции будет добавлено в ближайшее время
+                  </p>
+                </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Контент лекции */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          {contentBlocks && contentBlocks.length > 0 ? (
-            <div className="space-y-8">
-              {contentBlocks.map((block: {
-                id?: string;
-                type: string;
-                content?: string;
-                metadata?: {
-                  url?: string;
-                  alt?: string;
-                  filename?: string;
-                  files?: Array<{
-                    id: string;
-                    url: string;
-                    name: string;
-                    size: number;
-                    type: string;
-                    publicId?: string;
-                  }>;
-                };
-              }, index: number) => (
-                <div key={block.id || index} className="border-l-4 border-cyan-200 pl-6">
-                  {block.type === 'text' && (
-                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
-                      {block.content}
-                    </div>
-                  )}
-                  {block.type === 'gallery' && block.metadata?.files && block.metadata.files.length > 0 && (
-                    <div className="my-6">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <Image className="w-5 h-5 text-green-600" />
-                          Галерея изображений ({block.metadata.files.length})
-                        </h4>
-                        
-                        <div className={`grid gap-4 ${
-                          block.metadata.files.length === 1 
-                            ? 'grid-cols-1' 
-                            : 'grid-cols-2'
-                        }`}>
-                          {block.metadata.files.map((file) => (
-                            <div key={file.id} className="group relative">
-                              <a
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block"
-                              >
-                                <div className={`w-full rounded-lg border border-gray-200 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg bg-gray-100 flex items-center justify-center ${
-                                  block.metadata.files.length === 1 
-                                    ? 'h-64' 
-                                    : 'h-48'
-                                }`}>
-                                  <img
-                                    src={file.url}
-                                    alt={file.name}
-                                    className="w-full h-full object-cover rounded-lg"
-                                    onError={(e) => {
-                                      console.error('Ошибка загрузки изображения:', file.url, e);
-                                      e.currentTarget.style.display = 'none';
-                                      // Показываем fallback
-                                      const fallback = e.currentTarget.parentElement;
-                                      if (fallback) {
-                                        fallback.innerHTML = `
-                                          <div class="flex flex-col items-center justify-center text-gray-500 p-4">
-                                            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                            <span class="text-sm text-center">Ошибка загрузки</span>
-                                            <span class="text-xs text-center mt-1">${file.name}</span>
-                                          </div>
-                                        `;
-                                      }
-                                    }}
-                                    onLoad={() => {
-                                      console.log('Изображение загружено:', file.url);
-                                    }}
-                                  />
-                                </div>
-                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <div className="bg-white bg-opacity-90 rounded-full p-2">
-                                      <Image className="w-6 h-6 text-green-600" />
-                                    </div>
-                                  </div>
-                                </div>
-                              </a>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {block.content && (
-                          <p className="text-gray-600 mt-3 text-sm">{block.content}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {block.type === 'file' && block.metadata?.files && block.metadata.files.length > 0 && (
-                    <div className="my-6">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <File className="w-5 h-5 text-indigo-600" />
-                          Файлы для скачивания ({block.metadata.files.length})
-                        </h4>
-                        
-                        <div className="space-y-2">
-                          {block.metadata.files.map((file) => (
-                            <div key={file.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors">
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <File className="w-5 h-5 text-indigo-600" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-gray-900 truncate">{file.name}</div>
-                                  <div className="text-sm text-gray-500">
-                                    {Math.round(file.size / 1024)} KB
-                                  </div>
-                                </div>
-                              </div>
-                              <a
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
-                              >
-                                Скачать
-                              </a>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {block.content && (
-                          <p className="text-gray-600 mt-3 text-sm">{block.content}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {block.type === 'file' && block.metadata?.url && (
-                    <div className="my-6 p-6 bg-gray-50 rounded-lg border">
-                      <div className="flex items-center">
-                        <svg className="w-10 h-10 text-gray-400 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        <div className="flex-1">
-                          <a 
-                            href={block.metadata.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-700 font-medium text-lg"
-                          >
-                            {block.metadata.filename || 'Скачать файл'}
-                          </a>
-                          {block.content && (
-                            <p className="text-gray-600 mt-2">{block.content}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {block.type === 'video' && block.metadata?.url && (
-                    <div className="my-6">
-                      <VideoPlayer
-                        videoUrl={block.metadata.url}
-                        title={block.content || 'Видео'}
-                        className="w-full"
-                      />
-                      {block.content && (
-                        <p className="text-gray-600 mt-3 text-center">{block.content}</p>
-                      )}
-                    </div>
-                  )}
-                  {block.type === 'link' && block.metadata?.url && (
-                    <div className="my-6">
-                      <a 
-                        href={block.metadata.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-lg font-medium"
-                      >
-                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        {block.content || 'Открыть ссылку'}
-                      </a>
-                    </div>
-                  )}
-                  {block.type === 'code' && block.metadata?.url && (
-                    <div className="my-6">
-                      <div className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto">
-                        <div className="text-sm text-gray-400 mb-3 font-medium">
-                          {block.content || 'Код'}
-                        </div>
-                        <pre className="text-sm leading-relaxed">
-                          <code>{block.metadata.url}</code>
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <svg className="mx-auto h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
-                Контент лекции пока не добавлен
+          {/* Боковая панель */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-8 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Информация о лекции
               </h3>
-              <p className="text-gray-600">
-                Содержание лекции будет добавлено в ближайшее время
-              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Статус:</span>
+                  <span className={`text-sm font-medium ${lecture.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                    {lecture.isActive ? 'Активна' : 'Неактивна'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Автор:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {lecture.creator.name}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Уроков:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {lecture._count.lessons}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Создана:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {new Date(lecture.createdAt).toLocaleDateString('ru-RU')}
+                  </span>
+                </div>
+
+                {/* Связанные уроки */}
+                {lecture.lessons.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3">
+                      Связанные уроки
+                    </h4>
+                    <div className="space-y-2">
+                      {lecture.lessons.map((lesson) => (
+                        <Link
+                          key={lesson.id}
+                          href={`/courses/${lesson.module.course.id}/lessons/${lesson.id}`}
+                          className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {lesson.title}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {lesson.module.course.title} • {lesson.module.title}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">
+                    Навигация
+                  </h4>
+                  <div className="space-y-2">
+                    <Link
+                      href="/courses"
+                      className="block text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      ← К курсам
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

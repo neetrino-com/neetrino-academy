@@ -57,6 +57,36 @@ export async function GET(
       return NextResponse.json({ error: 'Lecture not found' }, { status: 404 });
     }
 
+    // Проверяем доступ к лекции через уроки
+    const userId = session.user.id;
+    let hasAccess = false;
+
+    // Проверяем, есть ли у пользователя доступ к любому из уроков, связанных с лекцией
+    for (const lesson of lecture.lessons) {
+      const enrollment = await prisma.enrollment.findUnique({
+        where: {
+          userId_courseId: {
+            userId: userId,
+            courseId: lesson.module.course.id
+          }
+        }
+      });
+
+      if (enrollment) {
+        hasAccess = true;
+        break;
+      }
+    }
+
+    // Если лекция не связана с уроками, разрешаем доступ всем авторизованным пользователям
+    if (lecture.lessons.length === 0) {
+      hasAccess = true;
+    }
+
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     // Парсим JSON контент
     let parsedContent;
     try {
