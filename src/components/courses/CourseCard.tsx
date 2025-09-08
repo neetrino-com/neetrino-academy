@@ -140,7 +140,7 @@ export function CourseCard({
             <div className="text-right">
               {course.paymentType === 'ONE_TIME' ? (
                 <div className="text-lg font-bold text-indigo-600">
-                  {course.price === 0 ? 'Бесплатно' : `${course.price} ₽`}
+                  {course.price === 0 || course.price === '0' ? 'Бесплатно' : `${course.price} ₽`}
                   <div className="text-xs text-gray-500 font-normal">1 разовая оплата</div>
                 </div>
               ) : (
