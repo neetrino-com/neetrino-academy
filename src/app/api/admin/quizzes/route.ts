@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error creating quiz:', error)
+    console.error('Quiz data received:', JSON.stringify(body, null, 2))
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1991,8 +1991,19 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         for (const quiz of quizzes) {
           if (quiz.questions && quiz.questions.length > 0) {
             try {
-              const quizResponse = await fetch('/api/admin/quizzes', {
-                method: 'POST',
+              console.log('=== DEBUG: Отправляем тест ===')
+              console.log('Quiz data:', JSON.stringify(quiz, null, 2))
+              
+              // Если у теста есть ID, значит он уже существует - обновляем
+              // Если нет ID - создаем новый
+              const isUpdate = quiz.id && !quiz.id.startsWith('quiz_')
+              const url = isUpdate ? `/api/admin/quizzes/${quiz.id}` : '/api/admin/quizzes'
+              const method = isUpdate ? 'PUT' : 'POST'
+              
+              console.log(`Метод: ${method}, URL: ${url}`)
+              
+              const quizResponse = await fetch(url, {
+                method,
                 headers: {
                   'Content-Type': 'application/json',
                 },
@@ -2000,10 +2011,15 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               })
               
               if (!quizResponse.ok) {
-                console.error('Ошибка создания теста:', await quizResponse.text())
+                const errorText = await quizResponse.text()
+                console.error(`Ошибка ${isUpdate ? 'обновления' : 'создания'} теста:`, errorText)
+                console.error('Status:', quizResponse.status)
+                console.error('StatusText:', quizResponse.statusText)
+              } else {
+                console.log(`Тест успешно ${isUpdate ? 'обновлен' : 'создан'}!`)
               }
             } catch (error) {
-              console.error('Ошибка при создании теста:', error)
+              console.error('Ошибка при сохранении теста:', error)
             }
           }
         }
