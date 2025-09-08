@@ -35,8 +35,7 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            lessons: true,
-            assignments: true
+            lessons: true
           }
         }
       },

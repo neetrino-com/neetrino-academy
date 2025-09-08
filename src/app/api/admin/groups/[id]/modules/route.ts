@@ -50,8 +50,7 @@ export async function GET(
         },
         _count: {
           select: {
-            lessons: true,
-            assignments: true
+            lessons: true
           }
         }
       },

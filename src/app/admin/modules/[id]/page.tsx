@@ -38,8 +38,7 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
       },
       _count: {
         select: {
-          lessons: true,
-          assignments: true
+          lessons: true
         }
       }
     }
@@ -62,7 +61,7 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
                   Уроки модуля: {existingModule.title}
                 </h1>
                 <p className="mt-2 text-gray-600">
-                  Курс: {existingModule.course.title} • Уроков: {existingModule._count.lessons} • Заданий: {existingModule._count.assignments}
+                  Курс: {existingModule.course.title} • Уроков: {existingModule._count.lessons}
                 </p>
               </div>
               <div className="flex space-x-3">
