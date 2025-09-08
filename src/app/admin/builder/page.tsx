@@ -246,13 +246,21 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               
               try {
                 // Сначала проверяем, есть ли тест для урока
+                const controller = new AbortController()
+                const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 секунд таймаут
+                
                 const quizCheckResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`, {
-                  method: 'HEAD' // Используем HEAD для проверки существования без загрузки данных
+                  method: 'HEAD', // Используем HEAD для проверки существования без загрузки данных
+                  signal: controller.signal
                 })
+                
+                clearTimeout(timeoutId)
                 
                 if (quizCheckResponse.ok) {
                   // Если тест существует, загружаем его
-                  const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
+                  const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`, {
+                    signal: controller.signal
+                  })
                   if (quizResponse.ok) {
                     quiz = await quizResponse.json()
                     hasQuiz = true
@@ -265,6 +273,10 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                 // Не логируем ошибки, так как это нормально для уроков без тестов
                 // Ошибки типа net::ERR_ABORTED означают, что запрос был прерван
                 // Это нормально для уроков без тестов
+                if (error instanceof Error && error.name === 'AbortError') {
+                  // Игнорируем ошибки отмены запросов
+                  return
+                }
               }
               
               // Проверяем, есть ли задания для этого урока
