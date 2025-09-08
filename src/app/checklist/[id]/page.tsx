@@ -117,7 +117,7 @@ const directionLabels = {
 };
 
 export default function ChecklistPage({ params }: { params: Promise<{ id: string }> }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const resolvedParams = use(params);
   const [checklist, setChecklist] = useState<Checklist | null>(null);
@@ -128,14 +128,23 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
   const [retryCount, setRetryCount] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
-    if (!session?.user) {
+    // Ждем загрузки сессии
+    if (status === 'loading') {
+      return;
+    }
+
+    // Если сессия не загружена и пользователь не авторизован
+    if (status === 'unauthenticated' || !session?.user) {
       router.push('/login');
       return;
     }
 
-    fetchChecklist();
-    fetchProgress();
-  }, [session, resolvedParams.id, router]);
+    // Если сессия загружена и пользователь авторизован
+    if (status === 'authenticated' && session?.user) {
+      fetchChecklist();
+      fetchProgress();
+    }
+  }, [session, status, resolvedParams.id, router]);
 
   const fetchChecklist = async () => {
     try {
@@ -369,7 +378,8 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     return stats;
   }, [checklist, statusMap]);
 
-  if (loading) {
+  // Показываем загрузку во время проверки сессии или загрузки данных
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
@@ -379,7 +389,9 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
               <BookOpen className="h-6 w-6 text-blue-600" />
             </div>
           </div>
-          <p className="mt-4 text-slate-600 font-medium">Загрузка чеклиста...</p>
+          <p className="mt-4 text-slate-600 font-medium">
+            {status === 'loading' ? 'Проверка авторизации...' : 'Загрузка чеклиста...'}
+          </p>
         </div>
       </div>
     );
