@@ -88,6 +88,7 @@ interface QuizQuestion {
   question: string
   type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TRUE_FALSE'
   points: number
+  order: number
   options: QuizOption[]
 }
 
@@ -95,6 +96,7 @@ interface QuizOption {
   id: string
   text: string
   isCorrect: boolean
+  order: number
 }
 
 // Этапы создания курса
@@ -1587,9 +1589,10 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                           question: '',
                           type: 'SINGLE_CHOICE',
                           points: 1,
+                          order: (currentQuiz.questions || []).length + 1,
                           options: [
-                            { id: `opt_${Date.now()}_1`, text: '', isCorrect: false },
-                            { id: `opt_${Date.now()}_2`, text: '', isCorrect: false }
+                            { id: `opt_${Date.now()}_1`, text: '', isCorrect: false, order: 1 },
+                            { id: `opt_${Date.now()}_2`, text: '', isCorrect: false, order: 2 }
                           ]
                         }
                         const updated = { 
@@ -1701,7 +1704,9 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                                   <button
                                     onClick={() => {
                                       const updatedQuestions = [...(currentQuiz.questions || [])]
-                                      const updatedOptions = question.options.filter((_, i) => i !== oIndex)
+                                      const updatedOptions = question.options
+                                        .filter((_, i) => i !== oIndex)
+                                        .map((opt, index) => ({ ...opt, order: index + 1 }))
                                       updatedQuestions[qIndex] = { ...question, options: updatedOptions }
                                       const updated = { ...currentQuiz, questions: updatedQuestions }
                                       setQuizzes(prev => {
@@ -1721,7 +1726,8 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                                   const newOption = { 
                                     id: `opt_${Date.now()}`, 
                                     text: '', 
-                                    isCorrect: false 
+                                    isCorrect: false,
+                                    order: question.options.length + 1
                                   }
                                   updatedQuestions[qIndex] = { 
                                     ...question, 
@@ -1743,7 +1749,9 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
 
                           <button
                             onClick={() => {
-                              const updatedQuestions = (currentQuiz.questions || []).filter((_, i) => i !== qIndex)
+                              const updatedQuestions = (currentQuiz.questions || [])
+                                .filter((_, i) => i !== qIndex)
+                                .map((q, index) => ({ ...q, order: index + 1 }))
                               const updated = { ...currentQuiz, questions: updatedQuestions }
                               setQuizzes(prev => {
                                 const filtered = prev.filter(q => q.lessonId !== selectedLesson)
