@@ -176,9 +176,11 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
         setProgress(prev => {
           if (!prev) return prev;
           
-          const existingIndex = prev.itemProgress.findIndex(p => p.itemId === itemId);
+          const itemProgress = prev.itemProgress || [];
+          const existingIndex = itemProgress.findIndex(p => p.itemId === itemId);
           if (existingIndex >= 0) {
             const newProgress = { ...prev };
+            newProgress.itemProgress = [...itemProgress];
             newProgress.itemProgress[existingIndex] = {
               ...newProgress.itemProgress[existingIndex],
               status: status as 'COMPLETED' | 'NOT_COMPLETED' | 'IN_PROGRESS',
@@ -189,7 +191,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
             return {
               ...prev,
               itemProgress: [
-                ...prev.itemProgress,
+                ...itemProgress,
                 {
                   id: `temp-${Date.now()}`,
                   itemId,
