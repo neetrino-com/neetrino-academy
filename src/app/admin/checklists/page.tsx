@@ -373,7 +373,7 @@ export default function ChecklistsPage() {
                     {/* Действия */}
                     <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => window.location.href = `/admin/checklists/${checklist.id}`}
+                        onClick={() => window.location.href = `/checklist/${checklist.id}`}
                         className="w-12 h-12 flex items-center justify-center text-amber-600 hover:text-white hover:bg-amber-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-amber-200 hover:border-amber-600 backdrop-blur-sm"
                         title="Просмотр"
                       >

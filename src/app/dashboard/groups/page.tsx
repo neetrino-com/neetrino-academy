@@ -25,9 +25,8 @@ export default async function StudentGroupsPage() {
     redirect('/login')
   }
 
-  if (session.user.role !== 'STUDENT') {
-    redirect('/')
-  }
+  // Все авторизованные пользователи могут видеть группы
+  // (студенты, учителя, админы)
 
   // Получаем все группы, в которых состоит студент
   const groupMemberships = await prisma.groupStudent.findMany({

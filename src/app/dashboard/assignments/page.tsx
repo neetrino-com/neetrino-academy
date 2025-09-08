@@ -26,9 +26,8 @@ export default async function StudentAssignmentsPage() {
     redirect('/login')
   }
 
-  if (session.user.role !== 'STUDENT') {
-    redirect('/')
-  }
+  // Все авторизованные пользователи могут видеть задания
+  // (студенты, учителя, админы)
 
   // Получаем все задания студента из его групп
   const assignments = await prisma.groupAssignment.findMany({

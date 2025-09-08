@@ -12,10 +12,8 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Только студенты могут видеть дашборд
-  if (session.user.role !== 'STUDENT') {
-    redirect('/')
-  }
+  // Все авторизованные пользователи могут видеть дашборд
+  // (студенты, учителя, админы)
 
   // Получаем курсы пользователя
   const enrollments = await prisma.enrollment.findMany({

@@ -25,9 +25,8 @@ export default async function StudentQuizzesPage() {
     redirect('/login')
   }
 
-  if (session.user.role !== 'STUDENT') {
-    redirect('/')
-  }
+  // Все авторизованные пользователи могут видеть тесты
+  // (студенты, учителя, админы)
 
   // Получаем все тесты из курсов, на которые записан студент
   const enrollments = await prisma.enrollment.findMany({

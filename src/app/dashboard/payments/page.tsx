@@ -97,10 +97,8 @@ export default function DashboardPaymentsPage() {
       return
     }
 
-    if (session.user.role !== 'STUDENT') {
-      router.push('/')
-      return
-    }
+    // Все авторизованные пользователи могут видеть платежи
+    // (студенты, учителя, админы)
 
     fetchPayments()
   }, [session, status, router])

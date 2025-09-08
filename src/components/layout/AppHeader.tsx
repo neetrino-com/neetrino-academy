@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, User, Settings, LogOut, Home, ArrowLeft, CreditCard } from 'lucide-react'
+import { ChevronDown, User, Settings, LogOut, Home, ArrowLeft, CreditCard, Menu, X } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
 import { CanAccess, StudentOnly, StaffOnly, AdminOnly } from '@/components/auth/CanAccess'
 import NotificationDropdown from './NotificationDropdown'
@@ -12,12 +12,17 @@ export function AppHeader() {
   const { data: session, status } = useSession()
   const { can, isStudent, isStaff, userRole } = usePermissions()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false)
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setShowMobileMenu(false)
       }
     }
 
@@ -27,7 +32,7 @@ export function AppHeader() {
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Умный логотип и навигация */}
           <div className="flex items-center space-x-4">
@@ -66,55 +71,82 @@ export function AppHeader() {
                   Neetrino Academy
                 </span>
                 <div className="text-xs text-gray-500 font-medium">
-                  {isStudent ? 'Студент' : 'Администратор'}
+                  {isStudent ? 'Студент' : userRole === 'TEACHER' ? 'Преподаватель' : 'Администратор'}
                 </div>
               </div>
             </Link>
           </div>
 
-          {/* Компактная App Navigation */}
+          {/* Расширенная App Navigation */}
           {session?.user && (
-            <nav className="hidden lg:flex space-x-3">
-              {/* Для студентов навигация не нужна - логотип ведет в дашборд */}
+            <>
+              {/* Десктопная навигация */}
+              <nav className="hidden lg:flex space-x-1">
+                {/* Переключение между админкой и дашбордом для админов и учителей */}
+                <StaffOnly>
+                  <Link 
+                    href="/dashboard" 
+                    className="relative text-blue-600 hover:text-blue-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-sm"
+                  >
+                    Дашборд
+                  </Link>
+                  <Link 
+                    href="/admin" 
+                    className="relative text-emerald-600 hover:text-emerald-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-sm"
+                  >
+                    Админка
+                  </Link>
+                </StaffOnly>
 
-              {/* Для преподавателей и админов - только основное */}
-              <StaffOnly>
-                <Link 
-                  href="/admin/groups" 
-                  className="relative text-emerald-600 hover:text-emerald-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-sm"
-                >
-                  Группы
-                </Link>
-                <Link 
-                  href="/admin/courses" 
-                  className="relative text-blue-600 hover:text-blue-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-sm"
-                >
-                  Курсы
-                </Link>
-                <Link 
-                  href="/admin/tests" 
-                  className="relative text-purple-600 hover:text-purple-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:shadow-sm"
-                >
-                  Тесты
-                </Link>
-              </StaffOnly>
+                {/* Для преподавателей и админов - основное меню админки */}
+                <StaffOnly>
+                  <Link 
+                    href="/admin/groups" 
+                    className="relative text-emerald-600 hover:text-emerald-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-sm"
+                  >
+                    Группы
+                  </Link>
+                  <Link 
+                    href="/admin/courses" 
+                    className="relative text-blue-600 hover:text-blue-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-sm"
+                  >
+                    Курсы
+                  </Link>
+                  <Link 
+                    href="/admin/tests" 
+                    className="relative text-purple-600 hover:text-purple-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:shadow-sm"
+                  >
+                    Тесты
+                  </Link>
+                </StaffOnly>
 
-              {/* Только для админов */}
-              <AdminOnly>
-                <Link 
-                  href="/admin/analytics" 
-                  className="relative text-orange-600 hover:text-orange-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-sm"
+                {/* Только для админов */}
+                <AdminOnly>
+                  <Link 
+                    href="/admin/analytics" 
+                    className="relative text-orange-600 hover:text-orange-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-sm"
+                  >
+                    Аналитика
+                  </Link>
+                  <Link 
+                    href="/admin/security" 
+                    className="relative text-red-600 hover:text-red-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-sm"
+                  >
+                    Безопасность
+                  </Link>
+                </AdminOnly>
+              </nav>
+
+              {/* Мобильная кнопка меню */}
+              <div className="lg:hidden">
+                <button
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                  className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
-                  Аналитика
-                </Link>
-                <Link 
-                  href="/admin/security" 
-                  className="relative text-red-600 hover:text-red-800 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-sm"
-                >
-                  Безопасность
-                </Link>
-              </AdminOnly>
-            </nav>
+                  {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+              </div>
+            </>
           )}
 
           {/* User Menu */}
@@ -249,6 +281,74 @@ export function AppHeader() {
             )}
           </div>
         </div>
+
+        {/* Мобильное меню */}
+        {showMobileMenu && session?.user && (
+          <div ref={mobileMenuRef} className="lg:hidden border-t border-gray-200 bg-white">
+            <div className="px-4 py-3 space-y-2">
+              {/* Переключение между админкой и дашбордом для админов и учителей */}
+              <StaffOnly>
+                <Link 
+                  href="/dashboard" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-blue-600 hover:text-blue-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-blue-50"
+                >
+                  📊 Дашборд
+                </Link>
+                <Link 
+                  href="/admin" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-emerald-600 hover:text-emerald-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-emerald-50"
+                >
+                  ⚙️ Админка
+                </Link>
+              </StaffOnly>
+
+              {/* Для преподавателей и админов - основное меню админки */}
+              <StaffOnly>
+                <Link 
+                  href="/admin/groups" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-emerald-600 hover:text-emerald-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-emerald-50"
+                >
+                  👥 Группы
+                </Link>
+                <Link 
+                  href="/admin/courses" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-blue-600 hover:text-blue-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-blue-50"
+                >
+                  📚 Курсы
+                </Link>
+                <Link 
+                  href="/admin/tests" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-purple-600 hover:text-purple-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-purple-50"
+                >
+                  🧪 Тесты
+                </Link>
+              </StaffOnly>
+
+              {/* Только для админов */}
+              <AdminOnly>
+                <Link 
+                  href="/admin/analytics" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-orange-600 hover:text-orange-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-orange-50"
+                >
+                  📈 Аналитика
+                </Link>
+                <Link 
+                  href="/admin/security" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-red-600 hover:text-red-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-red-50"
+                >
+                  🔒 Безопасность
+                </Link>
+              </AdminOnly>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )

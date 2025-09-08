@@ -11,9 +11,8 @@ export default async function StudentCoursesPage() {
     redirect('/login')
   }
 
-  if (session.user.role !== 'STUDENT') {
-    redirect('/')
-  }
+  // Все авторизованные пользователи могут видеть курсы
+  // (студенты, учителя, админы)
 
   // Получаем все курсы студента
   const enrollments = await prisma.enrollment.findMany({
