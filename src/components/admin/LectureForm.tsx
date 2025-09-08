@@ -102,12 +102,11 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Красивый заголовок с градиентом */}
+        {/* Красивый заголовок */}
         <div className="relative mb-12">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl opacity-10"></div>
-          <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
+          <div className="relative bg-white rounded-3xl p-8 shadow-lg border border-gray-200">
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-4">
@@ -126,7 +125,7 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
               </div>
               <button
                 onClick={() => router.push('/admin/lectures')}
-                className="group flex items-center gap-3 px-6 py-3 bg-white/80 hover:bg-white text-gray-700 hover:text-gray-900 rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="group flex items-center gap-3 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-300"
               >
                 <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
                 <span className="font-medium">Отмена</span>
@@ -138,8 +137,7 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Основная информация */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-            <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500">
+            <div className="relative bg-white rounded-3xl p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Settings className="w-6 h-6 text-white" />
@@ -213,8 +211,7 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
 
           {/* Контент лекции */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-            <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500">
+            <div className="relative bg-white rounded-3xl p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                   <FileText className="w-6 h-6 text-white" />
@@ -234,8 +231,7 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
 
           {/* Кнопки действий */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-500/10 to-slate-500/10 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-            <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-white/20 hover:shadow-3xl transition-all duration-500">
+            <div className="relative bg-white rounded-3xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-slate-600 rounded-xl flex items-center justify-center shadow-lg">
