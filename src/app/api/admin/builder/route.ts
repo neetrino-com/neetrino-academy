@@ -167,22 +167,8 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Создаём задания (если есть)
-        if (moduleData.assignments && moduleData.assignments.length > 0) {
-          console.log(`Создаём ${moduleData.assignments.length} заданий для модуля ${moduleData.title}`)
-          for (const assignment of moduleData.assignments) {
-            console.log('Создаём задание:', assignment.title)
-            await tx.assignment.create({
-              data: {
-                title: assignment.title,
-                description: assignment.description || '',
-                dueDate: assignment.dueDate ? new Date(assignment.dueDate) : null,
-                moduleId: newModule.id,
-                createdBy: user.id
-              }
-            })
-          }
-        }
+        // Задания теперь создаются через уроки, а не через модули
+        // Эта логика удалена, так как задания привязаны к урокам
       }
 
       return newCourse

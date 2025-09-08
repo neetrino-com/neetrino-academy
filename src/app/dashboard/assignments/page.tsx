@@ -356,14 +356,14 @@ export default async function StudentAssignmentsPage() {
                             <div className="flex-1">
                               <h3 className="font-bold text-gray-900 text-xl mb-2">{assignment.assignment.title}</h3>
                               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getDirectionColor(assignment.assignment.module.course.direction)}`}>
-                                  {getDirectionName(assignment.assignment.module.course.direction)}
+                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getDirectionColor(assignment.assignment.lesson.module.course.direction)}`}>
+                                  {getDirectionName(assignment.assignment.lesson.module.course.direction)}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                   </svg>
-                                  {assignment.assignment.module.course.title}
+                                  {assignment.assignment.lesson.module.course.title}
                                 </span>
                                 <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                                 <span className="flex items-center gap-1">
@@ -391,7 +391,7 @@ export default async function StudentAssignmentsPage() {
                             <div className="flex items-center gap-2">
                               <FileText className="w-4 h-4 text-gray-500" />
                               <span className="font-medium">Модуль:</span>
-                              <span className="font-semibold text-gray-900">{assignment.assignment.module.title}</span>
+                              <span className="font-semibold text-gray-900">{assignment.assignment.lesson.module.title}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4 text-gray-500" />

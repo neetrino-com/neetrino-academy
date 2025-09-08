@@ -197,7 +197,7 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
         const data = await response.json()
         const courseAssignments = data.filter((a: { assignment: { module: { courseId: string } } }) => {
           // Найти задания, связанные с выбранным курсом через модули
-          return a.assignment.module.courseId === formData.courseId
+          return a.assignment.lesson.module.courseId === formData.courseId
         })
         setAssignments(courseAssignments.map((a: { assignment: Assignment }) => a.assignment))
       }

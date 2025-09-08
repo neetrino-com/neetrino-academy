@@ -236,7 +236,7 @@ export async function GET(request: NextRequest) {
         id: submission.id,
         studentName: submission.user.name,
         assignmentTitle: submission.assignment.title,
-        courseTitle: submission.assignment.module.course.title,
+        courseTitle: submission.assignment.lesson.module.course.title,
         submittedAt: submission.submittedAt,
         score: submission.score,
         isGraded: !!submission.gradedAt

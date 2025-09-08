@@ -145,7 +145,7 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{submission.assignment.title}</h3>
                     <p className="text-gray-600">
-                      {submission.assignment.module.course.title} • {submission.assignment.module.title}
+                      {submission.assignment.lesson.module.course.title} • {submission.assignment.lesson.module.title}
                     </p>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
                       Курс
                     </div>
                     <p className="font-medium text-gray-900">
-                      {submission.assignment.module.course.title}
+                      {submission.assignment.lesson.module.course.title}
                     </p>
                   </div>
 
@@ -358,7 +358,7 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
                       Модуль
                     </div>
                     <p className="font-medium text-gray-900">
-                      {submission.assignment.module.title}
+                      {submission.assignment.lesson.module.title}
                     </p>
                   </div>
 

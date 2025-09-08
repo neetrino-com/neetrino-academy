@@ -806,10 +806,12 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                   <h3 className="text-lg font-semibold text-gray-900">Задания группы</h3>
                   <button 
                     onClick={() => setShowAssignmentCreationModal(true)}
-                    className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2"
+                    disabled
+                    title="Функционал временно отключен - обновляется для работы с уроками"
                   >
                     <Plus className="w-4 h-4" />
-                    Создать задание
+                    Создать задание (временно отключено)
                   </button>
                 </div>
                 
@@ -827,7 +829,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                       </div>
                       <div className="space-y-2 mb-3">
                         <p className="text-xs text-gray-600">
-                          {groupAssignment.assignment.module.course.title} • {groupAssignment.assignment.module.title}
+                          {groupAssignment.assignment.lesson.module.course.title} • {groupAssignment.assignment.lesson.module.title}
                         </p>
                         <p className="text-xs text-red-600 font-medium">
                           Срок: {formatDate(groupAssignment.assignment.dueDate)}

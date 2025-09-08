@@ -130,7 +130,7 @@ export default function SubmissionsManagement() {
     const matchesSearch = 
       submission.assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       submission.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      submission.assignment.module.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      submission.assignment.lesson.module.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       submission.groups.some(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()))
     
     return matchesSearch
@@ -321,7 +321,7 @@ export default function SubmissionsManagement() {
                             </span>
                             <span className="flex items-center gap-1">
                               <BookOpen className="w-4 h-4" />
-                              {submission.assignment.module.course.title}
+                              {submission.assignment.lesson.module.course.title}
                             </span>
                             <span className="flex items-center gap-1">
                               <Users className="w-4 h-4" />

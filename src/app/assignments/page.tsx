@@ -139,7 +139,7 @@ export default function StudentAssignments() {
 
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.assignment.module.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         assignment.assignment.lesson.module.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          assignment.group.name.toLowerCase().includes(searchTerm.toLowerCase())
     
     if (filter === 'all') return matchesSearch
@@ -359,7 +359,7 @@ export default function StudentAssignments() {
                           <div className="flex items-center gap-4 text-sm text-gray-600">
                             <span className="flex items-center gap-1">
                               <BookOpen className="w-4 h-4" />
-                              {assignment.assignment.module.course.title} • {assignment.assignment.module.title}
+                              {assignment.assignment.lesson.module.course.title} • {assignment.assignment.lesson.module.title}
                             </span>
                             <span className="flex items-center gap-1">
                               <Users className="w-4 h-4" />

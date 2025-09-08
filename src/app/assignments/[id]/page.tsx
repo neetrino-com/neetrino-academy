@@ -226,7 +226,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
               <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                 <span className="flex items-center gap-1">
                   <BookOpen className="w-4 h-4" />
-                  {assignment.assignment.assignment.module.course.title} • {assignment.assignment.assignment.module.title}
+                  {assignment.assignment.assignment.lesson.module.course.title} • {assignment.assignment.assignment.lesson.module.title}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="w-4 h-4" />
@@ -476,14 +476,14 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                 <div>
                   <p className="text-sm text-gray-600">Курс</p>
                   <p className="font-medium text-gray-900">
-                    {assignment.assignment.assignment.module.course.title}
+                    {assignment.assignment.assignment.lesson.module.course.title}
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-600">Модуль</p>
                   <p className="font-medium text-gray-900">
-                    {assignment.assignment.assignment.module.title}
+                    {assignment.assignment.assignment.lesson.module.title}
                   </p>
                 </div>
 

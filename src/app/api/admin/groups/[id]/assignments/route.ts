@@ -29,15 +29,15 @@ export async function POST(
 
     const { id: groupId } = await params
     const body = await request.json()
-    const { title, description, moduleId, dueDate } = body
+    const { title, description, lessonId, dueDate } = body
 
     // Валидация данных
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
-    if (!moduleId) {
-      return NextResponse.json({ error: 'Module is required' }, { status: 400 })
+    if (!lessonId) {
+      return NextResponse.json({ error: 'Lesson is required' }, { status: 400 })
     }
 
     if (!dueDate) {
@@ -53,26 +53,32 @@ export async function POST(
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    // Проверяем, что модуль существует и принадлежит курсу, назначенному группе
-    const existingModule = await prisma.module.findFirst({
+    // Проверяем, что урок существует и принадлежит курсу, назначенному группе
+    const existingLesson = await prisma.lesson.findFirst({
       where: {
-        id: moduleId,
-        course: {
-          groupCourses: {
-            some: {
-              groupId: groupId
+        id: lessonId,
+        module: {
+          course: {
+            groupCourses: {
+              some: {
+                groupId: groupId
+              }
             }
           }
         }
       },
       include: {
-        course: true
+        module: {
+          include: {
+            course: true
+          }
+        }
       }
     })
 
-    if (!existingModule) {
+    if (!existingLesson) {
       return NextResponse.json({ 
-        error: 'Module not found or not assigned to this group' 
+        error: 'Lesson not found or not assigned to this group' 
       }, { status: 404 })
     }
 
@@ -82,7 +88,10 @@ export async function POST(
         title: title.trim(),
         description: description?.trim() || null,
         dueDate: new Date(dueDate),
-        moduleId,
+        lessonId,
+        type: 'HOMEWORK',
+        status: 'PUBLISHED',
+        maxScore: 100,
         createdBy: user.id
       }
     })
@@ -120,11 +129,15 @@ export async function POST(
       include: {
         assignment: {
           include: {
-            module: {
+            lesson: {
               include: {
-                course: {
-                  select: {
-                    title: true
+                module: {
+                  include: {
+                    course: {
+                      select: {
+                        title: true
+                      }
+                    }
                   }
                 }
               }
@@ -169,12 +182,16 @@ export async function GET(
       include: {
         assignment: {
           include: {
-            module: {
+            lesson: {
               include: {
-                course: {
-                  select: {
-                    id: true,
-                    title: true
+                module: {
+                  include: {
+                    course: {
+                      select: {
+                        id: true,
+                        title: true
+                      }
+                    }
                   }
                 }
               }
