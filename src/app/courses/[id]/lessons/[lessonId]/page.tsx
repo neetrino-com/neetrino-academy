@@ -569,7 +569,7 @@ export default function LessonStudyPage() {
         </nav>
 
         <div className="max-w-6xl mx-auto">
-          {/* Объединенный блок заголовка и прогресса */}
+          {/* Заголовок урока */}
           <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
@@ -597,71 +597,52 @@ export default function LessonStudyPage() {
                       Видео включено
                     </span>
                   )}
+                  {lesson.checklist && (
+                    <span className="flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                      Чеклист
+                    </span>
+                  )}
                 </div>
               </div>
 
-              <Link
-                href={`/courses/${courseId}/modules/${lesson.module.id}`}
-                className="ml-6 text-blue-600 hover:text-blue-700 font-medium"
-              >
-                ← К модулю
-              </Link>
+              <div className="flex items-center space-x-4">
+                <Link
+                  href={`/courses/${courseId}/modules/${lesson.module.id}`}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  ← К модулю
+                </Link>
+                <Link
+                  href={`/courses/${courseId}`}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  ← К курсу
+                </Link>
+              </div>
             </div>
 
-            {/* Блок прогресса урока */}
+            {/* Статус урока */}
             <div className="border-t pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Прогресс урока
-                </h3>
-                <div className="flex items-center space-x-4 text-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-6">
                   <div className="flex items-center">
                     <span className="text-gray-600 mr-2">Статус:</span>
                     <span className={`font-medium ${isCompleted ? 'text-green-600' : 'text-yellow-600'}`}>
                       {isCompleted ? 'Завершен' : 'В процессе'}
                     </span>
                   </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-600 mr-2">Длительность:</span>
-                    <span className="font-medium text-gray-900">
-                      {formatDuration(lesson.duration)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {lesson.videoUrl && (
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-gray-600">Прогресс видео:</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {Math.round(videoProgress)}%
-                  </span>
-                </div>
-              )}
-
-              {lesson.checklist && (
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-gray-600">Тип урока:</span>
-                  <span className="text-sm font-medium text-amber-600">
-                    Чеклист
-                  </span>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-4">
-                  <Link
-                    href={`/courses/${courseId}/modules/${lesson.module.id}`}
-                    className="text-sm text-blue-600 hover:text-blue-700"
-                  >
-                    ← Вернуться к модулю
-                  </Link>
-                  <Link
-                    href={`/courses/${courseId}`}
-                    className="text-sm text-blue-600 hover:text-blue-700"
-                  >
-                    ← К курсу
-                  </Link>
+                  
+                  {lesson.videoUrl && (
+                    <div className="flex items-center">
+                      <span className="text-gray-600 mr-2">Прогресс видео:</span>
+                      <span className="font-medium text-gray-900">
+                        {Math.round(videoProgress)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 <div>
