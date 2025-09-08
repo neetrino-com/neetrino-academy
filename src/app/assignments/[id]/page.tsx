@@ -97,7 +97,11 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
       const apiUrl = `/api/student/assignments/${resolvedParams.id}/submission`
       console.log('🔍 [Assignment Page] API URL:', apiUrl)
       
-      const response = await fetch(apiUrl)
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
       console.log('📡 [Assignment Page] Response status:', response.status)
       console.log('📡 [Assignment Page] Response statusText:', response.statusText)
       console.log('📡 [Assignment Page] Response headers:', Object.fromEntries(response.headers.entries()))
