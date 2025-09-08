@@ -31,6 +31,8 @@ export function DynamicHeader() {
     pathname.startsWith('/notifications') ||
     pathname.startsWith('/profile') ||
     pathname.startsWith('/admin') ||
+    pathname.startsWith('/lectures') ||
+    pathname.startsWith('/checklist') ||
     (pathname.startsWith('/courses/') && pathname.split('/').length > 2) // Детальные страницы курсов
   ) {
     return <AppHeader />
