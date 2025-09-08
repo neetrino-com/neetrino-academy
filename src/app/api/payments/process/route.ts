@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { courseId, amount, currency } = body;
+    const { courseId, amount, currency, paymentMethod = 'CARD' } = body;
 
     if (!courseId || !amount) {
       return NextResponse.json(
@@ -52,6 +52,9 @@ export async function POST(request: NextRequest) {
     // В реальном приложении здесь была бы интеграция с платежной системой
     // Для демонстрации просто создаем запись о платеже и записи на курс
 
+    // Определяем статус платежа в зависимости от способа оплаты
+    const paymentStatus = paymentMethod === 'CASH' ? 'PAID' : 'COMPLETED';
+    
     // Создаем запись о платеже
     const payment = await prisma.payment.create({
       data: {
@@ -59,8 +62,8 @@ export async function POST(request: NextRequest) {
         courseId: courseId,
         amount: parseFloat(amount.toString()),
         currency: currency || 'RUB',
-        status: 'COMPLETED',
-        paymentMethod: 'CARD',
+        status: paymentStatus,
+        paymentMethod: paymentMethod,
         transactionId: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         paidAt: new Date()
       }
@@ -72,7 +75,8 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         courseId: courseId,
         enrolledAt: new Date(),
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        paymentStatus: paymentStatus === 'PAID' ? 'PAID' : 'PENDING'
       }
     });
 

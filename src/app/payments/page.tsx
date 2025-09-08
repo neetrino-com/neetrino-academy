@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { CreditCard, CheckCircle, AlertCircle } from 'lucide-react'
+import { CreditCard, CheckCircle, AlertCircle, Banknote } from 'lucide-react'
 
 interface PaymentInfo {
   courseId: string
@@ -12,12 +12,15 @@ interface PaymentInfo {
   paymentType: 'ONE_TIME' | 'MONTHLY'
 }
 
+type PaymentMethod = 'CARD' | 'CASH'
+
 export default function PaymentsPage() {
   const router = useRouter()
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'error'>('pending')
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('CARD')
 
   useEffect(() => {
     // Получаем информацию о платеже из localStorage или URL параметров
@@ -56,10 +59,14 @@ export default function PaymentsPage() {
     try {
       setProcessing(true)
       
-      // Имитация процесса оплаты
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Для наличных платежей - сразу успех
+      if (selectedPaymentMethod === 'CASH') {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      } else {
+        // Для карты - имитация процесса оплаты с возможностью ошибки
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
       
-      // В реальном приложении здесь был бы вызов платежного API
       const response = await fetch('/api/payments/process', {
         method: 'POST',
         headers: {
@@ -68,7 +75,8 @@ export default function PaymentsPage() {
         body: JSON.stringify({
           courseId: paymentInfo.courseId,
           amount: paymentInfo.amount,
-          currency: paymentInfo.currency
+          currency: paymentInfo.currency,
+          paymentMethod: selectedPaymentMethod
         })
       })
 
@@ -208,49 +216,103 @@ export default function PaymentsPage() {
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900">Способ оплаты</h3>
               
-              {/* Имитация формы оплаты */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Номер карты
-                  </label>
-                  <div className="relative">
-                    <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      disabled
-                    />
+              {/* Выбор способа оплаты */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <button
+                  onClick={() => setSelectedPaymentMethod('CARD')}
+                  className={`p-4 border-2 rounded-lg transition-all ${
+                    selectedPaymentMethod === 'CARD'
+                      ? 'border-indigo-500 bg-indigo-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <CreditCard className="w-5 h-5" />
+                    <span className="font-medium">Банковская карта</span>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Срок действия
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      disabled
-                    />
+                </button>
+                
+                <button
+                  onClick={() => setSelectedPaymentMethod('CASH')}
+                  className={`p-4 border-2 rounded-lg transition-all ${
+                    selectedPaymentMethod === 'CASH'
+                      ? 'border-indigo-500 bg-indigo-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Banknote className="w-5 h-5" />
+                    <span className="font-medium">Наличными</span>
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      CVV
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="123"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      disabled
-                    />
-                  </div>
-                </div>
+                </button>
               </div>
+              
+              {/* Форма оплаты картой */}
+              {selectedPaymentMethod === 'CARD' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Номер карты
+                    </label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="1234 5678 9012 3456"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Срок действия
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="MM/YY"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        disabled
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        CVV
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="123"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Информация о наличной оплате */}
+              {selectedPaymentMethod === 'CASH' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <Banknote className="w-6 h-6 text-green-600" />
+                    <h4 className="text-lg font-semibold text-green-800">Оплата наличными</h4>
+                  </div>
+                  <p className="text-green-700 mb-4">
+                    Вы выбрали оплату наличными. После подтверждения платежа вы получите доступ к курсу.
+                  </p>
+                  <div className="bg-white rounded-lg p-4 border border-green-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Сумма к оплате:</span>
+                      <span className="text-lg font-bold text-green-600">
+                        {formatCurrency(paymentInfo.amount, paymentInfo.currency)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Кнопка оплаты */}
               <div className="pt-6">
@@ -266,8 +328,12 @@ export default function PaymentsPage() {
                     </>
                   ) : (
                     <>
-                      <CreditCard className="w-5 h-5 mr-3" />
-                      Оплатить {formatCurrency(paymentInfo.amount, paymentInfo.currency)}
+                      {selectedPaymentMethod === 'CARD' ? (
+                        <CreditCard className="w-5 h-5 mr-3" />
+                      ) : (
+                        <Banknote className="w-5 h-5 mr-3" />
+                      )}
+                      {selectedPaymentMethod === 'CARD' ? 'Оплатить' : 'Подтвердить оплату'} {formatCurrency(paymentInfo.amount, paymentInfo.currency)}
                     </>
                   )}
                 </button>
