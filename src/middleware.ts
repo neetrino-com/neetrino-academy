@@ -5,8 +5,8 @@ import { UserRole } from '@/lib/permissions'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Защита API маршрутов
-  if (pathname.startsWith('/api/admin')) {
+  // Защита API маршрутов (кроме публичных)
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/') && !pathname.startsWith('/api/test-')) {
     try {
       const session = await auth()
 
@@ -17,11 +17,14 @@ export async function middleware(request: NextRequest) {
 
       const userRole = session.user.role as UserRole
 
-      // Проверяем, что у пользователя есть права администратора или преподавателя
-      if (!['ADMIN', 'TEACHER'].includes(userRole)) {
-        console.log(`[SECURITY] Access denied to API ${pathname} for role ${userRole}`)
-        return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      // Для админских API требуются права администратора или преподавателя
+      if (pathname.startsWith('/api/admin')) {
+        if (!['ADMIN', 'TEACHER'].includes(userRole)) {
+          console.log(`[SECURITY] Access denied to admin API ${pathname} for role ${userRole}`)
+          return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+        }
       }
+      // Для остальных API достаточно быть авторизованным пользователем
 
       // Логируем успешный доступ к API
       console.log(`[SECURITY] API access granted to ${userRole} for ${pathname}`)

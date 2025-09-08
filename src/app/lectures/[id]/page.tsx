@@ -38,7 +38,7 @@ export default function LecturePage() {
   const fetchLecture = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/lectures/${lectureId}`)
+      const response = await fetch(`/api/lectures/${lectureId}`)
       const data: LectureResponse = await response.json()
 
       if (!response.ok) {
