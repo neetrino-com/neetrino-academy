@@ -10,12 +10,15 @@ import { AccessControl } from '@/components/courses/AccessControl'
 
 interface ContentBlock {
   id?: string;
-  type: string;
+  type: 'text' | 'image' | 'video' | 'code' | 'link' | 'file' | 'checklist';
   content?: string;
   metadata?: {
     url?: string;
     alt?: string;
     filename?: string;
+    language?: string;
+    description?: string;
+    fileSize?: number;
   };
 }
 
@@ -109,13 +112,15 @@ export default function LessonStudyPage() {
       
       // Проверяем, является ли контент JSON
       if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
-        return JSON.parse(content);
+        const parsed = JSON.parse(content);
+        // Убеждаемся, что это массив блоков
+        return Array.isArray(parsed) ? parsed : [parsed];
       }
       
       // Если это не JSON, возвращаем как текстовый блок
       return [{
         id: 'text-1',
-        type: 'text',
+        type: 'text' as const,
         content: content
       }];
     } catch (error) {
@@ -123,7 +128,7 @@ export default function LessonStudyPage() {
       // Если JSON невалидный, возвращаем как текстовый блок
       return [{
         id: 'text-1',
-        type: 'text',
+        type: 'text' as const,
         content: content || ''
       }];
     }
@@ -170,6 +175,45 @@ export default function LessonStudyPage() {
                 {block.metadata.alt && (
                   <p className="text-sm text-gray-500 mt-3 italic text-center">{block.metadata.alt}</p>
                 )}
+              </div>
+            )}
+            {block.type === 'video' && block.metadata?.url && (
+              <div className="my-6">
+                <VideoPlayer
+                  videoUrl={block.metadata.url}
+                  title={block.content || 'Видео'}
+                  className="w-full"
+                />
+                {block.content && (
+                  <p className="text-gray-600 mt-3 text-center">{block.content}</p>
+                )}
+              </div>
+            )}
+            {block.type === 'code' && (
+              <div className="my-6">
+                <div className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto">
+                  <div className="text-sm text-gray-400 mb-3 font-medium">
+                    {block.metadata?.language || 'Код'}
+                  </div>
+                  <pre className="text-sm leading-relaxed">
+                    <code>{block.content || block.metadata?.url || ''}</code>
+                  </pre>
+                </div>
+              </div>
+            )}
+            {block.type === 'link' && block.metadata?.url && (
+              <div className="my-6">
+                <a 
+                  href={block.metadata.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-lg font-medium"
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  {block.content || 'Открыть ссылку'}
+                </a>
               </div>
             )}
             {block.type === 'file' && block.metadata?.url && (
