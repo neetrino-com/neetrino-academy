@@ -290,6 +290,8 @@ export async function PUT(
         for (const lessonData of moduleData.lessons) {
           const existingLesson = existingModule?.lessons.find(l => l.id === lessonData.id)
           
+          let lessonId = lessonData.id
+          
           if (existingLesson) {
             // Обновляем существующий урок
             await prisma.lesson.update({
@@ -304,7 +306,7 @@ export async function PUT(
             })
           } else {
             // Создаем новый урок
-            await prisma.lesson.create({
+            const newLesson = await prisma.lesson.create({
               data: {
                 title: lessonData.title,
                 content: lessonData.content || null,
@@ -314,13 +316,27 @@ export async function PUT(
                 lectureId: lessonData.lectureId || null
               }
             })
+            lessonId = newLesson.id
           }
+          
+          // Обновляем ID урока в данных для последующего использования
+          lessonData.id = lessonId
         }
 
         // Обрабатываем задания для каждого урока модуля
         for (const lessonData of moduleData.lessons) {
           if (lessonData.assignments && lessonData.assignments.length > 0) {
             console.log(`Обрабатываем ${lessonData.assignments.length} заданий для урока ${lessonData.title}`)
+            
+            // Проверяем, что урок существует в базе данных
+            const existingLesson = await prisma.lesson.findUnique({
+              where: { id: lessonData.id }
+            })
+            
+            if (!existingLesson) {
+              console.error(`Урок с ID ${lessonData.id} не найден в базе данных`)
+              continue
+            }
             
             // Удаляем старые задания урока
             await prisma.assignment.deleteMany({

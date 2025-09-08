@@ -321,6 +321,11 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
           })) : []
         )
       )
+      
+      // Удаляем дубликаты заданий по ID
+      const uniqueAssignments = allAssignments.filter((assignment, index, self) => 
+        index === self.findIndex(a => a.id === assignment.id)
+      )
       console.log('=== DEBUG: loadExistingCourse ===')
       console.log('Модули с уроками и заданиями:', modulesWithLessons.map(m => ({
         id: m.id,
@@ -332,8 +337,8 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
           assignmentsCount: l.assignments?.length || 0
         }))
       })))
-      console.log('Извлеченные задания для состояния:', allAssignments)
-      setAssignments(allAssignments)
+      console.log('Извлеченные задания для состояния:', uniqueAssignments)
+      setAssignments(uniqueAssignments)
       
     } catch (error) {
       console.error('Ошибка загрузки курса:', error)
