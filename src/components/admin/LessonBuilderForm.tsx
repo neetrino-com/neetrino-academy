@@ -39,7 +39,7 @@ interface UploadedFile {
 
 interface LessonBlock {
   id: string;
-  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file';
+  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file' | 'gallery';
   content: string;
   metadata?: {
     url?: string;
@@ -104,11 +104,18 @@ export default function LessonBuilderForm({
       color: 'text-blue-600 bg-blue-50 border-blue-200'
     },
     { 
+      type: 'gallery', 
+      icon: Image, 
+      title: 'Галерея', 
+      description: 'Загрузить изображения',
+      color: 'text-green-600 bg-green-50 border-green-200'
+    },
+    { 
       type: 'file', 
       icon: File, 
       title: 'Файлы', 
-      description: 'Загрузить файлы и изображения',
-      color: 'text-green-600 bg-green-50 border-green-200'
+      description: 'Загрузить документы',
+      color: 'text-indigo-600 bg-indigo-50 border-indigo-200'
     },
     { 
       type: 'video', 
@@ -218,6 +225,28 @@ export default function LessonBuilderForm({
           />
         );
 
+      case 'gallery':
+        return (
+          <div className="space-y-3">
+            <MultiFileUpload
+              onFilesUpload={(files) => updateBlock(block.id, { 
+                metadata: { ...block.metadata, files: files }
+              })}
+              onError={(error) => console.error('Ошибка загрузки изображений:', error)}
+              acceptedTypes=".jpg,.jpeg,.png,.gif,.webp"
+              maxSize={10}
+              maxFiles={20}
+              initialFiles={block.metadata?.files || []}
+            />
+            <textarea
+              value={block.content}
+              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+              placeholder="Описание галереи (необязательно)"
+              className="w-full h-20 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+            />
+          </div>
+        );
+
       case 'file':
         return (
           <div className="space-y-3">
@@ -226,7 +255,7 @@ export default function LessonBuilderForm({
                 metadata: { ...block.metadata, files: files }
               })}
               onError={(error) => console.error('Ошибка загрузки файлов:', error)}
-              acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi"
+              acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.mp4,.mov,.avi"
               maxSize={10}
               maxFiles={20}
               initialFiles={block.metadata?.files || []}
@@ -235,7 +264,7 @@ export default function LessonBuilderForm({
               value={block.content}
               onChange={(e) => updateBlock(block.id, { content: e.target.value })}
               placeholder="Описание файлов (необязательно)"
-              className="w-full h-20 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+              className="w-full h-20 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
             />
           </div>
         );
@@ -813,77 +842,73 @@ export default function LessonBuilderForm({
                             </div>
                           )}
                           
+                          {block.type === 'gallery' && block.metadata?.files && block.metadata.files.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-sm font-medium text-gray-700 mb-2">
+                                Галерея изображений ({block.metadata.files.length}):
+                              </div>
+                              <div className={`grid gap-2 ${
+                                block.metadata.files.length === 1 
+                                  ? 'grid-cols-1' 
+                                  : 'grid-cols-2'
+                              }`}>
+                                {block.metadata.files.map((file) => (
+                                  <div key={file.id} className="group relative">
+                                    <a
+                                      href={file.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block"
+                                    >
+                                      <img
+                                        src={file.url}
+                                        alt={file.name}
+                                        className={`w-full object-cover rounded border border-gray-200 hover:border-green-300 transition-all duration-200 group-hover:shadow-md ${
+                                          block.metadata.files.length === 1 
+                                            ? 'h-32' 
+                                            : 'h-24'
+                                        }`}
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded flex items-center justify-center">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                          <div className="bg-white bg-opacity-90 rounded-full p-1">
+                                            <Image className="w-4 h-4 text-green-600" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </a>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           {block.type === 'file' && block.metadata?.files && block.metadata.files.length > 0 && (
                             <div className="mt-2">
                               <div className="text-sm font-medium text-gray-700 mb-2">
-                                Файлы ({block.metadata.files.length}):
+                                Файлы для скачивания ({block.metadata.files.length}):
                               </div>
-                              
-                              {/* Галерея изображений */}
-                              {block.metadata.files.filter(file => file.type.startsWith('image/')).length > 0 && (
-                                <div className={`grid gap-2 mb-2 ${
-                                  block.metadata.files.filter(file => file.type.startsWith('image/')).length === 1 
-                                    ? 'grid-cols-1' 
-                                    : 'grid-cols-2'
-                                }`}>
-                                  {block.metadata.files
-                                    .filter(file => file.type.startsWith('image/'))
-                                    .map((file) => (
-                                      <div key={file.id} className="group relative">
-                                        <a
-                                          href={file.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="block"
-                                        >
-                                          <img
-                                            src={file.url}
-                                            alt={file.name}
-                                            className={`w-full object-cover rounded border border-gray-200 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${
-                                              block.metadata.files.filter(f => f.type.startsWith('image/')).length === 1 
-                                                ? 'h-32' 
-                                                : 'h-24'
-                                            }`}
-                                            onError={(e) => {
-                                              e.currentTarget.style.display = 'none';
-                                            }}
-                                          />
-                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded flex items-center justify-center">
-                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                              <div className="bg-white bg-opacity-90 rounded-full p-1">
-                                                <Image className="w-4 h-4 text-blue-600" />
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </a>
-                                      </div>
-                                    ))}
-                                </div>
-                              )}
-                              
-                              {/* Обычные файлы */}
-                              {block.metadata.files.filter(file => !file.type.startsWith('image/')).length > 0 && (
-                                <div className="space-y-1">
-                                  {block.metadata.files
-                                    .filter(file => !file.type.startsWith('image/'))
-                                    .map((file) => (
-                                      <div key={file.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
-                                        <File size={14} className="text-gray-500" />
-                                        <a 
-                                          href={file.url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:underline text-sm flex-1"
-                                        >
-                                          {file.name}
-                                        </a>
-                                        <span className="text-xs text-gray-500">
-                                          {Math.round(file.size / 1024)} KB
-                                        </span>
-                                      </div>
-                                    ))}
-                                </div>
-                              )}
+                              <div className="space-y-1">
+                                {block.metadata.files.map((file) => (
+                                  <div key={file.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                                    <File size={14} className="text-gray-500" />
+                                    <a 
+                                      href={file.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-sm flex-1"
+                                    >
+                                      {file.name}
+                                    </a>
+                                    <span className="text-xs text-gray-500">
+                                      {Math.round(file.size / 1024)} KB
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                           

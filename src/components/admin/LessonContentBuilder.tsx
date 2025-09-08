@@ -14,7 +14,8 @@ import {
   CheckSquare,
   Copy,
   X,
-  File
+  File,
+  Image
 } from 'lucide-react';
 import MultiFileUpload from '@/components/ui/MultiFileUpload';
 
@@ -29,7 +30,7 @@ interface UploadedFile {
 
 interface LessonBlock {
   id: string;
-  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file';
+  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file' | 'gallery';
   content: string;
   metadata?: {
     url?: string;
@@ -66,11 +67,18 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       color: 'text-blue-600 bg-blue-50 border-blue-200'
     },
     { 
+      type: 'gallery', 
+      icon: Image, 
+      title: 'Галерея', 
+      description: 'Загрузить изображения',
+      color: 'text-green-600 bg-green-50 border-green-200'
+    },
+    { 
       type: 'file', 
       icon: File, 
       title: 'Файлы', 
-      description: 'Загрузить файлы и изображения',
-      color: 'text-green-600 bg-green-50 border-green-200'
+      description: 'Загрузить документы',
+      color: 'text-indigo-600 bg-indigo-50 border-indigo-200'
     },
     { 
       type: 'video', 
@@ -172,6 +180,28 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
           />
         );
 
+      case 'gallery':
+        return (
+          <div className="space-y-3">
+            <MultiFileUpload
+              onFilesUpload={(files) => updateBlock(block.id, { 
+                metadata: { ...block.metadata, files: files }
+              })}
+              onError={(error) => console.error('Ошибка загрузки изображений:', error)}
+              acceptedTypes=".jpg,.jpeg,.png,.gif,.webp"
+              maxSize={10}
+              maxFiles={20}
+              initialFiles={block.metadata?.files || []}
+            />
+            <textarea
+              value={block.content}
+              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+              placeholder="Описание галереи (необязательно)"
+              className="w-full h-16 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+            />
+          </div>
+        );
+
       case 'file':
         return (
           <div className="space-y-3">
@@ -180,7 +210,7 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                 metadata: { ...block.metadata, files: files }
               })}
               onError={(error) => console.error('Ошибка загрузки файлов:', error)}
-              acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov,.avi"
+              acceptedTypes=".pdf,.doc,.docx,.zip,.rar,.mp4,.mov,.avi"
               maxSize={10}
               maxFiles={20}
               initialFiles={block.metadata?.files || []}
@@ -189,7 +219,7 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
               value={block.content}
               onChange={(e) => updateBlock(block.id, { content: e.target.value })}
               placeholder="Описание файлов (необязательно)"
-              className="w-full h-16 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+              className="w-full h-16 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
             />
           </div>
         );
