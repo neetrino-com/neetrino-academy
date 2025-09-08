@@ -8,6 +8,17 @@ import Quiz from '@/components/ui/Quiz'
 import ChecklistLesson from '@/components/lessons/ChecklistLesson'
 import { AccessControl } from '@/components/courses/AccessControl'
 
+interface ContentBlock {
+  id?: string;
+  type: string;
+  content?: string;
+  metadata?: {
+    url?: string;
+    alt?: string;
+    filename?: string;
+  };
+}
+
 interface Assignment {
   id: string
   title: string
@@ -90,6 +101,112 @@ export default function LessonStudyPage() {
 
   const courseId = params.id as string
   const lessonId = params.lessonId as string
+
+  // Функция для парсинга JSON контента уроков
+  const parseLessonContent = (content: string | null): ContentBlock[] => {
+    try {
+      if (!content) return [];
+      
+      // Проверяем, является ли контент JSON
+      if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
+        return JSON.parse(content);
+      }
+      
+      // Если это не JSON, возвращаем как текстовый блок
+      return [{
+        id: 'text-1',
+        type: 'text',
+        content: content
+      }];
+    } catch (error) {
+      console.error('Error parsing lesson content:', error);
+      // Если JSON невалидный, возвращаем как текстовый блок
+      return [{
+        id: 'text-1',
+        type: 'text',
+        content: content || ''
+      }];
+    }
+  }
+
+  // Функция для рендеринга блоков контента
+  const renderContentBlocks = (content: string | null) => {
+    const blocks = parseLessonContent(content);
+    
+    if (blocks.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-gray-400 mb-4">
+            <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Контент пока не добавлен
+          </h3>
+          <p className="text-gray-600">
+            Содержание урока будет добавлено в ближайшее время
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {blocks.map((block: ContentBlock, index: number) => (
+          <div key={block.id || index} className="border-l-4 border-cyan-200 pl-6">
+            {block.type === 'text' && (
+              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
+                {block.content}
+              </div>
+            )}
+            {block.type === 'image' && block.metadata?.url && (
+              <div className="my-6">
+                <img 
+                  src={block.metadata.url} 
+                  alt={block.metadata.alt || 'Изображение'} 
+                  className="max-w-full h-auto rounded-lg shadow-lg"
+                />
+                {block.metadata.alt && (
+                  <p className="text-sm text-gray-500 mt-3 italic text-center">{block.metadata.alt}</p>
+                )}
+              </div>
+            )}
+            {block.type === 'file' && block.metadata?.url && (
+              <div className="my-6 p-6 bg-gray-50 rounded-lg border">
+                <div className="flex items-center">
+                  <svg className="w-10 h-10 text-gray-400 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <div className="flex-1">
+                    <a 
+                      href={block.metadata.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 font-medium text-lg"
+                    >
+                      {block.metadata.filename || 'Скачать файл'}
+                    </a>
+                    {block.content && (
+                      <p className="text-gray-600 mt-2">{block.content}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {block.type === 'checklist' && (
+              <div className="my-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-900 mb-3">Чек-лист:</h4>
+                <div className="text-blue-800 whitespace-pre-wrap">
+                  {block.content}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetchLesson()
@@ -487,25 +604,7 @@ export default function LessonStudyPage() {
                 Содержание урока
               </h2>
               <div className="prose max-w-none">
-                {lesson.content ? (
-                  <div className="text-gray-700 leading-relaxed">
-                    {lesson.content}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-gray-400 mb-4">
-                      <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Контент пока не добавлен
-                    </h3>
-                    <p className="text-gray-600">
-                      Содержание урока будет добавлено в ближайшее время
-                    </p>
-                  </div>
-                )}
+                {renderContentBlocks(lesson.content)}
               </div>
             </div>
 
