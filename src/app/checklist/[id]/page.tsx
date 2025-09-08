@@ -225,7 +225,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
   };
 
   const getItemStatus = (itemId: string) => {
-    if (!progress) return 'NOT_COMPLETED';
+    if (!progress || !progress.itemProgress) return 'NOT_COMPLETED';
     const itemProgress = progress.itemProgress.find(p => p.itemId === itemId);
     return itemProgress?.status || 'NOT_COMPLETED';
   };
@@ -234,7 +234,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     if (!checklist || !progress) return { completed: 0, total: 0, percentage: 0 };
 
     const total = checklist.groups.reduce((sum, group) => sum + group.items.length, 0);
-    const completed = progress.itemProgress.filter(p => p.status === 'COMPLETED').length;
+    const completed = (progress.itemProgress || []).filter(p => p.status === 'COMPLETED').length;
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return { completed, total, percentage };
@@ -501,7 +501,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {Object.entries(statusConfig).map(([status, config]) => {
                   const StatusIcon = config.icon;
-                  const count = progress?.itemProgress.filter(p => p.status === status).length || 0;
+                  const count = (progress?.itemProgress || []).filter(p => p.status === status).length;
                   
                   return (
                     <div key={status} className="text-center group">
