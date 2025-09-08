@@ -185,28 +185,63 @@ export default function LessonStudyPage() {
                   </h4>
                   <div className="grid gap-3">
                     {block.metadata.files.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          {file.type.startsWith('image/') ? (
-                            <Image className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <File className="w-5 h-5 text-blue-600" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900 truncate">{file.name}</div>
-                            <div className="text-sm text-gray-500">
-                              {Math.round(file.size / 1024)} KB
+                      <div key={file.id} className={`p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors ${
+                        file.type.startsWith('image/') ? 'flex gap-4' : 'flex items-center justify-between'
+                      }`}>
+                        {file.type.startsWith('image/') ? (
+                          // Превью для изображений
+                          <>
+                            <div className="flex-shrink-0">
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
                             </div>
-                          </div>
-                        </div>
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                        >
-                          Скачать
-                        </a>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Image className="w-5 h-5 text-green-600" />
+                                <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                              </div>
+                              <div className="text-sm text-gray-500 mb-3">
+                                {Math.round(file.size / 1024)} KB
+                              </div>
+                              <a
+                                href={file.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                              >
+                                <File className="w-4 h-4" />
+                                Открыть
+                              </a>
+                            </div>
+                          </>
+                        ) : (
+                          // Обычное отображение для файлов
+                          <>
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <File className="w-5 h-5 text-blue-600" />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {Math.round(file.size / 1024)} KB
+                                </div>
+                              </div>
+                            </div>
+                            <a
+                              href={file.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                            >
+                              Скачать
+                            </a>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

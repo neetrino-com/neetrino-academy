@@ -23,7 +23,8 @@ import {
   Clock,
   BookOpen,
   Lightbulb,
-  File
+  File,
+  Image
 } from 'lucide-react';
 import MultiFileUpload from '@/components/ui/MultiFileUpload';
 
@@ -817,21 +818,58 @@ export default function LessonBuilderForm({
                               <div className="text-sm font-medium text-gray-700 mb-2">
                                 Файлы ({block.metadata.files.length}):
                               </div>
-                              <div className="space-y-1">
+                              <div className="space-y-2">
                                 {block.metadata.files.map((file) => (
-                                  <div key={file.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
-                                    <File size={14} className="text-gray-500" />
-                                    <a 
-                                      href={file.url} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline text-sm flex-1"
-                                    >
-                                      {file.name}
-                                    </a>
-                                    <span className="text-xs text-gray-500">
-                                      {Math.round(file.size / 1024)} KB
-                                    </span>
+                                  <div key={file.id} className={`p-2 bg-gray-50 rounded border ${
+                                    file.type.startsWith('image/') ? 'flex gap-3' : 'flex items-center gap-2'
+                                  }`}>
+                                    {file.type.startsWith('image/') ? (
+                                      // Превью для изображений
+                                      <>
+                                        <div className="flex-shrink-0">
+                                          <img
+                                            src={file.url}
+                                            alt={file.name}
+                                            className="w-12 h-12 object-cover rounded border border-gray-200"
+                                            onError={(e) => {
+                                              e.currentTarget.style.display = 'none';
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Image size={14} className="text-green-600" />
+                                            <a 
+                                              href={file.url} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer"
+                                              className="text-blue-600 hover:underline text-sm font-medium truncate"
+                                            >
+                                              {file.name}
+                                            </a>
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            {Math.round(file.size / 1024)} KB
+                                          </div>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      // Обычное отображение для файлов
+                                      <>
+                                        <File size={14} className="text-gray-500" />
+                                        <a 
+                                          href={file.url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline text-sm flex-1"
+                                        >
+                                          {file.name}
+                                        </a>
+                                        <span className="text-xs text-gray-500">
+                                          {Math.round(file.size / 1024)} KB
+                                        </span>
+                                      </>
+                                    )}
                                   </div>
                                 ))}
                               </div>

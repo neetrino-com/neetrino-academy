@@ -147,6 +147,10 @@ export default function MultiFileUpload({
     return <File className="w-4 h-4" />;
   };
 
+  const isImageFile = (fileType: string) => {
+    return fileType.startsWith('image/');
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -230,39 +234,92 @@ export default function MultiFileUpload({
             {uploadedFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                className={`p-3 bg-gray-50 border border-gray-200 rounded-lg ${
+                  isImageFile(file.type) ? 'flex gap-3' : 'flex items-center justify-between'
+                }`}
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  {getFileIcon(file.type)}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {file.name}
+                {isImageFile(file.type) ? (
+                  // Превью для изображений
+                  <>
+                    <div className="flex-shrink-0">
+                      <img
+                        src={file.url}
+                        alt={file.name}
+                        className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {formatFileSize(file.size)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Image className="w-4 h-4 text-green-600" />
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {file.name}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500 mb-2">
+                        {formatFileSize(file.size)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-1"
+                          title="Открыть изображение"
+                        >
+                          <FileText className="w-3 h-3" />
+                          Открыть
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(file.id)}
+                          className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1"
+                          title="Удалить файл"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Удалить
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700 p-1"
-                    title="Просмотреть файл"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(file.id)}
-                    className="text-red-500 hover:text-red-700 p-1"
-                    title="Удалить файл"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                  </>
+                ) : (
+                  // Обычное отображение для файлов
+                  <>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {getFileIcon(file.type)}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {file.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {formatFileSize(file.size)}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-700 p-1"
+                        title="Просмотреть файл"
+                      >
+                        <FileText className="w-4 h-4" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(file.id)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Удалить файл"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
