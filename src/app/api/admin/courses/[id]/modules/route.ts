@@ -47,7 +47,7 @@ export async function GET(
       )
     }
 
-    // Получаем модули курса с уроками и заданиями
+    // Получаем модули курса с уроками, заданиями и тестами
     const modules = await prisma.module.findMany({
       where: { courseId: id },
       include: {
@@ -55,6 +55,16 @@ export async function GET(
           include: {
             assignments: {
               orderBy: { createdAt: 'asc' }
+            },
+            quiz: {
+              include: {
+                questions: {
+                  include: {
+                    options: true
+                  },
+                  orderBy: { order: 'asc' }
+                }
+              }
             }
           },
           orderBy: { order: 'asc' }

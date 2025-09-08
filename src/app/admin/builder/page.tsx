@@ -181,6 +181,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
     }
   }
 
+
   const loadExistingCourse = async () => {
     if (!editCourseId) return
     
@@ -227,71 +228,38 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
           // Собираем все задания из всех уроков модуля
           const moduleAssignments = lessons.flatMap(lesson => lesson.assignments || [])
           
-          // Загружаем тесты для каждого урока (только если они существуют)
-          const lessonsWithQuizzes = await Promise.all(
-            lessons.map(async (lesson: {
+          // Тесты уже загружены вместе с уроками через основной API
+          const lessonsWithQuizzes = lessons.map((lesson: {
+            id: string;
+            title: string;
+            description?: string;
+            videoUrl?: string;
+            assignments?: Array<{
               id: string;
               title: string;
               description?: string;
-              videoUrl?: string;
-              assignments?: Array<{
-                id: string;
-                title: string;
-                description?: string;
-                dueDate?: string;
-              }>;
-            }) => {
-              let quiz = null
-              let hasQuiz = false
-              
-              try {
-                // Сначала проверяем, есть ли тест для урока
-                const controller = new AbortController()
-                const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 секунд таймаут
-                
-                const quizCheckResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`, {
-                  method: 'HEAD', // Используем HEAD для проверки существования без загрузки данных
-                  signal: controller.signal
-                })
-                
-                clearTimeout(timeoutId)
-                
-                if (quizCheckResponse.ok) {
-                  // Если тест существует, загружаем его
-                  const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`, {
-                    signal: controller.signal
-                  })
-                  if (quizResponse.ok) {
-                    quiz = await quizResponse.json()
-                    hasQuiz = true
-                    console.log(`[DEBUG] Квиз загружен для урока ${lesson.id}`)
-                  }
-                }
-                // Если 404 - теста нет, это нормально, не логируем ошибку
-              } catch (error) {
-                // Тихо игнорируем ошибки загрузки тестов
-                // Не логируем ошибки, так как это нормально для уроков без тестов
-                // Ошибки типа net::ERR_ABORTED означают, что запрос был прерван
-                // Это нормально для уроков без тестов
-                if (error instanceof Error && error.name === 'AbortError') {
-                  // Игнорируем ошибки отмены запросов
-                  return
-                }
-              }
-              
-              // Проверяем, есть ли задания для этого урока
-              const hasAssignment = (lesson.assignments && lesson.assignments.length > 0)
-              
-              return {
-                ...lesson,
-                type: lesson.videoUrl ? 'video' : 'text',
-                files: [],
-                hasQuiz: hasQuiz,
-                hasAssignment: hasAssignment,
-                quiz: quiz
-              }
-            })
-          )
+              dueDate?: string;
+            }>;
+            quiz?: any;
+          }) => {
+            // Тест уже пришел с уроком из API
+            const quiz = lesson.quiz || null
+            const hasQuiz = !!quiz
+            const hasAssignment = (lesson.assignments && lesson.assignments.length > 0)
+            
+            if (hasQuiz) {
+              console.log(`[DEBUG] Квиз уже загружен для урока ${lesson.id}`)
+            }
+            
+            return {
+              ...lesson,
+              type: lesson.videoUrl ? 'video' : 'text',
+              files: [],
+              hasQuiz: hasQuiz,
+              hasAssignment: hasAssignment,
+              quiz: quiz
+            }
+          })
           
           return {
             ...module,
