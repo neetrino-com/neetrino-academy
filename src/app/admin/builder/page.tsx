@@ -738,7 +738,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               
               <div className="flex-1 space-y-6">
                 {/* Заголовок и описание модуля */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
                       📚 Название модуля
@@ -1019,9 +1019,9 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
 
 
               {/* Описание и настройки урока */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Описание */}
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-3">
                   <textarea
                     value={currentLesson.description}
                     onChange={(e) => {
@@ -2116,7 +2116,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
     <div className="min-h-screen bg-gray-50">
       {/* Хедер с навигацией по шагам */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="py-4">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold text-gray-900">
@@ -2184,7 +2184,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       </div>
 
       {/* Контент */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
         {renderCurrentStep()}
 
         {/* Навигация внизу */}
