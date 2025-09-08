@@ -35,6 +35,7 @@ interface LessonBlock {
   id: string;
   type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file' | 'gallery';
   content: string;
+  title?: string; // Добавляем поле для кастомного названия блока
   collapsed?: boolean;
   metadata?: {
     url?: string;
@@ -60,6 +61,7 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
       return [];
     }
   });
+  const [editingTitle, setEditingTitle] = useState<string | null>(null);
 
 
   const blockTypes = [
@@ -174,6 +176,21 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
     updateBlocks(blocks.map(b => 
       b.id === blockId ? { ...b, collapsed: !b.collapsed } : b
     ));
+  };
+
+  const startEditingTitle = (blockId: string) => {
+    setEditingTitle(blockId);
+  };
+
+  const saveTitle = (blockId: string, newTitle: string) => {
+    updateBlocks(blocks.map(b => 
+      b.id === blockId ? { ...b, title: newTitle.trim() || undefined } : b
+    ));
+    setEditingTitle(null);
+  };
+
+  const cancelEditingTitle = () => {
+    setEditingTitle(null);
   };
 
   const getBlockTypeInfo = (type: LessonBlock['type']) => {
@@ -423,9 +440,41 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
                     <div className={`p-2 rounded-lg ${blockInfo.color}`}>
                       <IconComponent size={14} />
                     </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 text-sm">{blockInfo.title}</h4>
-                      <p className="text-xs text-gray-600">Блок #{index + 1}</p>
+                    <div className="flex-1">
+                      {editingTitle === block.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            defaultValue={block.title || blockInfo.title}
+                            onBlur={(e) => saveTitle(block.id, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                saveTitle(block.id, e.currentTarget.value);
+                              } else if (e.key === 'Escape') {
+                                cancelEditingTitle();
+                              }
+                            }}
+                            className="text-sm font-medium text-gray-900 bg-transparent border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => cancelEditingTitle()}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div 
+                          onClick={() => startEditingTitle(block.id)}
+                          className="cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1 group"
+                        >
+                          <h4 className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
+                            {block.title || blockInfo.title}
+                          </h4>
+                          <p className="text-xs text-gray-600">Блок #{index + 1}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
