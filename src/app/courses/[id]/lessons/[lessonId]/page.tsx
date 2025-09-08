@@ -197,11 +197,19 @@ export default function LessonStudyPage() {
                           rel="noopener noreferrer"
                           className="block"
                         >
-                          <div className={`w-full rounded-lg border border-gray-200 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg bg-gray-100 flex items-center justify-center ${
+                          <div className={`w-full rounded-lg border border-gray-200 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg overflow-hidden relative ${
                             block.metadata.files.length === 1 
                               ? 'h-64' 
                               : 'h-48'
                           }`}>
+                            {/* Индикатор загрузки */}
+                            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10" id={`loading-${file.id}`}>
+                              <div className="flex flex-col items-center text-gray-500">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-2"></div>
+                                <span className="text-sm">Загрузка...</span>
+                              </div>
+                            </div>
+                            
                             <img
                               src={file.url}
                               alt={file.name}
@@ -209,11 +217,14 @@ export default function LessonStudyPage() {
                               onError={(e) => {
                                 console.error('Ошибка загрузки изображения:', file.url, e);
                                 e.currentTarget.style.display = 'none';
+                                // Скрываем индикатор загрузки
+                                const loadingEl = document.getElementById(`loading-${file.id}`);
+                                if (loadingEl) loadingEl.style.display = 'none';
                                 // Показываем fallback
                                 const fallback = e.currentTarget.parentElement;
                                 if (fallback) {
                                   fallback.innerHTML = `
-                                    <div class="flex flex-col items-center justify-center text-gray-500 p-4">
+                                    <div class="flex flex-col items-center justify-center text-gray-500 p-4 bg-gray-100 h-full">
                                       <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                       </svg>
@@ -225,6 +236,9 @@ export default function LessonStudyPage() {
                               }}
                               onLoad={() => {
                                 console.log('Изображение загружено:', file.url);
+                                // Скрываем индикатор загрузки
+                                const loadingEl = document.getElementById(`loading-${file.id}`);
+                                if (loadingEl) loadingEl.style.display = 'none';
                               }}
                             />
                           </div>
