@@ -149,15 +149,6 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
     }
   }, [courseData.paymentType, courseData.monthlyPrice, courseData.price, courseData.duration])
 
-  // Автоматически выбираем первый урок при переходе на этапы "Задания" и "Тесты"
-  useEffect(() => {
-    if ((currentStep === 3 || currentStep === 4) && modules.length > 0) { // 3 = Задания, 4 = Тесты
-      const allLessons = modules.flatMap(m => m.lessons)
-      if (allLessons.length > 0 && !selectedLesson) {
-        setSelectedLesson(allLessons[0].id)
-      }
-    }
-  }, [currentStep, modules, selectedLesson])
   const [modules, setModules] = useState<Module[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
@@ -168,6 +159,16 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isEditing, setIsEditing] = useState(false)
   const [lectures, setLectures] = useState<Array<{id: string, title: string, description?: string}>>([])
+
+  // Автоматически выбираем первый урок при переходе на этапы "Задания" и "Тесты"
+  useEffect(() => {
+    if ((currentStep === 3 || currentStep === 4) && modules.length > 0) { // 3 = Задания, 4 = Тесты
+      const allLessons = modules.flatMap(m => m.lessons)
+      if (allLessons.length > 0 && !selectedLesson) {
+        setSelectedLesson(allLessons[0].id)
+      }
+    }
+  }, [currentStep, modules, selectedLesson])
 
   // Загрузка существующего курса для редактирования
   useEffect(() => {
