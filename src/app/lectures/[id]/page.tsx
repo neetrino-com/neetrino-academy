@@ -184,46 +184,56 @@ export default function LecturePage() {
                           <File className="w-5 h-5 text-blue-600" />
                           Файлы для скачивания ({block.metadata.files.length})
                         </h4>
-                        <div className="grid gap-3">
-                          {block.metadata.files.map((file) => (
-                            <div key={file.id} className={`p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors ${
-                              file.type.startsWith('image/') ? 'flex gap-4' : 'flex items-center justify-between'
-                            }`}>
-                              {file.type.startsWith('image/') ? (
-                                // Превью для изображений
-                                <>
-                                  <div className="flex-shrink-0">
+                        
+                        {/* Галерея изображений */}
+                        {block.metadata.files.filter(file => file.type.startsWith('image/')).length > 0 && (
+                          <div className={`grid gap-4 mb-4 ${
+                            block.metadata.files.filter(file => file.type.startsWith('image/')).length === 1 
+                              ? 'grid-cols-1' 
+                              : 'grid-cols-2'
+                          }`}>
+                            {block.metadata.files
+                              .filter(file => file.type.startsWith('image/'))
+                              .map((file) => (
+                                <div key={file.id} className="group relative">
+                                  <a
+                                    href={file.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block"
+                                  >
                                     <img
                                       src={file.url}
                                       alt={file.name}
-                                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                                      className={`w-full object-cover rounded-lg border border-gray-200 hover:border-blue-300 transition-all duration-200 group-hover:shadow-lg ${
+                                        block.metadata.files.filter(f => f.type.startsWith('image/')).length === 1 
+                                          ? 'h-64' 
+                                          : 'h-48'
+                                      }`}
                                       onError={(e) => {
                                         e.currentTarget.style.display = 'none';
                                       }}
                                     />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Image className="w-5 h-5 text-green-600" />
-                                      <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
+                                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <div className="bg-white bg-opacity-90 rounded-full p-2">
+                                          <Image className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div className="text-sm text-gray-500 mb-3">
-                                      {Math.round(file.size / 1024)} KB
-                                    </div>
-                                    <a
-                                      href={file.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                    >
-                                      <File className="w-4 h-4" />
-                                      Открыть
-                                    </a>
-                                  </div>
-                                </>
-                              ) : (
-                                // Обычное отображение для файлов
-                                <>
+                                  </a>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                        
+                        {/* Обычные файлы */}
+                        {block.metadata.files.filter(file => !file.type.startsWith('image/')).length > 0 && (
+                          <div className="space-y-2">
+                            {block.metadata.files
+                              .filter(file => !file.type.startsWith('image/'))
+                              .map((file) => (
+                                <div key={file.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
                                   <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <File className="w-5 h-5 text-blue-600" />
                                     <div className="flex-1 min-w-0">
@@ -241,11 +251,11 @@ export default function LecturePage() {
                                   >
                                     Скачать
                                   </a>
-                                </>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                        
                         {block.content && (
                           <p className="text-gray-600 mt-3 text-sm">{block.content}</p>
                         )}

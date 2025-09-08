@@ -818,44 +818,56 @@ export default function LessonBuilderForm({
                               <div className="text-sm font-medium text-gray-700 mb-2">
                                 Файлы ({block.metadata.files.length}):
                               </div>
-                              <div className="space-y-2">
-                                {block.metadata.files.map((file) => (
-                                  <div key={file.id} className={`p-2 bg-gray-50 rounded border ${
-                                    file.type.startsWith('image/') ? 'flex gap-3' : 'flex items-center gap-2'
-                                  }`}>
-                                    {file.type.startsWith('image/') ? (
-                                      // Превью для изображений
-                                      <>
-                                        <div className="flex-shrink-0">
+                              
+                              {/* Галерея изображений */}
+                              {block.metadata.files.filter(file => file.type.startsWith('image/')).length > 0 && (
+                                <div className={`grid gap-2 mb-2 ${
+                                  block.metadata.files.filter(file => file.type.startsWith('image/')).length === 1 
+                                    ? 'grid-cols-1' 
+                                    : 'grid-cols-2'
+                                }`}>
+                                  {block.metadata.files
+                                    .filter(file => file.type.startsWith('image/'))
+                                    .map((file) => (
+                                      <div key={file.id} className="group relative">
+                                        <a
+                                          href={file.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block"
+                                        >
                                           <img
                                             src={file.url}
                                             alt={file.name}
-                                            className="w-12 h-12 object-cover rounded border border-gray-200"
+                                            className={`w-full object-cover rounded border border-gray-200 hover:border-blue-300 transition-all duration-200 group-hover:shadow-md ${
+                                              block.metadata.files.filter(f => f.type.startsWith('image/')).length === 1 
+                                                ? 'h-32' 
+                                                : 'h-24'
+                                            }`}
                                             onError={(e) => {
                                               e.currentTarget.style.display = 'none';
                                             }}
                                           />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <Image size={14} className="text-green-600" />
-                                            <a 
-                                              href={file.url} 
-                                              target="_blank" 
-                                              rel="noopener noreferrer"
-                                              className="text-blue-600 hover:underline text-sm font-medium truncate"
-                                            >
-                                              {file.name}
-                                            </a>
+                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded flex items-center justify-center">
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                              <div className="bg-white bg-opacity-90 rounded-full p-1">
+                                                <Image className="w-4 h-4 text-blue-600" />
+                                              </div>
+                                            </div>
                                           </div>
-                                          <div className="text-xs text-gray-500">
-                                            {Math.round(file.size / 1024)} KB
-                                          </div>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      // Обычное отображение для файлов
-                                      <>
+                                        </a>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                              
+                              {/* Обычные файлы */}
+                              {block.metadata.files.filter(file => !file.type.startsWith('image/')).length > 0 && (
+                                <div className="space-y-1">
+                                  {block.metadata.files
+                                    .filter(file => !file.type.startsWith('image/'))
+                                    .map((file) => (
+                                      <div key={file.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
                                         <File size={14} className="text-gray-500" />
                                         <a 
                                           href={file.url} 
@@ -868,11 +880,10 @@ export default function LessonBuilderForm({
                                         <span className="text-xs text-gray-500">
                                           {Math.round(file.size / 1024)} KB
                                         </span>
-                                      </>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
                             </div>
                           )}
                           
