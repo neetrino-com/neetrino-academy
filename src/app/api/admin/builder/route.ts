@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
             const lesson = moduleData.lessons[j]
             console.log(`  Создаём урок ${j + 1}:`, lesson.title)
             
-            await tx.lesson.create({
+            const newLesson = await tx.lesson.create({
               data: {
                 title: lesson.title,
                 description: lesson.description || '',
@@ -164,6 +164,25 @@ export async function POST(request: NextRequest) {
                 checklistId: lesson.checklistId || null
               }
             })
+
+            // Создаём задание для урока, если оно есть
+            if (lesson.assignments && lesson.assignments.length > 0) {
+              const assignment = lesson.assignments[0] // Берем только первое задание
+              console.log(`    Создаём задание для урока:`, assignment.title)
+              
+              await tx.assignment.create({
+                data: {
+                  title: assignment.title,
+                  description: assignment.description || '',
+                  dueDate: assignment.dueDate ? new Date(assignment.dueDate) : null,
+                  lessonId: newLesson.id,
+                  type: 'HOMEWORK',
+                  status: 'PUBLISHED',
+                  maxScore: assignment.maxScore || 100,
+                  createdBy: user.id
+                }
+              })
+            }
           }
         }
 

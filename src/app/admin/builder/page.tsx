@@ -1970,9 +1970,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
             ...lesson,
             assignments: assignments
               .filter(a => a.lessonId === lesson.id)
-              .filter((assignment, index, self) => 
-                index === self.findIndex(a => a.title === assignment.title && a.lessonId === assignment.lessonId)
-              )
+              .slice(0, 1) // Берем только первое задание
               .map(a => ({
                 title: a.title,
                 description: a.description,

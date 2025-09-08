@@ -126,7 +126,7 @@ model Lesson {
   checklist   Checklist?       @relation(fields: [checklistId], references: [id])
   progress    LessonProgress[]
   quiz        Quiz?
-  assignments Assignment[]     // Задания привязанные к уроку
+  assignment  Assignment?      // Одно задание к уроку
 }
 
 model Quiz {
@@ -188,7 +188,7 @@ model Assignment {
   title       String
   description String?
   dueDate     DateTime?
-  lessonId    String           // Привязка к уроку вместо модуля
+  lessonId    String           @unique // Привязка к уроку вместо модуля (уникальная)
   type        AssignmentType   @default(HOMEWORK)
   status      AssignmentStatus @default(DRAFT)
   maxScore    Int?             // Максимальный балл

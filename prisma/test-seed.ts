@@ -1212,31 +1212,25 @@ fetch('/admin/api/2023-04/graphql.json', {
   })
 
   if (wpLessons.length > 0) {
-    // Основное задание
-    await prisma.assignment.create({
-      data: {
-        title: 'Создание первой темы WordPress',
-        description: 'Создайте простую тему WordPress с главной страницей и страницей записи. Требования: 1. Создать файлы index.php, single.php, header.php, footer.php 2. Добавить базовые стили в style.css 3. Подключить поддержку миниатюр постов 4. Сделать адаптивную верстку',
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // через неделю
-        lessonId: wpLessons[0].id, // Привязываем к первому уроку
-        type: 'PROJECT',
-        status: 'PUBLISHED',
-        maxScore: 100,
-        createdBy: teacher1.id
-      }
-    })
-
-    // Дополнительное задание для второго урока
-    if (wpLessons.length > 1) {
+    // Создаем по одному заданию для каждого урока
+    for (let i = 0; i < wpLessons.length; i++) {
+      const lesson = wpLessons[i]
+      const assignmentTitles = [
+        'Создание первой темы WordPress',
+        'Установка и настройка WordPress',
+        'Работа с плагинами WordPress',
+        'Настройка темы и виджетов'
+      ]
+      
       await prisma.assignment.create({
         data: {
-          title: 'Установка и настройка WordPress',
-          description: 'Установите WordPress локально и настройте базовые параметры. Требования: 1. Установить XAMPP/MAMP 2. Скачать WordPress 3. Создать базу данных 4. Настроить wp-config.php 5. Выполнить установку через браузер',
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // через 3 дня
-          lessonId: wpLessons[1].id,
-          type: 'HOMEWORK',
+          title: assignmentTitles[i] || `Задание ${i + 1}`,
+          description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
+          dueDate: new Date(Date.now() + (i + 1) * 7 * 24 * 60 * 60 * 1000), // через неделю для каждого урока
+          lessonId: lesson.id,
+          type: i === 0 ? 'PROJECT' : 'HOMEWORK',
           status: 'PUBLISHED',
-          maxScore: 50,
+          maxScore: 100,
           createdBy: teacher1.id
         }
       })
@@ -1254,31 +1248,25 @@ fetch('/admin/api/2023-04/graphql.json', {
   })
 
   if (frontendLessons.length > 0) {
-    // Основное задание
-    await prisma.assignment.create({
-      data: {
-        title: 'React Counter приложение',
-        description: 'Создайте приложение-счетчик на React с дополнительным функционалом. Функционал: 1. Кнопки +1, -1, +10, -10 2. Кнопка сброса 3. История изменений 4. Сохранение состояния в localStorage 5. Стилизация с CSS modules',
-        dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // через 5 дней
-        lessonId: frontendLessons[0].id, // Привязываем к первому уроку
-        type: 'PROJECT',
-        status: 'PUBLISHED',
-        maxScore: 100,
-        createdBy: teacher2.id
-      }
-    })
-
-    // Дополнительное задание для второго урока
-    if (frontendLessons.length > 1) {
+    // Создаем по одному заданию для каждого урока
+    for (let i = 0; i < frontendLessons.length; i++) {
+      const lesson = frontendLessons[i]
+      const assignmentTitles = [
+        'React Counter приложение',
+        'Практика с массивами JavaScript',
+        'Компоненты и пропсы React',
+        'Управление состоянием в React'
+      ]
+      
       await prisma.assignment.create({
         data: {
-          title: 'Практика с массивами JavaScript',
-          description: 'Решите задачи по работе с массивами. Задачи: 1. Создать массив чисел от 1 до 100 2. Найти все четные числа 3. Умножить каждое число на 2 4. Найти сумму всех чисел 5. Создать новый массив с квадратами чисел',
-          dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // через 2 дня
-          lessonId: frontendLessons[1].id,
-          type: 'HOMEWORK',
+          title: assignmentTitles[i] || `Задание ${i + 1}`,
+          description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
+          dueDate: new Date(Date.now() + (i + 1) * 5 * 24 * 60 * 60 * 1000), // через 5 дней для каждого урока
+          lessonId: lesson.id,
+          type: i === 0 ? 'PROJECT' : 'HOMEWORK',
           status: 'PUBLISHED',
-          maxScore: 75,
+          maxScore: 100,
           createdBy: teacher2.id
         }
       })
@@ -1296,33 +1284,29 @@ fetch('/admin/api/2023-04/graphql.json', {
   })
 
   if (shopifyLessons.length > 0) {
-    // Основное задание
-    await prisma.assignment.create({
-      data: {
-        title: 'Shopify App с REST API',
-        description: 'Создайте приложение для Shopify, которое работает с REST API. Требования: 1. Настройка Shopify App 2. Аутентификация через OAuth 2. Получение списка продуктов через API 3. Создание нового продукта 4. Обработка ошибок API 5. Документация кода',
-        dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // через 10 дней
-        lessonId: shopifyLessons[0].id, // Привязываем к первому уроку
-        type: 'PROJECT',
-        status: 'PUBLISHED',
-        maxScore: 100,
-        createdBy: teacher3.id
-      }
-    })
-
-    // Дополнительное задание
-    await prisma.assignment.create({
-      data: {
-        title: 'Изучение Shopify API документации',
-        description: 'Изучите официальную документацию Shopify API и создайте краткий отчет. Требования: 1. Прочитать раздел "Getting Started" 2. Изучить основные endpoints 3. Понять систему аутентификации 4. Создать примеры запросов 5. Написать отчет на 2-3 страницы',
-        dueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // через 4 дня
-        lessonId: shopifyLessons[0].id,
-        type: 'ESSAY',
-        status: 'PUBLISHED',
-        maxScore: 60,
-        createdBy: teacher3.id
-      }
-    })
+    // Создаем по одному заданию для каждого урока
+    for (let i = 0; i < shopifyLessons.length; i++) {
+      const lesson = shopifyLessons[i]
+      const assignmentTitles = [
+        'Shopify App с REST API',
+        'Работа с продуктами Shopify',
+        'Настройка темы Shopify',
+        'Интеграция с внешними сервисами'
+      ]
+      
+      await prisma.assignment.create({
+        data: {
+          title: assignmentTitles[i] || `Задание ${i + 1}`,
+          description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
+          dueDate: new Date(Date.now() + (i + 1) * 10 * 24 * 60 * 60 * 1000), // через 10 дней для каждого урока
+          lessonId: lesson.id,
+          type: i === 0 ? 'PROJECT' : 'HOMEWORK',
+          status: 'PUBLISHED',
+          maxScore: 100,
+          createdBy: teacher3.id
+        }
+      })
+    }
   }
 
   console.log('✅ Задания созданы!')
