@@ -36,6 +36,7 @@ interface Course {
   totalPrice?: number | null
   duration?: number | null
   durationUnit?: string | null
+  currency?: string
   modules: Module[]
   _count: {
     enrollments: number
@@ -180,14 +181,16 @@ export default function CourseDetailPage() {
     }
   }
 
-  const formatCurrency = (amount: number | null, currency: string = 'AMD') => {
-    if (amount === null || amount === 0) return 'Бесплатно'
+  const formatCurrency = (amount: number | string | null, currency: string = 'AMD') => {
+    if (amount === null || amount === 0 || amount === '0') return 'Бесплатно'
+    
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount
     
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
       currency: currency === 'AMD' ? 'RUB' : currency,
       minimumFractionDigits: 0
-    }).format(amount).replace('₽', currency === 'AMD' ? '֏' : '₽')
+    }).format(numericAmount).replace('₽', currency === 'AMD' ? '֏' : '₽')
   }
 
   const getDurationLabel = (duration: number | null, unit: string | null) => {
@@ -313,7 +316,7 @@ export default function CourseDetailPage() {
                   {course.paymentType === 'ONE_TIME' ? (
                     <div>
                       <div className="text-3xl font-bold text-gray-900 mb-2">
-                        {formatCurrency(course.totalPrice, course.currency)}
+                        {formatCurrency(course.price, course.currency)}
                       </div>
                       <p className="text-sm text-gray-600">Разовая оплата за весь курс</p>
                     </div>
