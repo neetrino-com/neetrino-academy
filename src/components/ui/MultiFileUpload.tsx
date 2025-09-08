@@ -76,10 +76,15 @@ export default function MultiFileUpload({
           body: formData,
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Ошибка загрузки файла "${file.name}"`);
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Ошибка загрузки файла:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        throw new Error(errorData.details || errorData.error || `Ошибка загрузки файла "${file.name}"`);
+      }
 
         const data = await response.json();
         newUploadedFiles.push({

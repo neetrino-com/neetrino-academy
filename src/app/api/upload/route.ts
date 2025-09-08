@@ -23,44 +23,102 @@ export async function POST(request: NextRequest) {
     }
 
     // Валидация типа файла
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip', 'application/x-rar-compressed'];
+    const allowedTypes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/gif', 
+      'image/webp',
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+      'application/zip', 
+      'application/x-rar-compressed',
+      'video/mp4',
+      'video/quicktime',
+      'video/x-msvideo'
+    ];
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Неподдерживаемый тип файла' }, { status: 400 });
+      return NextResponse.json({ error: `Неподдерживаемый тип файла: ${file.type}` }, { status: 400 });
     }
 
-    // Создаем FormData для Cloudinary
-    const cloudinaryFormData = new FormData();
-    cloudinaryFormData.append('file', file);
-    cloudinaryFormData.append('upload_preset', 'academy_uploads');
+    // Проверяем, настроен ли Cloudinary
+    const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+    
+    if (cloudinaryCloudName && cloudinaryApiKey && cloudinaryCloudName !== 'your-cloud-name') {
+      // Используем Cloudinary если настроен
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append('file', file);
+      cloudinaryFormData.append('upload_preset', 'academy_uploads');
 
-    // Загружаем файл на Cloudinary
-    const cloudinaryResponse = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/auto/upload`,
-      {
-        method: 'POST',
-        body: cloudinaryFormData,
+      const cloudinaryResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/auto/upload`,
+        {
+          method: 'POST',
+          body: cloudinaryFormData,
+        }
+      );
+
+      if (!cloudinaryResponse.ok) {
+        throw new Error('Ошибка загрузки на Cloudinary');
       }
-    );
 
-    if (!cloudinaryResponse.ok) {
-      throw new Error('Ошибка загрузки на Cloudinary');
+      const cloudinaryData = await cloudinaryResponse.json();
+
+      return NextResponse.json({
+        success: true,
+        fileUrl: cloudinaryData.secure_url,
+        publicId: cloudinaryData.public_id,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
+    } else {
+      // Fallback: сохраняем файл локально
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const crypto = await import('crypto');
+      
+      // Создаем уникальное имя файла
+      const fileExtension = file.name.split('.').pop() || '';
+      const uniqueName = `${crypto.randomUUID()}.${fileExtension}`;
+      
+      // Путь для сохранения
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'temp');
+      const filePath = path.join(uploadDir, uniqueName);
+      
+      // Создаем директорию если не существует
+      await fs.mkdir(uploadDir, { recursive: true });
+      
+      // Сохраняем файл
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+      
+      // Возвращаем URL для доступа к файлу
+      const fileUrl = `/uploads/temp/${uniqueName}`;
+      
+      return NextResponse.json({
+        success: true,
+        fileUrl: fileUrl,
+        publicId: uniqueName,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
     }
-
-    const cloudinaryData = await cloudinaryResponse.json();
-
-    return NextResponse.json({
-      success: true,
-      fileUrl: cloudinaryData.secure_url,
-      publicId: cloudinaryData.public_id,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type
-    });
 
   } catch (error) {
     console.error('Ошибка загрузки файла:', error);
+    console.error('Детали ошибки:', {
+      message: error instanceof Error ? error.message : 'Неизвестная ошибка',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
     return NextResponse.json(
-      { error: 'Ошибка загрузки файла' },
+      { 
+        error: 'Ошибка загрузки файла',
+        details: error instanceof Error ? error.message : 'Неизвестная ошибка'
+      },
       { status: 500 }
     );
   }
