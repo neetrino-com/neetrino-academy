@@ -86,10 +86,15 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
 
   const fetchAssignment = async () => {
     try {
+      console.log('🔍 [Assignment Page] Starting fetch for assignment:', resolvedParams.id)
       setLoading(true)
+      
       const response = await fetch(`/api/student/assignments/${resolvedParams.id}/submission`)
+      console.log('📡 [Assignment Page] Response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ [Assignment Page] Data received:', data)
         setAssignment(data)
         
         // Заполняем форму существующими данными
@@ -98,10 +103,14 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
           setFileUrl(data.submission.fileUrl || '')
         }
       } else {
+        const errorData = await response.json()
+        console.error('❌ [Assignment Page] API Error:', errorData)
+        alert(`Ошибка загрузки задания: ${errorData.error || 'Неизвестная ошибка'}`)
         router.push('/assignments')
       }
     } catch (error) {
-      console.error('Ошибка загрузки задания:', error)
+      console.error('❌ [Assignment Page] Network error:', error)
+      alert('Ошибка сети при загрузке задания')
       router.push('/assignments')
     } finally {
       setLoading(false)
