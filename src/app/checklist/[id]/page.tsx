@@ -52,7 +52,13 @@ interface ChecklistProgress {
   id: string;
   userId: string;
   checklistId: string;
-  itemProgress: {
+  itemProgress?: {
+    id: string;
+    itemId: string;
+    status: 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS';
+    updatedAt: string;
+  }[];
+  itemsProgress?: {
     id: string;
     itemId: string;
     status: 'COMPLETED' | 'NOT_COMPLETED' | 'NOT_NEEDED' | 'HAS_QUESTIONS';
@@ -163,11 +169,18 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
         const data = await response.json();
         console.log('Данные прогресса:', data);
         console.log('itemsProgress:', data.itemsProgress);
+        console.log('itemsProgress детально:', data.itemsProgress?.map(item => ({ itemId: item.itemId, status: item.status })));
         
         // Убеждаемся, что данные прогресса корректно установлены
         setProgress(prev => {
           console.log('Обновляем прогресс:', data);
-          return data;
+          // Преобразуем itemsProgress в itemProgress для совместимости
+          const progressData = {
+            ...data,
+            itemProgress: data.itemsProgress || []
+          };
+          console.log('Преобразованный прогресс:', progressData);
+          return progressData;
         });
       } else {
         console.log('Ошибка загрузки прогресса:', response.status);
@@ -336,17 +349,22 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
   // Создаем карту статусов один раз
   const statusMap = useMemo(() => {
-    if (!progress || !progress.itemProgress) {
+    console.log('statusMap useMemo вызван, progress:', progress);
+    console.log('progress.itemProgress:', progress?.itemProgress);
+    console.log('progress.itemsProgress:', progress?.itemsProgress);
+    
+    const itemProgress = progress?.itemProgress || progress?.itemsProgress;
+    if (!progress || !itemProgress) {
       console.log('statusMap: нет данных прогресса');
       return new Map();
     }
     
     const map = new Map(
-      progress.itemProgress.map(p => [p.itemId, p.status])
+      itemProgress.map(p => [p.itemId, p.status])
     );
     console.log('statusMap создан:', map.size, 'элементов', Array.from(map.entries()));
     return map;
-  }, [progress?.itemProgress]);
+  }, [progress?.itemProgress, progress?.itemsProgress]);
 
   // Функция получения статуса (без мемоизации, так как statusMap уже мемоизирован)
   const getItemStatus = (itemId: string) => {
@@ -360,7 +378,8 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     if (!checklist || !progress) return { completed: 0, total: 0, percentage: 0 };
 
     const total = checklist.groups.reduce((sum, group) => sum + group.items.length, 0);
-    const completed = (progress.itemProgress || []).filter(p => p.status === 'COMPLETED').length;
+    const itemProgress = progress.itemProgress || progress.itemsProgress || [];
+    const completed = itemProgress.filter(p => p.status === 'COMPLETED').length;
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return { completed, total, percentage };
