@@ -173,7 +173,9 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     const maxRetries = 3;
     const retryKey = `${itemId}-${status}`;
     
-    console.log('🔄 Обновляем статус пункта:', { itemId, status, attempt: retryAttempt + 1 });
+    if (retryAttempt === 0) {
+      console.log('🔄 Обновляем статус пункта:', { itemId, status });
+    }
     
     // Сохраняем предыдущее состояние для отката
     const previousProgress = progress;
@@ -221,11 +223,9 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
         body: JSON.stringify({ itemId, status })
       });
 
-      console.log('📡 Ответ API:', response.status);
-      
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Статус успешно обновлен:', result);
+        console.log('✅ Статус успешно обновлен');
         
         // Сбрасываем счетчик попыток при успехе
         setRetryCount(prev => {
@@ -268,7 +268,6 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
         if (retryAttempt < maxRetries) {
           // Пробуем еще раз с экспоненциальной задержкой
           const delay = Math.pow(2, retryAttempt) * 1000; // 1s, 2s, 4s
-          console.log(`🔄 Повторная попытка через ${delay}ms`);
           
           setRetryCount(prev => ({
             ...prev,
@@ -292,7 +291,6 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
       
       if (retryAttempt < maxRetries) {
         const delay = Math.pow(2, retryAttempt) * 1000;
-        console.log(`🔄 Повторная попытка через ${delay}ms`);
         
         setRetryCount(prev => ({
           ...prev,
@@ -326,20 +324,22 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     });
   };
 
-  // Мемоизируем статусы для оптимизации
-  const getItemStatus = useMemo(() => {
-    if (!progress || !progress.itemProgress) return () => 'NOT_COMPLETED';
+  // Создаем карту статусов один раз
+  const statusMap = useMemo(() => {
+    if (!progress || !progress.itemProgress) return new Map();
     
-    const statusMap = new Map(
+    return new Map(
       progress.itemProgress.map(p => [p.itemId, p.status])
     );
-    
-    return (itemId: string) => {
-      const status = statusMap.get(itemId) || 'NOT_COMPLETED';
-      console.log(`Статус для ${itemId}:`, status);
-      return status;
-    };
   }, [progress?.itemProgress]);
+
+  // Функция получения статуса (без мемоизации, так как statusMap уже мемоизирован)
+  const getItemStatus = (itemId: string) => {
+    const status = statusMap.get(itemId) || 'NOT_COMPLETED';
+    // Убираем лишние логи - оставляем только для отладки
+    // console.log(`Статус для ${itemId}:`, status);
+    return status;
+  };
 
   // Мемоизируем статистику прогресса
   const progressStats = useMemo(() => {
@@ -358,7 +358,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     
     const stats = new Map();
     checklist.groups.forEach(group => {
-      const groupCompleted = group.items.filter(item => getItemStatus(item.id) === 'COMPLETED').length;
+      const groupCompleted = group.items.filter(item => statusMap.get(item.id) === 'COMPLETED').length;
       const groupTotal = group.items.length;
       const groupPercentage = groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 0;
       
@@ -366,7 +366,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
     });
     
     return stats;
-  }, [checklist, progress, getItemStatus]);
+  }, [checklist, statusMap]);
 
   if (loading) {
     return (
