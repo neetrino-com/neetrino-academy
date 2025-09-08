@@ -156,6 +156,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
       if (response.ok) {
         const data = await response.json();
         console.log('Данные прогресса:', data);
+        console.log('itemsProgress:', data.itemsProgress);
         setProgress(data);
       } else {
         console.log('Ошибка загрузки прогресса:', response.status);
@@ -240,6 +241,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
   const getItemStatus = (itemId: string) => {
     if (!progress || !progress.itemProgress) return 'NOT_COMPLETED';
     const itemProgress = progress.itemProgress.find(p => p.itemId === itemId);
+    console.log(`Статус для ${itemId}:`, itemProgress?.status || 'NOT_COMPLETED');
     return itemProgress?.status || 'NOT_COMPLETED';
   };
 
