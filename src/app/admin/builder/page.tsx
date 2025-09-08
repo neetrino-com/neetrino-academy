@@ -227,7 +227,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
           // Собираем все задания из всех уроков модуля
           const moduleAssignments = lessons.flatMap(lesson => lesson.assignments || [])
           
-          // Загружаем тесты для каждого урока
+          // Загружаем тесты для каждого урока (только если они существуют)
           const lessonsWithQuizzes = await Promise.all(
             lessons.map(async (lesson: {
               id: string;
@@ -242,15 +242,27 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               }>;
             }) => {
               let quiz = null
+              let hasQuiz = false
+              
               try {
-                const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
-                if (quizResponse.ok) {
-                  quiz = await quizResponse.json()
+                // Сначала проверяем, есть ли тест для урока
+                const quizCheckResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`, {
+                  method: 'HEAD' // Используем HEAD для проверки существования без загрузки данных
+                })
+                
+                if (quizCheckResponse.ok) {
+                  // Если тест существует, загружаем его
+                  const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
+                  if (quizResponse.ok) {
+                    quiz = await quizResponse.json()
+                    hasQuiz = true
+                    console.log(`[DEBUG] Квиз загружен для урока ${lesson.id}`)
+                  }
                 }
-                // Если 404 - это нормально, теста просто нет
+                // Если 404 - теста нет, это нормально, не логируем ошибку
               } catch (error) {
-                // Игнорируем ошибки загрузки тестов
-                console.log(`Тест для урока ${lesson.id} не найден (это нормально)`)
+                // Тихо игнорируем ошибки загрузки тестов
+                console.log(`[DEBUG] Тест для урока ${lesson.id} недоступен`)
               }
               
               // Проверяем, есть ли задания для этого урока
@@ -260,7 +272,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                 ...lesson,
                 type: lesson.videoUrl ? 'video' : 'text',
                 files: [],
-                hasQuiz: !!quiz,
+                hasQuiz: hasQuiz,
                 hasAssignment: hasAssignment,
                 quiz: quiz
               }
@@ -295,10 +307,10 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       
       setModules(modulesWithLessons)
       
-      // Инициализируем тесты из загруженных данных
+      // Инициализируем тесты из загруженных данных (только существующие тесты)
       const allQuizzes = modulesWithLessons.flatMap(module => 
         module.lessons
-          .filter((lesson: { quiz: unknown }) => lesson.quiz)
+          .filter((lesson: { quiz: unknown; hasQuiz: boolean }) => lesson.hasQuiz && lesson.quiz)
           .map((lesson: { quiz: unknown }) => lesson.quiz)
       )
       setQuizzes(allQuizzes)

@@ -1332,8 +1332,10 @@ fetch('/admin/api/2023-04/graphql.json', {
 
   // Тест для WordPress урока
   if (wpLessons.length > 0) {
-    const wpQuiz = await prisma.quiz.create({
-      data: {
+    const wpQuiz = await prisma.quiz.upsert({
+      where: { lessonId: wpLessons[0].id },
+      update: {},
+      create: {
         title: 'Тест по основам WordPress',
         description: 'Проверьте свои знания основ WordPress',
         timeLimit: 15, // 15 минут
@@ -1431,8 +1433,10 @@ fetch('/admin/api/2023-04/graphql.json', {
 
   // Тест для Frontend урока
   if (frontendLessons.length > 0) {
-    const frontendQuiz = await prisma.quiz.create({
-      data: {
+    const frontendQuiz = await prisma.quiz.upsert({
+      where: { lessonId: frontendLessons[0].id },
+      update: {},
+      create: {
         title: 'Тест по JavaScript ES6+',
         description: 'Проверьте знания современного JavaScript',
         timeLimit: 20,
@@ -1505,8 +1509,10 @@ fetch('/admin/api/2023-04/graphql.json', {
 
   // Тест для Shopify урока
   if (shopifyLessons.length > 0) {
-    const shopifyQuiz = await prisma.quiz.create({
-      data: {
+    const shopifyQuiz = await prisma.quiz.upsert({
+      where: { lessonId: shopifyLessons[0].id },
+      update: {},
+      create: {
         title: 'Тест по Shopify REST API',
         description: 'Проверьте знания работы с Shopify API',
         timeLimit: 25,
