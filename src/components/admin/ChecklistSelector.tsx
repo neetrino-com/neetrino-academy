@@ -44,6 +44,7 @@ export default function ChecklistSelector({
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedChecklist, setSelectedChecklist] = useState<Checklist | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchChecklists();
@@ -61,20 +62,35 @@ export default function ChecklistSelector({
   const fetchChecklists = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Загружаем чеклисты...');
+      
       const response = await fetch('/api/admin/checklists?limit=1000');
+      console.log('📡 Ответ API:', response.status, response.statusText);
+      
       const data = await response.json();
+      console.log('📊 Данные API:', data);
       
       if (response.ok) {
         // Фильтруем по направлению, если указано
         let filteredChecklists = data.checklists || [];
+        console.log('📋 Всего чеклистов:', filteredChecklists.length);
+        
         if (direction) {
           filteredChecklists = filteredChecklists.filter((c: Checklist) => c.direction === direction);
+          console.log(`🎯 Отфильтровано по направлению ${direction}:`, filteredChecklists.length);
         }
         
         setChecklists(filteredChecklists);
+        console.log('✅ Чеклисты загружены:', filteredChecklists);
+      } else {
+        console.error('❌ Ошибка API:', data.error);
+        setError(data.error || 'Ошибка загрузки чеклистов');
+        setChecklists([]);
       }
     } catch (error) {
-      console.error('Error fetching checklists:', error);
+      console.error('❌ Ошибка загрузки чеклистов:', error);
+      setError('Ошибка соединения с сервером');
+      setChecklists([]);
     } finally {
       setLoading(false);
     }
@@ -162,6 +178,19 @@ export default function ChecklistSelector({
               <div className="p-4 text-center text-gray-500">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600 mx-auto mb-2"></div>
                 Загрузка чеклистов...
+              </div>
+            ) : error ? (
+              <div className="p-4 text-center text-red-500">
+                <div className="mb-2">❌ {error}</div>
+                <button 
+                  onClick={() => {
+                    setError(null);
+                    fetchChecklists();
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  Попробовать снова
+                </button>
               </div>
             ) : filteredChecklists.length === 0 ? (
               <div className="p-4 text-center text-gray-500">

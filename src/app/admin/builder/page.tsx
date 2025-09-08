@@ -212,6 +212,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
             id: string;
             title: string;
             description?: string;
+            checklistId?: string;
             assignments?: Array<{
               id: string;
               title: string;
@@ -236,6 +237,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
             title: string;
             description?: string;
             videoUrl?: string;
+            checklistId?: string;
             assignments?: Array<{
               id: string;
               title: string;
@@ -1973,6 +1975,13 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         console.log(`Модуль ${index + 1} (${module.title}): ${module.assignments.length} заданий`)
         module.assignments.forEach(assignment => {
           console.log(`  - Задание: ${assignment.title}`)
+        })
+        
+        // Проверим чеклисты в уроках
+        module.lessons.forEach((lesson, lessonIndex) => {
+          if (lesson.checklistId) {
+            console.log(`  Урок ${lessonIndex + 1} (${lesson.title}): чеклист ${lesson.checklistId}`)
+          }
         })
       })
       

@@ -35,6 +35,7 @@ const updateCourseSchema = z.object({
       duration: z.number().nullable().optional().default(null),
       order: z.number(),
       lectureId: z.string().nullable().optional().default(null),
+      checklistId: z.string().nullable().optional().default(null),
       assignments: z.array(z.object({
         title: z.string(),
         description: z.string().optional().default(''),
@@ -91,6 +92,13 @@ export async function GET(
               orderBy: { order: 'asc' },
               include: {
                 lecture: {
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true
+                  }
+                },
+                checklist: {
                   select: {
                     id: true,
                     title: true,
@@ -290,6 +298,8 @@ export async function PUT(
         for (const lessonData of moduleData.lessons) {
           const existingLesson = existingModule?.lessons.find(l => l.id === lessonData.id)
           
+          console.log(`[DEBUG] Обрабатываем урок: ${lessonData.title}, checklistId: ${lessonData.checklistId}`)
+          
           let lessonId = lessonData.id
           
           if (existingLesson) {
@@ -301,7 +311,8 @@ export async function PUT(
                 content: lessonData.content || null,
                 duration: lessonData.duration || null,
                 order: lessonData.order,
-                lectureId: lessonData.lectureId || null
+                lectureId: lessonData.lectureId || null,
+                checklistId: lessonData.checklistId || null
               }
             })
           } else {
@@ -313,7 +324,8 @@ export async function PUT(
                 duration: lessonData.duration || null,
                 order: lessonData.order,
                 moduleId: currentModule.id,
-                lectureId: lessonData.lectureId || null
+                lectureId: lessonData.lectureId || null,
+                checklistId: lessonData.checklistId || null
               }
             })
             lessonId = newLesson.id

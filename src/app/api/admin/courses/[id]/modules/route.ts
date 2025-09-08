@@ -65,6 +65,13 @@ export async function GET(
                   orderBy: { order: 'asc' }
                 }
               }
+            },
+            checklist: {
+              select: {
+                id: true,
+                title: true,
+                description: true
+              }
             }
           },
           orderBy: { order: 'asc' }
