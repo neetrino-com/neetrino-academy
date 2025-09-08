@@ -121,7 +121,7 @@ export default function LecturePage() {
           <div className="my-6">
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Image className="w-5 h-5 text-green-600" />
+                <Image className="w-4 h-4 text-green-600" />
                 Галерея изображений ({block.metadata?.files?.length || 0})
               </h4>
               
@@ -170,7 +170,7 @@ export default function LecturePage() {
           <div className="my-6">
             <div className="bg-gray-50 rounded-lg p-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <File className="w-5 h-5 text-indigo-600" />
+                <File className="w-4 h-4 text-indigo-600" />
                 Файлы для скачивания ({block.metadata?.files?.length || 0})
               </h4>
               
@@ -236,15 +236,15 @@ export default function LecturePage() {
       case 'link':
         return (
           <div className="my-6">
-            <a 
-              href={block.metadata?.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-lg font-medium"
-            >
-              <LinkIcon className="w-5 h-5 mr-3" />
-              {block.content || 'Открыть ссылку'}
-            </a>
+              <a 
+                href={block.metadata?.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-6 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-lg font-medium"
+              >
+                <LinkIcon className="w-4 h-4 mr-2" />
+                {block.content || 'Открыть ссылку'}
+              </a>
           </div>
         );
 
@@ -303,7 +303,7 @@ export default function LecturePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Хлебные крошки */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-500">
@@ -321,9 +321,9 @@ export default function LecturePage() {
           </ol>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
           {/* Основной контент */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-5">
             {/* Заголовок лекции */}
             <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-200">
               <div className="flex items-start justify-between mb-6">
