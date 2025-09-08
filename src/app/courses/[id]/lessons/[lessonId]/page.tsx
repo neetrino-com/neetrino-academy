@@ -815,60 +815,6 @@ export default function LessonStudyPage() {
                   )}
                 </div>
 
-                {/* Тест урока */}
-                {quiz && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">
-                      Тест по уроку
-                    </h4>
-                    
-                    {userAttempt ? (
-                      <div className="text-center py-4">
-                        <div className={`mb-3 ${userAttempt.passed ? 'text-green-600' : 'text-red-600'}`}>
-                          <svg className="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {userAttempt.passed ? (
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            ) : (
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            )}
-                          </svg>
-                        </div>
-                        <h5 className="text-sm font-medium text-gray-900 mb-1">
-                          {userAttempt.passed ? 'Тест пройден!' : 'Тест не пройден'}
-                        </h5>
-                        <p className="text-xs text-gray-600 mb-2">
-                          Результат: {userAttempt.score?.toFixed(1)}%
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {userAttempt.passed 
-                            ? 'Отличная работа!'
-                            : 'Попробуйте еще раз.'
-                          }
-                        </p>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="mb-3">
-                          <h5 className="text-sm font-medium text-gray-900 mb-1">
-                            {quiz.title}
-                          </h5>
-                          <div className="text-xs text-gray-500 space-y-1">
-                            <div>Вопросов: {quiz.questions?.length || 0}</div>
-                            <div>Время: {quiz.timeLimit || 'Не ограничено'} мин</div>
-                            <div>Проходной балл: {quiz.passingScore}%</div>
-                          </div>
-                        </div>
-                        
-                        <button
-                          onClick={() => setShowQuiz(true)}
-                          className="w-full bg-blue-600 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
-                        >
-                          Начать тест
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
 
 
 
