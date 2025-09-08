@@ -183,69 +183,50 @@ export default function LessonStudyPage() {
                     <Image className="w-5 h-5 text-green-600" />
                     Галерея изображений ({block.metadata.files.length})
                   </h4>
-                  {console.log('Рендерим галерею с файлами:', block.metadata.files.map(f => ({ name: f.name, url: f.url })))}
                   
-                  <div className={`grid gap-4 ${
-                    block.metadata.files.length === 1 
-                      ? 'grid-cols-1' 
-                      : 'grid-cols-2'
-                  }`}>
+                  <div className="space-y-2">
                     {block.metadata.files.map((file) => (
-                      <div key={file.id} className="group">
-                        <a
-                          href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block"
-                        >
-                          <div className="relative bg-white rounded-lg border-2 border-gray-200 hover:border-green-400 transition-all duration-300 group-hover:shadow-xl overflow-hidden">
-                            {/* Простое превью изображения */}
-                            <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                              <img
-                                src={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
-                                alt={file.name}
-                                className="max-w-full max-h-full object-contain rounded-lg"
-                                onError={(e) => {
-                                  console.error('Ошибка загрузки изображения:', file.url, e);
-                                  e.currentTarget.style.display = 'none';
-                                  // Показываем fallback
-                                  const container = e.currentTarget.parentElement;
-                                  if (container) {
-                                    container.innerHTML = `
-                                      <div class="flex flex-col items-center justify-center text-gray-400 p-6">
-                                        <svg class="w-16 h-16 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <span class="text-sm font-medium">Не удалось загрузить</span>
-                                        <span class="text-xs mt-1 text-center">${file.name}</span>
-                                      </div>
-                                    `;
-                                  }
-                                }}
-                                onLoad={() => {
-                                  console.log('Изображение загружено:', file.url);
-                                  console.log('Полный URL:', file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`);
-                                }}
-                              />
-                            </div>
-                            
-                            {/* Overlay с иконкой */}
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-75 group-hover:scale-100">
-                                <div className="bg-white rounded-full p-3 shadow-lg">
-                                  <Image className="w-6 h-6 text-green-600" />
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* Название файла */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                              <p className="text-white text-sm font-medium truncate">
-                                {file.name}
-                              </p>
+                      <div
+                        key={file.id}
+                        className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex gap-3"
+                      >
+                        <div className="flex-shrink-0">
+                          <img
+                            src={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
+                            alt={file.name}
+                            className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                            onError={(e) => {
+                              console.error('Ошибка загрузки изображения:', file.url, e);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            onLoad={() => {
+                              console.log('Изображение загружено:', file.url);
+                            }}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Image className="w-4 h-4 text-green-600" />
+                            <div className="text-sm font-medium text-gray-900 truncate">
+                              {file.name}
                             </div>
                           </div>
-                        </a>
+                          <div className="text-xs text-gray-500 mb-2">
+                            {Math.round(file.size / 1024)} KB
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-1"
+                              title="Открыть изображение"
+                            >
+                              <File className="w-3 h-3" />
+                              Открыть
+                            </a>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
