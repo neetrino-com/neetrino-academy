@@ -133,27 +133,22 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
       return;
     }
 
-    console.log('useEffect: загружаем чеклист и прогресс');
     fetchChecklist();
     fetchProgress();
   }, [session, resolvedParams.id, router]);
 
   const fetchChecklist = async () => {
     try {
-      console.log('Загружаем чеклист:', resolvedParams.id);
       const response = await fetch(`/api/student/checklists/${resolvedParams.id}`);
       if (response.ok) {
         const data = await response.json();
-        console.log('Чеклист загружен:', data);
         setChecklist(data);
         // По умолчанию разворачиваем все группы
         setExpandedGroups(new Set(data.groups.map((g: { id: string }) => g.id)));
       } else {
-        console.log('Ошибка загрузки чеклиста:', response.status);
         toast.error('Ошибка загрузки чеклиста');
       }
     } catch (error) {
-      console.error('Ошибка загрузки чеклиста:', error);
       toast.error('Ошибка загрузки чеклиста');
     } finally {
       setLoading(false);
@@ -162,28 +157,15 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
   const fetchProgress = async () => {
     try {
-      console.log('Загружаем прогресс для чеклиста:', resolvedParams.id);
       const response = await fetch(`/api/student/checklists/${resolvedParams.id}/progress`);
-      console.log('Ответ загрузки прогресса:', response.status);
       if (response.ok) {
         const data = await response.json();
-        console.log('Данные прогресса:', data);
-        console.log('itemsProgress:', data.itemsProgress);
-        console.log('itemsProgress детально:', data.itemsProgress?.map(item => ({ itemId: item.itemId, status: item.status })));
         
-        // Убеждаемся, что данные прогресса корректно установлены
-        setProgress(prev => {
-          console.log('Обновляем прогресс:', data);
-          // Преобразуем itemsProgress в itemProgress для совместимости
-          const progressData = {
-            ...data,
-            itemProgress: data.itemsProgress || []
-          };
-          console.log('Преобразованный прогресс:', progressData);
-          return progressData;
+        // Преобразуем itemsProgress в itemProgress для совместимости
+        setProgress({
+          ...data,
+          itemProgress: data.itemsProgress || []
         });
-      } else {
-        console.log('Ошибка загрузки прогресса:', response.status);
       }
     } catch (error) {
       console.error('Ошибка загрузки прогресса:', error);
@@ -195,10 +177,6 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
     const maxRetries = 3;
     const retryKey = `${itemId}-${status}`;
-    
-    if (retryAttempt === 0) {
-      console.log('🔄 Обновляем статус пункта:', { itemId, status });
-    }
     
     // Сохраняем предыдущее состояние для отката
     const previousProgress = progress;
@@ -248,7 +226,6 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Статус успешно обновлен');
         
         // Сбрасываем счетчик попыток при успехе
         setRetryCount(prev => {
@@ -349,28 +326,19 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
 
   // Создаем карту статусов один раз
   const statusMap = useMemo(() => {
-    console.log('statusMap useMemo вызван, progress:', progress);
-    console.log('progress.itemProgress:', progress?.itemProgress);
-    console.log('progress.itemsProgress:', progress?.itemsProgress);
-    
     const itemProgress = progress?.itemProgress || progress?.itemsProgress;
     if (!progress || !itemProgress) {
-      console.log('statusMap: нет данных прогресса');
       return new Map();
     }
     
-    const map = new Map(
+    return new Map(
       itemProgress.map(p => [p.itemId, p.status])
     );
-    console.log('statusMap создан:', map.size, 'элементов', Array.from(map.entries()));
-    return map;
   }, [progress?.itemProgress, progress?.itemsProgress]);
 
   // Функция получения статуса (без мемоизации, так как statusMap уже мемоизирован)
   const getItemStatus = (itemId: string) => {
-    const status = statusMap.get(itemId) || 'NOT_COMPLETED';
-    console.log(`Статус для ${itemId}:`, status, 'из statusMap:', statusMap.has(itemId));
-    return status;
+    return statusMap.get(itemId) || 'NOT_COMPLETED';
   };
 
   // Мемоизируем статистику прогресса
