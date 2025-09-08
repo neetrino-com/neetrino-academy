@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { File, Image } from 'lucide-react'
 import VideoPlayer from '@/components/ui/VideoPlayer'
 import Quiz from '@/components/ui/Quiz'
-import ChecklistLesson from '@/components/lessons/ChecklistLesson'
 import { AccessControl } from '@/components/courses/AccessControl'
 
 interface UploadedFile {
@@ -808,13 +807,6 @@ export default function LessonStudyPage() {
                   </div>
                 </div>
 
-                {/* Встроенный чеклист */}
-                <div className="mt-6">
-                  <ChecklistLesson 
-                    checklistId={lesson.checklist.id} 
-                    lessonId={lesson.id} 
-                  />
-                </div>
               </div>
             )}
 
