@@ -34,7 +34,7 @@ export default function PaymentsPage() {
 
   const fetchPaymentInfo = async (courseId: string) => {
     try {
-      const response = await fetch(`/api/courses/${courseId}`)
+      const response = await fetch(`${window.location.origin}/api/courses/${courseId}`)
       const data = await response.json()
 
       if (response.ok) {
@@ -67,7 +67,7 @@ export default function PaymentsPage() {
         await new Promise(resolve => setTimeout(resolve, 2000))
       }
       
-      const response = await fetch('/api/payments/process', {
+      const response = await fetch(`${window.location.origin}/api/payments/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
