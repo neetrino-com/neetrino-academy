@@ -321,9 +321,9 @@ export default function LecturePage() {
           </ol>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+        <div className="max-w-5xl mx-auto">
           {/* Основной контент */}
-          <div className="lg:col-span-5">
+          <div>
             {/* Заголовок лекции */}
             <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-200">
               <div className="flex items-start justify-between mb-6">
@@ -418,84 +418,6 @@ export default function LecturePage() {
                   </p>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Боковая панель */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-8 border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Информация о лекции
-              </h3>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Статус:</span>
-                  <span className={`text-sm font-medium ${lecture.isActive ? 'text-green-600' : 'text-red-600'}`}>
-                    {lecture.isActive ? 'Активна' : 'Неактивна'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Автор:</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {lecture.creator.name}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Уроков:</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {lecture._count.lessons}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Создана:</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {new Date(lecture.createdAt).toLocaleDateString('ru-RU')}
-                  </span>
-                </div>
-
-                {/* Связанные уроки */}
-                {lecture.lessons.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-3">
-                      Связанные уроки
-                    </h4>
-                    <div className="space-y-2">
-                      {lecture.lessons.map((lesson) => (
-                        <Link
-                          key={lesson.id}
-                          href={`/courses/${lesson.module.course.id}/lessons/${lesson.id}`}
-                          className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="text-sm font-medium text-gray-900 truncate">
-                            {lesson.title}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {lesson.module.course.title} • {lesson.module.title}
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="border-t pt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">
-                    Навигация
-                  </h4>
-                  <div className="space-y-2">
-                    <Link
-                      href="/courses"
-                      className="block text-sm text-blue-600 hover:text-blue-700"
-                    >
-                      ← К курсам
-                    </Link>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
