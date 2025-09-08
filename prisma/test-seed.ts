@@ -1222,18 +1222,24 @@ fetch('/admin/api/2023-04/graphql.json', {
         'Настройка темы и виджетов'
       ]
       
-      await prisma.assignment.create({
-        data: {
-          title: assignmentTitles[i] || `Задание ${i + 1}`,
-          description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
-          dueDate: new Date(Date.now() + (i + 1) * 7 * 24 * 60 * 60 * 1000), // через неделю для каждого урока
-          lessonId: lesson.id,
-          type: i === 0 ? 'PROJECT' : 'HOMEWORK',
-          status: 'PUBLISHED',
-          maxScore: 100,
-          createdBy: teacher1.id
-        }
-      })
+      const existingAssignment = await prisma.assignment.findFirst({
+        where: { lessonId: lesson.id }
+      });
+      
+      if (!existingAssignment) {
+        await prisma.assignment.create({
+          data: {
+            title: assignmentTitles[i] || `Задание ${i + 1}`,
+            description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
+            dueDate: new Date(Date.now() + (i + 1) * 7 * 24 * 60 * 60 * 1000), // через неделю для каждого урока
+            lessonId: lesson.id,
+            type: i === 0 ? 'PROJECT' : 'HOMEWORK',
+            status: 'PUBLISHED',
+            maxScore: 100,
+            createdBy: teacher1.id
+          }
+        });
+      }
     }
   }
 
@@ -1258,18 +1264,24 @@ fetch('/admin/api/2023-04/graphql.json', {
         'Управление состоянием в React'
       ]
       
-      await prisma.assignment.create({
-        data: {
-          title: assignmentTitles[i] || `Задание ${i + 1}`,
-          description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
-          dueDate: new Date(Date.now() + (i + 1) * 5 * 24 * 60 * 60 * 1000), // через 5 дней для каждого урока
-          lessonId: lesson.id,
-          type: i === 0 ? 'PROJECT' : 'HOMEWORK',
-          status: 'PUBLISHED',
-          maxScore: 100,
-          createdBy: teacher2.id
-        }
-      })
+      const existingAssignment = await prisma.assignment.findFirst({
+        where: { lessonId: lesson.id }
+      });
+      
+      if (!existingAssignment) {
+        await prisma.assignment.create({
+          data: {
+            title: assignmentTitles[i] || `Задание ${i + 1}`,
+            description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
+            dueDate: new Date(Date.now() + (i + 1) * 5 * 24 * 60 * 60 * 1000), // через 5 дней для каждого урока
+            lessonId: lesson.id,
+            type: i === 0 ? 'PROJECT' : 'HOMEWORK',
+            status: 'PUBLISHED',
+            maxScore: 100,
+            createdBy: teacher2.id
+          }
+        });
+      }
     }
   }
 
@@ -1294,18 +1306,24 @@ fetch('/admin/api/2023-04/graphql.json', {
         'Интеграция с внешними сервисами'
       ]
       
-      await prisma.assignment.create({
-        data: {
-          title: assignmentTitles[i] || `Задание ${i + 1}`,
-          description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
-          dueDate: new Date(Date.now() + (i + 1) * 10 * 24 * 60 * 60 * 1000), // через 10 дней для каждого урока
-          lessonId: lesson.id,
-          type: i === 0 ? 'PROJECT' : 'HOMEWORK',
-          status: 'PUBLISHED',
-          maxScore: 100,
-          createdBy: teacher3.id
-        }
-      })
+      const existingAssignment = await prisma.assignment.findFirst({
+        where: { lessonId: lesson.id }
+      });
+      
+      if (!existingAssignment) {
+        await prisma.assignment.create({
+          data: {
+            title: assignmentTitles[i] || `Задание ${i + 1}`,
+            description: `Описание задания для урока "${lesson.title}". Выполните все требования и загрузите результат.`,
+            dueDate: new Date(Date.now() + (i + 1) * 10 * 24 * 60 * 60 * 1000), // через 10 дней для каждого урока
+            lessonId: lesson.id,
+            type: i === 0 ? 'PROJECT' : 'HOMEWORK',
+            status: 'PUBLISHED',
+            maxScore: 100,
+            createdBy: teacher3.id
+          }
+        });
+      }
     }
   }
 

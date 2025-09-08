@@ -199,11 +199,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     })
 
+    // Если прогресс не найден, создаем пустой прогресс
     if (!progress) {
-      return NextResponse.json(
-        { error: 'Прогресс не найден' },
-        { status: 404 }
-      )
+      return NextResponse.json({
+        id: '',
+        userId: session.user.id,
+        checklistId: id,
+        startedAt: new Date().toISOString(),
+        completedAt: null,
+        progress: 0,
+        checklist: {
+          title: '',
+          description: ''
+        },
+        itemsProgress: []
+      })
     }
 
     // Получаем детальный прогресс по пунктам
