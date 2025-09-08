@@ -392,6 +392,30 @@ export default function LectureContentBuilder({ content, onChange }: LectureCont
                     </div>
                   </div>
                   
+                  {/* Центральные кнопки перемещения */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => moveBlock(block.id, 'up')}
+                      disabled={index === 0}
+                      className="p-2 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Переместить вверх"
+                    >
+                      <ArrowUp size={16} />
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => moveBlock(block.id, 'down')}
+                      disabled={index === blocks.length - 1}
+                      className="p-2 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Переместить вниз"
+                    >
+                      <ArrowDown size={16} />
+                    </button>
+                  </div>
+                  
+                  {/* Правые кнопки управления */}
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -400,26 +424,6 @@ export default function LectureContentBuilder({ content, onChange }: LectureCont
                       title={block.collapsed ? "Развернуть блок" : "Свернуть блок"}
                     >
                       {block.collapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => moveBlock(block.id, 'up')}
-                      disabled={index === 0}
-                      className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Переместить вверх"
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => moveBlock(block.id, 'down')}
-                      disabled={index === blocks.length - 1}
-                      className="p-1 text-gray-500 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Переместить вниз"
-                    >
-                      <ArrowDown size={14} />
                     </button>
                     
                     <button
