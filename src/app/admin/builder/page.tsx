@@ -198,25 +198,34 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       const modulesResponse = await fetch(`/api/admin/courses/${editCourseId}/modules`)
       const modulesData = modulesResponse.ok ? await modulesResponse.json() : []
       
-      // Загружаем уроки для каждого модуля (модули уже содержат задания)
+      // Загружаем уроки для каждого модуля (модули уже содержат уроки с заданиями)
       const modulesWithLessons = await Promise.all(
         modulesData.map(async (module: {
           id: string;
           title: string;
           description?: string;
           order: number;
-          assignments?: Array<{
+          lessons?: Array<{
             id: string;
             title: string;
             description?: string;
-            dueDate?: string;
+            assignments?: Array<{
+              id: string;
+              title: string;
+              description?: string;
+              dueDate?: string;
+            }>;
           }>;
         }) => {
-          const lessonsResponse = await fetch(`/api/admin/modules/${module.id}/lessons`)
-          const lessons = lessonsResponse.ok ? await lessonsResponse.json() : []
+          // Используем уроки из модуля, если они есть, иначе загружаем отдельно
+          let lessons = module.lessons || []
+          if (lessons.length === 0) {
+            const lessonsResponse = await fetch(`/api/admin/modules/${module.id}/lessons`)
+            lessons = lessonsResponse.ok ? await lessonsResponse.json() : []
+          }
           
-          // Модули уже содержат задания из API /api/admin/courses/[id]/modules
-          const moduleAssignments = module.assignments || []
+          // Собираем все задания из всех уроков модуля
+          const moduleAssignments = lessons.flatMap(lesson => lesson.assignments || [])
           
           // Загружаем тесты для каждого урока
           const lessonsWithQuizzes = await Promise.all(
@@ -225,12 +234,18 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               title: string;
               description?: string;
               videoUrl?: string;
+              assignments?: Array<{
+                id: string;
+                title: string;
+                description?: string;
+                dueDate?: string;
+              }>;
             }) => {
               const quizResponse = await fetch(`/api/admin/lessons/${lesson.id}/quiz`)
               const quiz = quizResponse.ok ? await quizResponse.json() : null
               
-              // Проверяем, есть ли задания для этого урока (по связи с модулем)
-              const hasAssignment = moduleAssignments.length > 0
+              // Проверяем, есть ли задания для этого урока
+              const hasAssignment = (lesson.assignments && lesson.assignments.length > 0)
               
               return {
                 ...lesson,
@@ -279,28 +294,34 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       )
       setQuizzes(allQuizzes)
       
-      // Инициализируем задания из загруженных данных
+      // Инициализируем задания из загруженных данных (задания привязаны к урокам)
       const allAssignments = modulesWithLessons.flatMap(module => 
-        module.assignments ? module.assignments.map((assignment: {
-          id: string;
-          title: string;
-          description?: string;
-          dueDate?: string;
-        }) => ({
-          id: assignment.id,
-          lessonId: module.lessons[0]?.id || '', // Привязываем к первому уроку модуля
-          moduleId: module.id,
-          title: assignment.title,
-          description: assignment.description || '',
-          dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().split('T')[0] : ''
-        })) : []
+        module.lessons.flatMap(lesson => 
+          lesson.assignments ? lesson.assignments.map((assignment: {
+            id: string;
+            title: string;
+            description?: string;
+            dueDate?: string;
+          }) => ({
+            id: assignment.id,
+            lessonId: lesson.id,
+            moduleId: module.id,
+            title: assignment.title,
+            description: assignment.description || '',
+            dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().split('T')[0] : ''
+          })) : []
+        )
       )
       console.log('=== DEBUG: loadExistingCourse ===')
-      console.log('Модули с заданиями:', modulesWithLessons.map(m => ({
+      console.log('Модули с уроками и заданиями:', modulesWithLessons.map(m => ({
         id: m.id,
         title: m.title,
-        assignmentsCount: m.assignments?.length || 0,
-        assignments: m.assignments
+        lessonsCount: m.lessons.length,
+        lessons: m.lessons.map(l => ({
+          id: l.id,
+          title: l.title,
+          assignmentsCount: l.assignments?.length || 0
+        }))
       })))
       console.log('Извлеченные задания для состояния:', allAssignments)
       setAssignments(allAssignments)
@@ -1220,9 +1241,11 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
                 </p>
                 <button
                   onClick={() => {
+                    const currentLesson = allLessons.find(l => l.id === selectedLesson)
                     const newAssignment = {
                       id: `assignment_${Date.now()}`,
                       lessonId: selectedLesson!,
+                      moduleId: currentLesson?.moduleId || '',
                       title: '',
                       description: ''
                     }

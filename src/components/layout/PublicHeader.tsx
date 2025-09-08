@@ -8,7 +8,12 @@ import { ChevronDown, User, Settings, LogOut } from 'lucide-react'
 export function PublicHeader() {
   const { data: session, status } = useSession()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -59,7 +64,7 @@ export function PublicHeader() {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            {status === 'loading' ? (
+            {!isMounted || status === 'loading' ? (
               <div className="text-blue-500 font-medium">Загрузка...</div>
             ) : session?.user ? (
               <div className="flex items-center space-x-4">

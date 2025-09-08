@@ -33,9 +33,11 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     // Проверяем существование курса
     const course = await prisma.course.findUnique({
-      where: { id: (await params).id }
+      where: { id }
     })
 
     if (!course) {
@@ -45,12 +47,17 @@ export async function GET(
       )
     }
 
-    // Получаем модули курса с заданиями
+    // Получаем модули курса с уроками и заданиями
     const modules = await prisma.module.findMany({
-      where: { courseId: (await params).id },
+      where: { courseId: id },
       include: {
-        assignments: {
-          orderBy: { createdAt: 'asc' }
+        lessons: {
+          include: {
+            assignments: {
+              orderBy: { createdAt: 'asc' }
+            }
+          },
+          orderBy: { order: 'asc' }
         }
       },
       orderBy: { order: 'asc' }
@@ -90,9 +97,11 @@ export async function POST(
       )
     }
 
+    const { id } = await params
+
     // Проверяем существование курса
     const course = await prisma.course.findUnique({
-      where: { id: (await params).id }
+      where: { id }
     })
 
     if (!course) {
@@ -111,7 +120,7 @@ export async function POST(
         title: validatedData.title,
         description: validatedData.description,
         order: validatedData.order,
-        courseId: (await params).id
+        courseId: id
       },
       include: {
         course: {

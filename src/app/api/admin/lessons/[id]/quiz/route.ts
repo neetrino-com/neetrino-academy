@@ -26,8 +26,10 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     const quiz = await prisma.quiz.findUnique({
-      where: { lessonId: params.id },
+      where: { lessonId: id },
       include: {
         questions: {
           include: {
