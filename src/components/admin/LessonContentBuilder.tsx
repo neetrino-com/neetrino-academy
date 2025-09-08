@@ -18,7 +18,7 @@ import {
   Image
 } from 'lucide-react';
 import MultiFileUpload from '@/components/ui/MultiFileUpload';
-import RichTextEditor from '@/components/ui/RichTextEditor';
+import TinyMCEEditor from '@/components/ui/TinyMCEEditor';
 
 interface UploadedFile {
   id: string;
@@ -173,11 +173,12 @@ export default function LessonContentBuilder({ content, onChange }: LessonConten
     switch (block.type) {
       case 'text':
         return (
-          <RichTextEditor
+          <TinyMCEEditor
             value={block.content}
             onChange={(value) => updateBlock(block.id, { content: value })}
             placeholder="Введите текст урока с форматированием..."
             className="w-full"
+            height={250}
           />
         );
 
