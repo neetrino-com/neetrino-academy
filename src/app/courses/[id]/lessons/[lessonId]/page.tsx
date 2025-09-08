@@ -183,6 +183,7 @@ export default function LessonStudyPage() {
                     <Image className="w-5 h-5 text-green-600" />
                     Галерея изображений ({block.metadata.files.length})
                   </h4>
+                  {console.log('Рендерим галерею с файлами:', block.metadata.files.map(f => ({ name: f.name, url: f.url })))}
                   
                   <div className={`grid gap-4 ${
                     block.metadata.files.length === 1 
@@ -223,6 +224,7 @@ export default function LessonStudyPage() {
                                 }}
                                 onLoad={() => {
                                   console.log('Изображение загружено:', file.url);
+                                  console.log('Полный URL:', file.url.startsWith('http') ? file.url : `${process.env.NEXTAUTH_URL || 'http://localhost:3005'}${file.url}`);
                                 }}
                               />
                             </div>
