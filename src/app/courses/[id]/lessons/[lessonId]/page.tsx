@@ -190,63 +190,57 @@ export default function LessonStudyPage() {
                       : 'grid-cols-2'
                   }`}>
                     {block.metadata.files.map((file) => (
-                      <div key={file.id} className="group relative">
+                      <div key={file.id} className="group">
                         <a
                           href={file.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block"
                         >
-                          <div className={`w-full rounded-lg border border-gray-200 hover:border-green-300 transition-all duration-200 group-hover:shadow-lg overflow-hidden relative ${
-                            block.metadata.files.length === 1 
-                              ? 'h-64' 
-                              : 'h-48'
-                          }`}>
-                            {/* Индикатор загрузки */}
-                            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10" id={`loading-${file.id}`}>
-                              <div className="flex flex-col items-center text-gray-500">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-2"></div>
-                                <span className="text-sm">Загрузка...</span>
+                          <div className="relative bg-white rounded-lg border-2 border-gray-200 hover:border-green-400 transition-all duration-300 group-hover:shadow-xl overflow-hidden">
+                            {/* Простое превью изображения */}
+                            <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="max-w-full max-h-full object-contain rounded-lg"
+                                onError={(e) => {
+                                  console.error('Ошибка загрузки изображения:', file.url, e);
+                                  e.currentTarget.style.display = 'none';
+                                  // Показываем fallback
+                                  const container = e.currentTarget.parentElement;
+                                  if (container) {
+                                    container.innerHTML = `
+                                      <div class="flex flex-col items-center justify-center text-gray-400 p-6">
+                                        <svg class="w-16 h-16 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span class="text-sm font-medium">Не удалось загрузить</span>
+                                        <span class="text-xs mt-1 text-center">${file.name}</span>
+                                      </div>
+                                    `;
+                                  }
+                                }}
+                                onLoad={() => {
+                                  console.log('Изображение загружено:', file.url);
+                                }}
+                              />
+                            </div>
+                            
+                            {/* Overlay с иконкой */}
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-75 group-hover:scale-100">
+                                <div className="bg-white rounded-full p-3 shadow-lg">
+                                  <Image className="w-6 h-6 text-green-600" />
+                                </div>
                               </div>
                             </div>
                             
-                            <img
-                              src={file.url}
-                              alt={file.name}
-                              className="w-full h-full object-cover rounded-lg"
-                              onError={(e) => {
-                                console.error('Ошибка загрузки изображения:', file.url, e);
-                                e.currentTarget.style.display = 'none';
-                                // Скрываем индикатор загрузки
-                                const loadingEl = document.getElementById(`loading-${file.id}`);
-                                if (loadingEl) loadingEl.style.display = 'none';
-                                // Показываем fallback
-                                const fallback = e.currentTarget.parentElement;
-                                if (fallback) {
-                                  fallback.innerHTML = `
-                                    <div class="flex flex-col items-center justify-center text-gray-500 p-4 bg-gray-100 h-full">
-                                      <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                      </svg>
-                                      <span class="text-sm text-center">Ошибка загрузки</span>
-                                      <span class="text-xs text-center mt-1">${file.name}</span>
-                                    </div>
-                                  `;
-                                }
-                              }}
-                              onLoad={() => {
-                                console.log('Изображение загружено:', file.url);
-                                // Скрываем индикатор загрузки
-                                const loadingEl = document.getElementById(`loading-${file.id}`);
-                                if (loadingEl) loadingEl.style.display = 'none';
-                              }}
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              <div className="bg-white bg-opacity-90 rounded-full p-2">
-                                <Image className="w-6 h-6 text-green-600" />
-                              </div>
+                            {/* Название файла */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                              <p className="text-white text-sm font-medium truncate">
+                                {file.name}
+                              </p>
                             </div>
                           </div>
                         </a>
