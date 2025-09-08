@@ -34,8 +34,15 @@ export async function GET(
 
     console.log('✅ [Assignment API] User found:', user.id)
 
-    const { id: assignmentId } = await params
+    const resolvedParams = await params
+    const assignmentId = resolvedParams.id
     console.log('📝 [Assignment API] Looking for assignment:', assignmentId)
+    console.log('📝 [Assignment API] Resolved params:', resolvedParams)
+    
+    if (!assignmentId) {
+      console.log('❌ [Assignment API] No assignment ID provided')
+      return NextResponse.json({ error: 'Assignment ID is required' }, { status: 400 })
+    }
 
     // Проверяем доступ к заданию
     const groupAssignment = await prisma.groupAssignment.findFirst({
@@ -104,6 +111,10 @@ export async function GET(
     return NextResponse.json(result)
   } catch (error) {
     console.error('❌ [Assignment API] Error fetching submission:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('❌ [Assignment API] Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }

@@ -91,6 +91,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
       
       const response = await fetch(`/api/student/assignments/${resolvedParams.id}/submission`)
       console.log('📡 [Assignment Page] Response status:', response.status)
+      console.log('📡 [Assignment Page] Response headers:', Object.fromEntries(response.headers.entries()))
       
       if (response.ok) {
         const data = await response.json()
@@ -103,9 +104,18 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
           setFileUrl(data.submission.fileUrl || '')
         }
       } else {
-        const errorData = await response.json()
+        console.log('❌ [Assignment Page] Response not ok, status:', response.status)
+        let errorData = {}
+        try {
+          const text = await response.text()
+          console.log('❌ [Assignment Page] Raw response text:', text)
+          errorData = text ? JSON.parse(text) : {}
+        } catch (parseError) {
+          console.error('❌ [Assignment Page] Failed to parse error response:', parseError)
+          errorData = { error: 'Failed to parse server response' }
+        }
         console.error('❌ [Assignment Page] API Error:', errorData)
-        alert(`Ошибка загрузки задания: ${errorData.error || 'Неизвестная ошибка'}`)
+        alert(`Ошибка загрузки задания: ${errorData.error || `HTTP ${response.status}`}`)
         router.push('/assignments')
       }
     } catch (error) {
