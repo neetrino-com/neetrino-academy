@@ -148,6 +148,16 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       }))
     }
   }, [courseData.paymentType, courseData.monthlyPrice, courseData.price, courseData.duration])
+
+  // Автоматически выбираем первый урок при переходе на этапы "Задания" и "Тесты"
+  useEffect(() => {
+    if ((currentStep === 3 || currentStep === 4) && modules.length > 0) { // 3 = Задания, 4 = Тесты
+      const allLessons = modules.flatMap(m => m.lessons)
+      if (allLessons.length > 0 && !selectedLesson) {
+        setSelectedLesson(allLessons[0].id)
+      }
+    }
+  }, [currentStep, modules, selectedLesson])
   const [modules, setModules] = useState<Module[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
@@ -382,6 +392,14 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
     } else if (validateStep(true)) {
       setCurrentStep(step)
       setErrors({})
+      
+      // Автоматически выбираем первый урок при переходе на этапы "Задания" и "Тесты"
+      if (step === 3 || step === 4) { // 3 = Задания, 4 = Тесты
+        const allLessons = modules.flatMap(m => m.lessons)
+        if (allLessons.length > 0) {
+          setSelectedLesson(allLessons[0].id)
+        }
+      }
     }
   }
 
