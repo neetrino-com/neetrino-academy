@@ -95,8 +95,15 @@ export async function POST(request: NextRequest) {
       await fs.writeFile(filePath, buffer);
       
       // Возвращаем URL для доступа к файлу
-      const fileUrl = `/uploads/temp/${uniqueName}`;
+      const fileUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/uploads/temp/${uniqueName}`;
       
+      console.log('Файл сохранен локально:', {
+        fileName: file.name,
+        fileUrl: fileUrl,
+        filePath: filePath,
+        fileSize: file.size
+      });
+
       return NextResponse.json({
         success: true,
         fileUrl: fileUrl,
