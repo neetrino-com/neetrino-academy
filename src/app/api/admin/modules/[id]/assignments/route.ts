@@ -38,15 +38,26 @@ export async function GET(
       )
     }
 
-    // Получаем задания модуля
+    // Получаем задания модуля через уроки
     const assignments = await prisma.assignment.findMany({
-      where: { moduleId: (await params).id },
+      where: { 
+        lesson: {
+          moduleId: (await params).id
+        }
+      },
       include: {
         creator: {
           select: {
             id: true,
             name: true,
             email: true
+          }
+        },
+        lesson: {
+          select: {
+            id: true,
+            title: true,
+            order: true
           }
         },
         _count: {

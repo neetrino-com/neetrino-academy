@@ -59,8 +59,8 @@ interface Lesson {
       id: string
       title: string
     }
-    assignments: Assignment[]
   }
+  assignments: Assignment[]
 }
 
 interface LessonResponse {
@@ -609,7 +609,7 @@ export default function LessonStudyPage() {
             </div>
 
             {/* Задания к уроку */}
-            {lesson.module.assignments && lesson.module.assignments.length > 0 && (
+            {lesson.assignments && lesson.assignments.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center">
@@ -630,7 +630,7 @@ export default function LessonStudyPage() {
                 </div>
                 
                 <div className="space-y-4">
-                  {lesson.module.assignments.map((assignment) => (
+                  {lesson.assignments.map((assignment) => (
                     <div key={assignment.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
