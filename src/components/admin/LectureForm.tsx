@@ -3,16 +3,28 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, X, Plus, Image, Link, FileText, Video, Code } from 'lucide-react';
+import LectureContentBuilder from './LectureContentBuilder';
 
 interface LectureBlock {
   id: string;
-  type: 'text' | 'image' | 'file' | 'video' | 'link' | 'code';
+  type: 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file' | 'gallery';
   content: string;
+  collapsed?: boolean;
   metadata?: {
     url?: string;
     alt?: string;
+    language?: string;
+    description?: string;
     filename?: string;
-    size?: number;
+    fileSize?: number;
+    files?: Array<{
+      id: string;
+      url: string;
+      name: string;
+      size: number;
+      type: string;
+      publicId?: string;
+    }>;
   };
 }
 
@@ -36,42 +48,8 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
   const [thumbnail, setThumbnail] = useState(lecture?.thumbnail || '');
   const [isActive, setIsActive] = useState(lecture?.isActive ?? true);
   const [blocks, setBlocks] = useState<LectureBlock[]>(lecture?.content || []);
-  const [showBlockSelector, setShowBlockSelector] = useState(false);
 
-  const addBlock = (type: LectureBlock['type']) => {
-    const newBlock: LectureBlock = {
-      id: Date.now().toString(),
-      type,
-      content: '',
-    };
-    setBlocks([...blocks, newBlock]);
-    setShowBlockSelector(false);
-  };
-
-  const showBlockTypeSelector = () => {
-    setShowBlockSelector(true);
-  };
-
-  const updateBlock = (id: string, updates: Partial<LectureBlock>) => {
-    setBlocks(blocks.map(block => 
-      block.id === id ? { ...block, ...updates } : block
-    ));
-  };
-
-  const removeBlock = (id: string) => {
-    setBlocks(blocks.filter(block => block.id !== id));
-  };
-
-  const moveBlock = (id: string, direction: 'up' | 'down') => {
-    const index = blocks.findIndex(block => block.id === id);
-    if (index === -1) return;
-
-    const newBlocks = [...blocks];
-    if (direction === 'up' && index > 0) {
-      [newBlocks[index], newBlocks[index - 1]] = [newBlocks[index - 1], newBlocks[index]];
-    } else if (direction === 'down' && index < blocks.length - 1) {
-      [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
-    }
+  const handleBlocksChange = (newBlocks: LectureBlock[]) => {
     setBlocks(newBlocks);
   };
 
@@ -122,176 +100,6 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
     }
   };
 
-  const renderBlock = (block: LectureBlock) => {
-    switch (block.type) {
-      case 'text':
-        return (
-          <textarea
-            value={block.content}
-            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-            placeholder="Введите текст лекции..."
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-          />
-        );
-
-      case 'image':
-        return (
-          <div className="space-y-2">
-            <input
-              type="url"
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
-              })}
-              placeholder="URL изображения"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.metadata?.alt || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, alt: e.target.value }
-              })}
-              placeholder="Альтернативный текст"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            {block.metadata?.url && (
-              <img
-                src={block.metadata.url}
-                alt={block.metadata.alt || 'Изображение'}
-                className="max-w-full h-auto rounded-lg border"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            )}
-          </div>
-        );
-
-      case 'file':
-        return (
-          <div className="space-y-2">
-            <input
-              type="url"
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
-              })}
-              placeholder="URL файла"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.metadata?.filename || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, filename: e.target.value }
-              })}
-              placeholder="Название файла"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Описание файла"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        );
-
-      case 'video':
-        return (
-          <div className="space-y-2">
-            <input
-              type="url"
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
-              })}
-              placeholder="URL видео (YouTube, Vimeo и т.д.)"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Описание видео"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        );
-
-      case 'link':
-        return (
-          <div className="space-y-2">
-            <input
-              type="url"
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
-              })}
-              placeholder="URL ссылки"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Текст ссылки"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        );
-
-      case 'code':
-        return (
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Язык программирования (например: javascript, python, html)"
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <textarea
-              value={block.metadata?.url || ''}
-              onChange={(e) => updateBlock(block.id, { 
-                metadata: { ...block.metadata, url: e.target.value }
-              })}
-              placeholder="Код..."
-              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none font-mono text-sm"
-            />
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const getBlockIcon = (type: LectureBlock['type']) => {
-    switch (type) {
-      case 'text': return <FileText size={16} />;
-      case 'image': return <Image size={16} />;
-      case 'file': return <FileText size={16} />;
-      case 'video': return <Video size={16} />;
-      case 'link': return <Link size={16} />;
-      case 'code': return <Code size={16} />;
-      default: return <FileText size={16} />;
-    }
-  };
-
-  const getBlockTitle = (type: LectureBlock['type']) => {
-    switch (type) {
-      case 'text': return 'Текст';
-      case 'image': return 'Изображение';
-      case 'file': return 'Файл';
-      case 'video': return 'Видео';
-      case 'link': return 'Ссылка';
-      case 'code': return 'Код';
-      default: return 'Блок';
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -377,114 +185,17 @@ export default function LectureForm({ lecture, mode }: LectureFormProps) {
 
           {/* Контент лекции */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="mb-4">
+            <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Контент лекции</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Создайте интерактивную лекцию с разными типами контента
+              </p>
             </div>
 
-            {blocks.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-                <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Нет блоков контента</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Добавьте блоки для создания контента лекции
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                  {(['text', 'image', 'file', 'video', 'link', 'code'] as const).map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => addBlock(type)}
-                      className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                    >
-                      {getBlockIcon(type)}
-                      {getBlockTitle(type)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {blocks.map((block, index) => (
-                  <div key={block.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        {getBlockIcon(block.type)}
-                        <span className="font-medium text-gray-900">
-                          {getBlockTitle(block.type)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => moveBlock(block.id, 'up')}
-                          disabled={index === 0}
-                          className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveBlock(block.id, 'down')}
-                          disabled={index === blocks.length - 1}
-                          className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeBlock(block.id)}
-                          className="p-1 text-red-400 hover:text-red-600"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    </div>
-                    {renderBlock(block)}
-                  </div>
-                ))}
-
-                {/* Кнопка добавления блока в конце списка */}
-                <div className="pt-4">
-                  <button
-                    type="button"
-                    onClick={showBlockTypeSelector}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-400 hover:text-blue-600 transition-colors"
-                  >
-                    <Plus size={20} />
-                    Добавить блок
-                  </button>
-                </div>
-
-                {/* Селектор типа блока */}
-                {showBlockSelector && (
-                  <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium text-gray-900">Выберите тип блока:</h3>
-                      <button
-                        type="button"
-                        onClick={() => setShowBlockSelector(false)}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(['text', 'image', 'file', 'video', 'link', 'code'] as const).map((type) => (
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() => addBlock(type)}
-                          className="flex items-center gap-2 px-3 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-                        >
-                          {getBlockIcon(type)}
-                          {getBlockTitle(type)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <LectureContentBuilder
+              content={blocks}
+              onChange={handleBlocksChange}
+            />
           </div>
 
           {/* Кнопки действий */}
