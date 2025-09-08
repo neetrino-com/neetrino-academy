@@ -1945,12 +1945,17 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
           ...module,
           lessons: module.lessons.map(lesson => ({
             ...lesson,
-            assignments: assignments.filter(a => a.lessonId === lesson.id).map(a => ({
-              title: a.title,
-              description: a.description,
-              dueDate: a.dueDate,
-              maxScore: 100 // Добавляем maxScore по умолчанию
-            }))
+            assignments: assignments
+              .filter(a => a.lessonId === lesson.id)
+              .filter((assignment, index, self) => 
+                index === self.findIndex(a => a.title === assignment.title && a.lessonId === assignment.lessonId)
+              )
+              .map(a => ({
+                title: a.title,
+                description: a.description,
+                dueDate: a.dueDate,
+                maxScore: 100 // Добавляем maxScore по умолчанию
+              }))
           }))
         }))
       }
@@ -1983,13 +1988,21 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         // Сохраняем тесты
         for (const quiz of quizzes) {
           if (quiz.questions && quiz.questions.length > 0) {
-            await fetch('/api/admin/quizzes', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(quiz)
-            })
+            try {
+              const quizResponse = await fetch('/api/admin/quizzes', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(quiz)
+              })
+              
+              if (!quizResponse.ok) {
+                console.error('Ошибка создания теста:', await quizResponse.text())
+              }
+            } catch (error) {
+              console.error('Ошибка при создании теста:', error)
+            }
           }
         }
 
