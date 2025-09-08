@@ -36,10 +36,13 @@ interface AssignmentDetail {
       title: string
       description: string | null
       dueDate: string
-      module: {
+      lesson: {
         title: string
-        course: {
+        module: {
           title: string
+          course: {
+            title: string
+          }
         }
       }
     }
@@ -105,16 +108,34 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
         }
       } else {
         console.log('❌ [Assignment Page] Response not ok, status:', response.status)
-        let errorData = {}
+        console.log('❌ [Assignment Page] Response statusText:', response.statusText)
+        console.log('❌ [Assignment Page] Response URL:', response.url)
+        
+        let errorData: { error?: string } = {}
         try {
           const text = await response.text()
+          console.log('❌ [Assignment Page] Raw response text length:', text.length)
           console.log('❌ [Assignment Page] Raw response text:', text)
-          errorData = text ? JSON.parse(text) : {}
+          console.log('❌ [Assignment Page] Raw response text type:', typeof text)
+          
+          if (text && text.trim()) {
+            try {
+              errorData = JSON.parse(text)
+              console.log('❌ [Assignment Page] Parsed error data:', errorData)
+            } catch (jsonError) {
+              console.error('❌ [Assignment Page] JSON parse error:', jsonError)
+              errorData = { error: `Invalid JSON response: ${text.substring(0, 100)}...` }
+            }
+          } else {
+            console.log('❌ [Assignment Page] Empty response text')
+            errorData = { error: `Empty response from server (HTTP ${response.status})` }
+          }
         } catch (parseError) {
           console.error('❌ [Assignment Page] Failed to parse error response:', parseError)
           errorData = { error: 'Failed to parse server response' }
         }
-        console.error('❌ [Assignment Page] API Error:', errorData)
+        
+        console.error('❌ [Assignment Page] Final error data:', errorData)
         alert(`Ошибка загрузки задания: ${errorData.error || `HTTP ${response.status}`}`)
         router.push('/assignments')
       }
@@ -409,9 +430,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                       Прикрепить файл (опционально)
                     </label>
                     <FileUpload
-                      onUpload={(url) => setFileUrl(url)}
-                      currentFile={fileUrl}
-                      onRemove={() => setFileUrl('')}
+                      onFileUpload={(url: string) => setFileUrl(url)}
                     />
                   </div>
 

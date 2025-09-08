@@ -13,8 +13,11 @@ export async function GET(
 ) {
   try {
     console.log('🔍 [Assignment API] Starting request...')
+    console.log('🔍 [Assignment API] Request URL:', request.url)
+    console.log('🔍 [Assignment API] Request method:', request.method)
     
     const session = await auth()
+    console.log('🔍 [Assignment API] Session check result:', !!session)
     if (!session?.user) {
       console.log('❌ [Assignment API] No session found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -23,6 +26,7 @@ export async function GET(
     console.log('👤 [Assignment API] Session found for user:', session.user.email)
 
     // Получаем пользователя
+    console.log('🔍 [Assignment API] Looking for user with email:', session.user.email)
     const user = await prisma.user.findUnique({
       where: { email: session.user.email! }
     })
@@ -32,7 +36,7 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    console.log('✅ [Assignment API] User found:', user.id)
+    console.log('✅ [Assignment API] User found:', user.id, 'Role:', user.role)
 
     const resolvedParams = await params
     const assignmentId = resolvedParams.id
@@ -45,6 +49,7 @@ export async function GET(
     }
 
     // Проверяем доступ к заданию
+    console.log('🔍 [Assignment API] Searching for groupAssignment...')
     const groupAssignment = await prisma.groupAssignment.findFirst({
       where: {
         assignmentId,
@@ -82,6 +87,7 @@ export async function GET(
         }
       }
     })
+    console.log('🔍 [Assignment API] GroupAssignment query completed')
 
     if (!groupAssignment) {
       console.log('❌ [Assignment API] GroupAssignment not found for assignment:', assignmentId)
