@@ -118,6 +118,18 @@ export function AppHeader() {
                   >
                     Тесты
                   </Link>
+                  <Link 
+                    href="/admin/checklists" 
+                    className="relative text-orange-600 hover:text-orange-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-md min-w-[80px] text-center"
+                  >
+                    Чеклисты
+                  </Link>
+                  <Link 
+                    href="/admin/lectures" 
+                    className="relative text-indigo-600 hover:text-indigo-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 hover:shadow-md min-w-[80px] text-center"
+                  >
+                    Лекции
+                  </Link>
                 </StaffOnly>
 
               </nav>
@@ -311,6 +323,20 @@ export function AppHeader() {
                   className="block text-purple-600 hover:text-purple-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-purple-50 hover:shadow-md"
                 >
                   🧪 Тесты
+                </Link>
+                <Link 
+                  href="/admin/checklists" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-orange-600 hover:text-orange-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-orange-50 hover:shadow-md"
+                >
+                  ✅ Чеклисты
+                </Link>
+                <Link 
+                  href="/admin/lectures" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block text-indigo-600 hover:text-indigo-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-indigo-50 hover:shadow-md"
+                >
+                  📖 Лекции
                 </Link>
               </StaffOnly>
 
