@@ -49,6 +49,7 @@ model User {
   payments       Payment[]
   groupQuizAttempts GroupQuizAttempt[]
   createdGroupQuizzes GroupQuiz[]
+  createdQuizzes Quiz[]
 }
 
 model Course {
@@ -137,11 +138,14 @@ model Quiz {
   timeLimit    Int?
   passingScore Int            @default(70)
   isActive     Boolean        @default(true)
+  createdBy    String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   lesson       Lesson         @relation(fields: [lessonId], references: [id])
+  creator      User?          @relation(fields: [createdBy], references: [id])
   attempts     QuizAttempt[]
   questions    QuizQuestion[]
+  groupQuizAssignments GroupQuizAssignment[]
 }
 
 model QuizQuestion {
@@ -373,6 +377,7 @@ model Group {
   events      Event[]
   schedule    GroupSchedule[] // расписание занятий
   quizzes     GroupQuiz[]     // групповые тесты
+  groupQuizAssignments GroupQuizAssignment[] // назначенные тесты
 }
 
 model GroupStudent {
@@ -438,6 +443,19 @@ model GroupQuiz {
   creator      User           @relation(fields: [createdBy], references: [id])
   attempts     GroupQuizAttempt[]
   questions    GroupQuizQuestion[]
+}
+
+// Назначение тестов группам
+model GroupQuizAssignment {
+  id        String   @id @default(cuid())
+  groupId   String
+  quizId    String
+  assignedAt DateTime @default(now())
+  
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, quizId])
 }
 
 model GroupQuizQuestion {
