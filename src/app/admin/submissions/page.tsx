@@ -186,118 +186,139 @@ export default function SubmissionsManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Загрузка сдач...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-6">
-        {/* Заголовок */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Управление сдачами</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Современный хедер */}
+      <div className="border-b border-slate-200/40 rounded-b-2xl mx-6 mt-6">
+        <div className="w-full px-6 py-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.back()}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Управление сдачами 📝
+                </h1>
+                <p className="text-slate-600 mt-1 font-medium">
+                  Проверка и оценка всех сдач заданий
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg px-3 py-2">
+                <p className="text-sm text-emerald-700 font-semibold">
+                  {stats.ungraded > 0 ? `${stats.ungraded} работ ожидают проверки` : 'Все работы проверены'}
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-600">Проверка и оценка всех сдач заданий</p>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6">
 
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <Target className="w-8 h-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Всего сдач</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-blue-200/80 hover:shadow-2xl transition-all duration-300 group hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-blue-600 font-semibold">Всего сдач</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{stats.total}</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <Target className="w-8 h-8 text-blue-600" />
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <Clock className="w-8 h-8 text-yellow-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Ожидают проверки</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.ungraded}</p>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-yellow-200/80 hover:shadow-2xl transition-all duration-300 group hover:bg-gradient-to-br hover:from-yellow-50 hover:to-amber-50 hover:border-yellow-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-yellow-600 font-semibold">Ожидают проверки</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{stats.ungraded}</p>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-100 to-amber-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <Clock className="w-8 h-8 text-yellow-600" />
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Проверено</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.graded}</p>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-green-200/80 hover:shadow-2xl transition-all duration-300 group hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-green-600 font-semibold">Проверено</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{stats.graded}</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Средняя оценка</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.averageScore}</p>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-purple-200/80 hover:shadow-2xl transition-all duration-300 group hover:bg-gradient-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-purple-600 font-semibold">Средняя оценка</p>
+                <p className="text-3xl font-bold mt-1 text-gray-900">{stats.averageScore}</p>
+              </div>
+              <div className="bg-gradient-to-br from-purple-100 to-violet-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                <TrendingUp className="w-8 h-8 text-purple-600" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Фильтры */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Поиск */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Поиск по студенту, заданию или курсу..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+        {/* Поиск и фильтры */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60 p-6 mb-6">
+          <div className="flex gap-4 items-center">
+            <div className="flex-1 relative">
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Поиск по студенту, заданию или курсу..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
             </div>
-
-            {/* Фильтр по статусу */}
-            <div className="flex gap-2">
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">Все сдачи</option>
-                <option value="ungraded">Ожидают проверки</option>
-                <option value="graded">Проверено</option>
-              </select>
-            </div>
+            
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="all">Все сдачи</option>
+              <option value="ungraded">Ожидают проверки</option>
+              <option value="graded">Проверено</option>
+            </select>
           </div>
         </div>
 
         {/* Список сдач */}
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Студенческие работы</h2>
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/60">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900">
+              Студенческие работы ({filteredSubmissions.length})
+            </h2>
           </div>
           
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-100">
             {filteredSubmissions.length === 0 ? (
               <div className="p-12 text-center">
-                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Сдач не найдено</h3>
                 <p className="text-gray-600">
                   {searchTerm || filter !== 'all' 
@@ -308,54 +329,63 @@ export default function SubmissionsManagement() {
               </div>
             ) : (
               filteredSubmissions.map((submission) => (
-                <div key={submission.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={submission.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-indigo-200 relative overflow-hidden">
+                  {/* Декоративный элемент */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {submission.user.name}
-                        </h3>
-                        {getStatusBadge(submission)}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                          <FileText className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors">
+                            {submission.user.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            {getStatusBadge(submission)}
+                          </div>
+                        </div>
                       </div>
                       
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
-                        <div className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          <span>{submission.user.email}</span>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-indigo-50 to-blue-50 px-3 py-2 rounded-lg group-hover:from-indigo-100 group-hover:to-blue-100 transition-colors">
+                          <User className="w-4 h-4 text-indigo-500" />
+                          <span className="font-medium">{submission.user.email}</span>
                         </div>
                         
-                        <div className="flex items-center gap-1">
-                          <BookOpen className="w-4 h-4" />
-                          <span>{submission.assignment.lesson.module.course.title}</span>
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-lg group-hover:from-green-100 group-hover:to-emerald-100 transition-colors">
+                          <BookOpen className="w-4 h-4 text-green-500" />
+                          <span className="font-medium">{submission.assignment.lesson.module.course.title}</span>
                         </div>
                         
-                        <div className="flex items-center gap-1">
-                          <FileText className="w-4 h-4" />
-                          <span>{submission.assignment.title}</span>
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-3 py-2 rounded-lg group-hover:from-purple-100 group-hover:to-pink-100 transition-colors">
+                          <FileText className="w-4 h-4 text-purple-500" />
+                          <span className="font-medium">{submission.assignment.title}</span>
                         </div>
                         
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>Сдано: {formatDate(submission.submittedAt)}</span>
+                        <div className="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-yellow-50 px-3 py-2 rounded-lg group-hover:from-orange-100 group-hover:to-yellow-100 transition-colors">
+                          <Calendar className="w-4 h-4 text-orange-500" />
+                          <span className="font-medium">Сдано: {formatDate(submission.submittedAt)}</span>
                         </div>
                         
                         {submission.assignment.dueDate && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>Дедлайн: {formatDate(submission.assignment.dueDate)}</span>
+                          <div className="flex items-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 px-3 py-2 rounded-lg group-hover:from-red-100 group-hover:to-rose-100 transition-colors">
+                            <Clock className="w-4 h-4 text-red-500" />
+                            <span className="font-medium">Дедлайн: {formatDate(submission.assignment.dueDate)}</span>
                           </div>
                         )}
                       </div>
 
                       {/* Группы */}
                       {submission.groups.length > 0 && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <Users className="w-4 h-4 text-gray-400" />
+                        <div className="flex items-center gap-2 mb-4">
+                          <Users className="w-4 h-4 text-gray-500" />
                           <div className="flex flex-wrap gap-1">
                             {submission.groups.map((group) => (
                               <span
                                 key={group.id}
-                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium"
                               >
                                 {group.name}
                               </span>
@@ -366,8 +396,8 @@ export default function SubmissionsManagement() {
 
                       {/* Содержимое сдачи */}
                       {submission.content && (
-                        <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                          <p className="text-sm text-gray-700 line-clamp-3">
+                        <div className="bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-xl mb-4 group-hover:from-indigo-50 group-hover:to-blue-50 transition-colors">
+                          <p className="text-sm text-gray-700 line-clamp-3 group-hover:text-gray-800 transition-colors">
                             {submission.content}
                           </p>
                         </div>
@@ -375,13 +405,13 @@ export default function SubmissionsManagement() {
 
                       {/* Файл */}
                       {submission.fileUrl && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <Download className="w-4 h-4 text-gray-400" />
+                        <div className="flex items-center gap-2 mb-4">
+                          <Download className="w-4 h-4 text-gray-500" />
                           <a
                             href={submission.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:text-blue-800"
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                           >
                             Скачать файл
                           </a>
@@ -390,7 +420,7 @@ export default function SubmissionsManagement() {
 
                       {/* Оценка */}
                       {submission.score !== null && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-4">
                           <Award className="w-4 h-4 text-yellow-600" />
                           <span className="text-sm font-medium text-gray-900">
                             Оценка: {submission.score}
@@ -406,30 +436,30 @@ export default function SubmissionsManagement() {
 
                       {/* Обратная связь */}
                       {submission.feedback && (
-                        <div className="mt-2 p-3 bg-yellow-50 rounded-lg">
-                          <p className="text-sm text-gray-700">
+                        <div className="mt-2 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl group-hover:from-yellow-100 group-hover:to-amber-100 transition-colors">
+                          <p className="text-sm text-gray-700 group-hover:text-gray-800 transition-colors">
                             <strong>Обратная связь:</strong> {submission.feedback}
                           </p>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
                       {!submission.gradedAt ? (
                         <button
                           onClick={() => openGradingModal(submission)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
+                          title="Проверить"
                         >
-                          <Edit className="w-4 h-4" />
-                          Проверить
+                          <Edit className="w-5 h-5" />
                         </button>
                       ) : (
                         <button
                           onClick={() => openGradingModal(submission)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                          className="w-12 h-12 flex items-center justify-center text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-emerald-200 hover:border-emerald-600 backdrop-blur-sm"
+                          title="Просмотреть"
                         >
-                          <Eye className="w-4 h-4" />
-                          Просмотреть
+                          <Eye className="w-5 h-5" />
                         </button>
                       )}
                     </div>

@@ -36,8 +36,8 @@ export async function POST(
       return NextResponse.json({ error: 'Score is required' }, { status: 400 })
     }
 
-    if (typeof score !== 'number' || score < 0 || score > 5) {
-      return NextResponse.json({ error: 'Score must be a number between 0 and 5' }, { status: 400 })
+    if (typeof score !== 'number' || score < 0 || score > 100) {
+      return NextResponse.json({ error: 'Score must be a number between 0 and 100' }, { status: 400 })
     }
 
     // Проверяем, что сдача существует
