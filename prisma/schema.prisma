@@ -126,6 +126,7 @@ model Lesson {
   checklist   Checklist?       @relation(fields: [checklistId], references: [id])
   progress    LessonProgress[]
   quiz        Quiz?
+  assignments Assignment[]
 }
 
 model Quiz {
@@ -195,6 +196,7 @@ model Assignment {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   creator     User             @relation(fields: [createdBy], references: [id])
+  lesson      Lesson?          @relation(fields: [lessonId], references: [id])
   submissions Submission[]
   groupAssignments GroupAssignment[]
   events      Event[]

@@ -20,26 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 1. Получаем задания из курсов (через Enrollment)
-    const courseAssignments = await prisma.assignment.findMany({
-      where: {
-        lessonId: {
-          not: null
-        },
-        // Фильтруем задания, которые связаны с курсами, на которые записан студент
-        // Это делается через отдельный запрос к урокам
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    })
-
-    // Фильтруем задания по курсам студента
+    // Сначала получаем курсы студента
     const studentCourses = await prisma.enrollment.findMany({
       where: {
         userId: user.id,
@@ -68,10 +49,38 @@ export async function GET(request: NextRequest) {
 
     const studentLessonIds = studentLessons.map(l => l.id)
 
-    // Фильтруем задания по урокам студента
-    const filteredCourseAssignments = courseAssignments.filter(assignment => 
-      assignment.lessonId && studentLessonIds.includes(assignment.lessonId)
-    )
+    // Теперь получаем задания, которые привязаны к урокам студента
+    const courseAssignments = await prisma.assignment.findMany({
+      where: {
+        lessonId: {
+          in: studentLessonIds
+        }
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        lesson: {
+          include: {
+            module: {
+              include: {
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                    direction: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
 
     // 2. Получаем задания из групп
     const groupAssignments = await prisma.groupAssignment.findMany({
@@ -124,7 +133,7 @@ export async function GET(request: NextRequest) {
     // 3. Объединяем все задания
     const allAssignments = [
       // Задания из курсов
-      ...filteredCourseAssignments.map(assignment => ({
+      ...courseAssignments.map(assignment => ({
         id: assignment.id,
         title: assignment.title,
         description: assignment.description,
@@ -133,8 +142,8 @@ export async function GET(request: NextRequest) {
         status: assignment.status,
         maxScore: assignment.maxScore,
         source: 'course' as const,
-        course: null, // Информация о курсе будет получена отдельно
-        lesson: null, // Информация об уроке будет получена отдельно
+        course: assignment.lesson?.module.course || null,
+        lesson: assignment.lesson || null,
         creator: assignment.creator,
         group: null
       })),
@@ -191,7 +200,7 @@ export async function GET(request: NextRequest) {
       .map(assignment => ({
         ...assignment,
         submission: submissionMap.get(assignment.id) || null,
-        status: getAssignmentStatus(assignment.dueDate, submissionMap.get(assignment.id))
+        status: getAssignmentStatus(assignment.dueDate, submissionMap.get(assignment.id) || null)
       }))
       .sort((a, b) => {
         if (!a.dueDate && !b.dueDate) return 0
@@ -208,7 +217,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Определить статус задания для студента
-function getAssignmentStatus(dueDate: Date | null, submission: { gradedAt?: Date } | null) {
+function getAssignmentStatus(dueDate: Date | null, submission: any) {
   if (!dueDate) {
     return submission ? (submission.gradedAt ? 'graded' : 'submitted') : 'pending'
   }
