@@ -20,7 +20,7 @@ import {
   Download
 } from 'lucide-react'
 import FileUpload from '@/components/ui/FileUpload'
-import AppHeader from '@/components/layout/AppHeader'
+import { AppHeader } from '@/components/layout/AppHeader'
 
 interface AssignmentDetailProps {
   params: Promise<{ id: string }>
