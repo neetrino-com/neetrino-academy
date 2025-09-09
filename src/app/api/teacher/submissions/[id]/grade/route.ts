@@ -13,8 +13,16 @@ export async function POST(
   { params }: { params: Params }
 ) {
   try {
+    console.log('🚀 [API] Starting submission grading process')
+    console.log('🌐 [API] Request URL:', request.url)
+    console.log('📋 [API] Request method:', request.method)
+    
     const session = await auth()
+    console.log('👤 [API] Session:', session ? 'exists' : 'null')
+    console.log('👤 [API] User:', session?.user ? session.user.email : 'null')
+    
     if (!session?.user) {
+      console.log('❌ [API] No session or user, returning 401')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -22,23 +30,36 @@ export async function POST(
     const user = await prisma.user.findUnique({
       where: { email: session.user.email! }
     })
+    
+    console.log('👤 [API] User found:', user ? 'yes' : 'no')
+    console.log('👤 [API] User role:', user?.role)
 
     if (!user || (user.role !== 'ADMIN' && user.role !== 'TEACHER')) {
+      console.log('❌ [API] User not found or wrong role, returning 403')
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { id: submissionId } = await params
+    console.log('📝 [API] Submission ID:', submissionId)
+    
     const body = await request.json()
+    console.log('📦 [API] Request body:', body)
     const { score, feedback } = body
 
     // Валидация данных
+    console.log('✅ [API] Validating score:', score, 'Type:', typeof score)
+    
     if (score === undefined || score === null) {
+      console.log('❌ [API] Score is required but missing')
       return NextResponse.json({ error: 'Score is required' }, { status: 400 })
     }
 
     if (typeof score !== 'number' || score < 0 || score > 100) {
+      console.log('❌ [API] Invalid score:', score, 'Type:', typeof score)
       return NextResponse.json({ error: 'Score must be a number between 0 and 100' }, { status: 400 })
     }
+    
+    console.log('✅ [API] Score validation passed')
 
     // Проверяем, что сдача существует
     const submission = await prisma.submission.findUnique({
@@ -128,7 +149,12 @@ export async function POST(
       submission: updatedSubmission
     })
   } catch (error) {
-    console.error('Error grading submission:', error)
+    console.error('💥 [API] Error grading submission:', error)
+    console.error('💥 [API] Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

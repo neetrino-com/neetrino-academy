@@ -60,37 +60,72 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
+    console.log('🚀 [GradingModal] Starting submission grading process')
+    console.log('📊 [GradingModal] Score:', score, 'Feedback:', feedback)
+    console.log('👤 [GradingModal] Submission ID:', submission.id)
+    
     if (score < 0 || score > 100) {
+      console.log('❌ [GradingModal] Invalid score:', score)
       alert('Оценка должна быть от 0 до 100')
       return
     }
 
     setLoading(true)
     try {
-      const response = await fetch(`/api/teacher/submissions/${submission.id}/grade`, {
+      // Используем относительный URL, который будет работать с текущим портом
+      const url = `/api/teacher/submissions/${submission.id}/grade`
+      const requestBody = {
+        score: score,
+        feedback: feedback.trim()
+      }
+      
+      console.log('🌐 [GradingModal] Making request to:', url)
+      console.log('📦 [GradingModal] Request body:', requestBody)
+      console.log('🌍 [GradingModal] Current location:', window.location.href)
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({
-          score: score,
-          feedback: feedback.trim()
-        })
+        body: JSON.stringify(requestBody)
       })
+
+      console.log('📡 [GradingModal] Response status:', response.status)
+      console.log('📡 [GradingModal] Response ok:', response.ok)
+      console.log('📡 [GradingModal] Response URL:', response.url)
 
       if (response.ok) {
         const result = await response.json()
+        console.log('✅ [GradingModal] Success response:', result)
         alert(result.message)
         onSuccess()
       } else {
-        const error = await response.json()
-        alert(`Ошибка: ${error.error}`)
+        const errorText = await response.text()
+        console.log('❌ [GradingModal] Error response text:', errorText)
+        
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+          console.log('❌ [GradingModal] Parsed error data:', errorData)
+        } catch (parseError) {
+          console.log('❌ [GradingModal] Failed to parse error response as JSON:', parseError)
+          errorData = { error: errorText }
+        }
+        
+        alert(`Ошибка: ${errorData.error || 'Неизвестная ошибка'}`)
       }
     } catch (error) {
-      console.error('Ошибка выставления оценки:', error)
-      alert('Ошибка выставления оценки')
+      console.error('💥 [GradingModal] Network or other error:', error)
+      console.error('💥 [GradingModal] Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      alert('Произошла ошибка при отправке оценки')
     } finally {
+      console.log('🏁 [GradingModal] Process completed, setting loading to false')
       setLoading(false)
     }
   }
