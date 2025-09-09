@@ -22,35 +22,13 @@ export async function GET(request: NextRequest) {
     // 1. Получаем задания из курсов (через Enrollment)
     const courseAssignments = await prisma.assignment.findMany({
       where: {
-        lesson: {
-          module: {
-            course: {
-              enrollments: {
-                some: {
-                  userId: user.id,
-                  status: 'ACTIVE'
-                }
-              }
-            }
-          }
-        }
+        lessonId: {
+          not: null
+        },
+        // Фильтруем задания, которые связаны с курсами, на которые записан студент
+        // Это делается через отдельный запрос к урокам
       },
       include: {
-        lesson: {
-          include: {
-            module: {
-              include: {
-                course: {
-                  select: {
-                    id: true,
-                    title: true,
-                    direction: true
-                  }
-                }
-              }
-            }
-          }
-        },
         creator: {
           select: {
             id: true,
@@ -60,6 +38,40 @@ export async function GET(request: NextRequest) {
         }
       }
     })
+
+    // Фильтруем задания по курсам студента
+    const studentCourses = await prisma.enrollment.findMany({
+      where: {
+        userId: user.id,
+        status: 'ACTIVE'
+      },
+      select: {
+        courseId: true
+      }
+    })
+
+    const studentCourseIds = studentCourses.map(e => e.courseId)
+
+    // Получаем уроки, которые принадлежат курсам студента
+    const studentLessons = await prisma.lesson.findMany({
+      where: {
+        module: {
+          courseId: {
+            in: studentCourseIds
+          }
+        }
+      },
+      select: {
+        id: true
+      }
+    })
+
+    const studentLessonIds = studentLessons.map(l => l.id)
+
+    // Фильтруем задания по урокам студента
+    const filteredCourseAssignments = courseAssignments.filter(assignment => 
+      assignment.lessonId && studentLessonIds.includes(assignment.lessonId)
+    )
 
     // 2. Получаем задания из групп
     const groupAssignments = await prisma.groupAssignment.findMany({
@@ -112,7 +124,7 @@ export async function GET(request: NextRequest) {
     // 3. Объединяем все задания
     const allAssignments = [
       // Задания из курсов
-      ...courseAssignments.map(assignment => ({
+      ...filteredCourseAssignments.map(assignment => ({
         id: assignment.id,
         title: assignment.title,
         description: assignment.description,
@@ -121,8 +133,8 @@ export async function GET(request: NextRequest) {
         status: assignment.status,
         maxScore: assignment.maxScore,
         source: 'course' as const,
-        course: assignment.lesson.module.course,
-        lesson: assignment.lesson,
+        course: null, // Информация о курсе будет получена отдельно
+        lesson: null, // Информация об уроке будет получена отдельно
         creator: assignment.creator,
         group: null
       })),
