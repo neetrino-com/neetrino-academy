@@ -75,7 +75,7 @@ export default function AssignmentCreationModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.title.trim() || !formData.lessonId || !formData.dueDate) {
+    if (!formData.title.trim() || !formData.dueDate) {
       alert('Пожалуйста, заполните все обязательные поля')
       return
     }
@@ -93,7 +93,7 @@ export default function AssignmentCreationModal({
         body: JSON.stringify({
           title: formData.title.trim(),
           description: formData.description.trim(),
-          lessonId: formData.lessonId,
+          lessonId: formData.lessonId || null, // lessonId теперь опциональный
           dueDate: dueDateTime.toISOString()
         })
       })
@@ -200,7 +200,7 @@ export default function AssignmentCreationModal({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <BookOpen className="w-4 h-4 inline mr-2" />
-              Урок курса *
+              Урок курса (необязательно)
             </label>
             {loadingLessons ? (
               <div className="flex items-center justify-center py-4">
@@ -213,9 +213,8 @@ export default function AssignmentCreationModal({
                 onChange={(e) => setFormData(prev => ({ ...prev, lessonId: e.target.value }))}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={loading}
-                required
               >
-                <option value="">Выберите урок</option>
+                <option value="">Без привязки к уроку</option>
                 {lessons.map((lesson) => (
                   <option key={lesson.id} value={lesson.id}>
                     {lesson.module.course.title} → {lesson.module.title} → {lesson.title}
@@ -224,8 +223,8 @@ export default function AssignmentCreationModal({
               </select>
             )}
             {lessons.length === 0 && !loadingLessons && (
-              <p className="text-amber-600 text-xs mt-1">
-                ⚠️ У группы нет назначенных курсов с уроками. Сначала назначьте курсы группе.
+              <p className="text-blue-600 text-xs mt-1">
+                ℹ️ У группы нет назначенных курсов с уроками. Задание будет создано без привязки к уроку.
               </p>
             )}
           </div>
@@ -274,7 +273,7 @@ export default function AssignmentCreationModal({
             </button>
             <button
               type="submit"
-              disabled={loading || lessons.length === 0}
+              disabled={loading}
               className="flex-1 px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (

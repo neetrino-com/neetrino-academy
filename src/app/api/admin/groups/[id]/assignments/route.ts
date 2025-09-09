@@ -36,10 +36,6 @@ export async function POST(
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
-    if (!lessonId) {
-      return NextResponse.json({ error: 'Lesson is required' }, { status: 400 })
-    }
-
     if (!dueDate) {
       return NextResponse.json({ error: 'Due date is required' }, { status: 400 })
     }
@@ -53,33 +49,36 @@ export async function POST(
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    // Проверяем, что урок существует и принадлежит курсу, назначенному группе
-    const existingLesson = await prisma.lesson.findFirst({
-      where: {
-        id: lessonId,
-        module: {
-          course: {
-            groupCourses: {
-              some: {
-                groupId: groupId
+    // Если lessonId предоставлен, проверяем, что урок существует и принадлежит курсу, назначенному группе
+    let existingLesson = null
+    if (lessonId) {
+      existingLesson = await prisma.lesson.findFirst({
+        where: {
+          id: lessonId,
+          module: {
+            course: {
+              groupCourses: {
+                some: {
+                  groupId: groupId
+                }
               }
             }
           }
-        }
-      },
-      include: {
-        module: {
-          include: {
-            course: true
+        },
+        include: {
+          module: {
+            include: {
+              course: true
+            }
           }
         }
-      }
-    })
+      })
 
-    if (!existingLesson) {
-      return NextResponse.json({ 
-        error: 'Lesson not found or not assigned to this group' 
-      }, { status: 404 })
+      if (!existingLesson) {
+        return NextResponse.json({ 
+          error: 'Lesson not found or not assigned to this group' 
+        }, { status: 404 })
+      }
     }
 
     // Создаем задание
@@ -88,7 +87,7 @@ export async function POST(
         title: title.trim(),
         description: description?.trim() || null,
         dueDate: new Date(dueDate),
-        lessonId,
+        lessonId: lessonId || null, // lessonId теперь опциональный
         type: 'HOMEWORK',
         status: 'PUBLISHED',
         maxScore: 100,
