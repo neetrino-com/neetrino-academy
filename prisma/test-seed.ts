@@ -1344,6 +1344,7 @@ fetch('/admin/api/2023-04/graphql.json', {
         passingScore: 70,
         isActive: true,
         lessonId: wpLessons[0].id,
+        createdBy: teacher1.id,
         questions: {
           create: [
             {
@@ -1445,6 +1446,7 @@ fetch('/admin/api/2023-04/graphql.json', {
         passingScore: 75,
         isActive: true,
         lessonId: frontendLessons[0].id,
+        createdBy: teacher2.id,
         questions: {
           create: [
             {
@@ -1521,6 +1523,7 @@ fetch('/admin/api/2023-04/graphql.json', {
         passingScore: 80,
         isActive: true,
         lessonId: shopifyLessons[0].id,
+        createdBy: teacher3.id,
         questions: {
           create: [
             {

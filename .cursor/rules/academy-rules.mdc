@@ -1,6 +1,21 @@
+---
+alwaysApply: true
+---
 # Academy Rules - Development Guidelines
 
 1. When doing work, change the code carefully so as not to break other functions in the project.
+
+2. Before you do something, you first check whether this functionality already exists or not, and when you are sure that it doesn’t, only then do you start creating it.
+
+When creating a form function and input validation, use hints if the user has filled in, clicked, or is trying to save something that will not be possible due to some parameter. For example, a minimum number of characters, an unselected option, or a file with such data already created
+
+All dashboard and admin pages must use AppHeader
+
+when errors occur, add logging to get an accurate picture of the problem# Academy Rules - Development Guidelines
+
+1. When doing work, change the code carefully so as not to break other functions in the project.
+
+2. Before you do something, you first check whether this functionality already exists or not, and when you are sure that it doesn’t, only then do you start creating it.
 
 When creating a form function and input validation, use hints if the user has filled in, clicked, or is trying to save something that will not be possible due to some parameter. For example, a minimum number of characters, an unselected option, or a file with such data already created
 

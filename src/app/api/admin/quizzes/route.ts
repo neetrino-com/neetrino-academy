@@ -102,6 +102,13 @@ export async function GET(request: NextRequest) {
     const quizzes = await prisma.quiz.findMany({
       where,
       include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
         lesson: {
           select: {
             title: true,

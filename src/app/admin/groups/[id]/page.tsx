@@ -26,12 +26,14 @@ import {
   Activity,
   MessageCircle,
   Calendar as CalendarIcon,
-  ClipboardList
+  ClipboardList,
+  TestTube
 } from 'lucide-react'
 import CourseAssignmentModal from '@/components/admin/CourseAssignmentModal'
 import StudentManagementModal from '@/components/admin/StudentManagementModal'
 import TeacherManagementModal from '@/components/admin/TeacherManagementModal'
 import AssignmentCreationModal from '@/components/admin/AssignmentCreationModal'
+import QuizSelectionModal from '@/components/admin/QuizSelectionModal'
 import GroupChat from '@/components/chat/GroupChat'
 import CalendarComponent from '@/components/calendar/Calendar'
 import EventModal from '@/components/calendar/EventModal'
@@ -123,14 +125,17 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [loading, setLoading] = useState(true)
   const [group, setGroup] = useState<Group | null>(null)
   const [error, setError] = useState<string>('')
-  type TabId = 'overview' | 'students' | 'teachers' | 'courses' | 'assignments' | 'schedule' | 'chat'
+  type TabId = 'overview' | 'students' | 'teachers' | 'courses' | 'assignments' | 'quizzes' | 'schedule' | 'chat'
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false)
   const [showStudentManagementModal, setShowStudentManagementModal] = useState(false)
   const [showTeacherManagementModal, setShowTeacherManagementModal] = useState(false)
   const [showAssignmentCreationModal, setShowAssignmentCreationModal] = useState(false)
+  const [showQuizSelectionModal, setShowQuizSelectionModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | undefined>()
+  const [groupQuizzes, setGroupQuizzes] = useState<any[]>([])
+  const [assignedQuizIds, setAssignedQuizIds] = useState<string[]>([])
   
   // Развертываем промис params
   const resolvedParams = use(params)
@@ -144,6 +149,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     }
 
     fetchGroup()
+    fetchGroupQuizzes()
   }, [session, status, router, resolvedParams.id])
 
   const fetchGroup = async () => {
@@ -162,6 +168,46 @@ export default function GroupDetail({ params }: GroupDetailProps) {
       setError('Ошибка загрузки группы')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchGroupQuizzes = async () => {
+    try {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}/quizzes`)
+      if (response.ok) {
+        const quizzes = await response.json()
+        setGroupQuizzes(quizzes)
+        setAssignedQuizIds(quizzes.map((q: any) => q.id))
+      } else {
+        console.error('Error fetching group quizzes:', response.status, response.statusText)
+        const errorData = await response.json()
+        console.error('Error details:', errorData)
+      }
+    } catch (error) {
+      console.error('Error fetching group quizzes:', error)
+    }
+  }
+
+  const handleQuizAssign = async (quizIds: string[]) => {
+    try {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}/quizzes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quizIds })
+      })
+
+      if (response.ok) {
+        await fetchGroupQuizzes()
+        setShowQuizSelectionModal(false)
+      } else {
+        const error = await response.json()
+        alert(`Ошибка назначения тестов: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error assigning quizzes:', error)
+      alert('Ошибка назначения тестов')
     }
   }
 
@@ -382,6 +428,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     { id: 'teachers', label: `Преподаватели (${group.teachers.length})`, icon: GraduationCap },
     { id: 'courses', label: `Курсы (${group.courses.length})`, icon: BookOpen },
     { id: 'assignments', label: `Задания (${group.assignments.length})`, icon: Target },
+    { id: 'quizzes', label: `Тесты (${groupQuizzes.length})`, icon: TestTube },
     { id: 'schedule', label: 'Расписание', icon: CalendarIcon },
     { id: 'chat', label: 'Чат', icon: MessageCircle }
   ]
@@ -873,6 +920,89 @@ export default function GroupDetail({ params }: GroupDetailProps) {
               </div>
             )}
 
+            {activeTab === 'quizzes' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Тесты группы</h3>
+                  <button 
+                    onClick={() => setShowQuizSelectionModal(true)}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                    title="Назначить тесты группе"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Назначить тесты
+                  </button>
+                </div>
+                
+                {groupQuizzes.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {groupQuizzes.map((quiz) => (
+                      <div key={quiz.id} className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <TestTube className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">{quiz.title}</p>
+                            <p className="text-sm text-gray-500 line-clamp-2">{quiz.description}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center justify-between text-xs text-gray-600">
+                            <span>Время: {quiz.timeLimit ? `${quiz.timeLimit} мин` : 'Не ограничено'}</span>
+                            <span>Проходной балл: {quiz.passingScore}%</span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-gray-600">
+                            <span>Вопросов: {quiz.questions?.length || 0}</span>
+                            <span>Попыток: {quiz.attempts?.length || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                              quiz.isActive 
+                                ? 'bg-emerald-100 text-emerald-800' 
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {quiz.isActive ? 'Активен' : 'Неактивен'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-end">
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => router.push(`/admin/tests`)}
+                              className="p-2 text-emerald-600 hover:bg-emerald-100 rounded-lg"
+                              title="Просмотр теста"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => router.push(`/admin/tests/analytics`)}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
+                              title="Аналитика теста"
+                            >
+                              <Award className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Нет назначенных тестов</h3>
+                    <p className="text-gray-500 mb-4">Назначьте тесты группе, чтобы студенты могли их проходить</p>
+                    <button 
+                      onClick={() => setShowQuizSelectionModal(true)}
+                      className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 hover:bg-emerald-50"
+                    >
+                      Назначить первый тест
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'schedule' && (
               <div className="h-[380px] overflow-hidden">
                 <CalendarComponent
@@ -945,6 +1075,18 @@ export default function GroupDetail({ params }: GroupDetailProps) {
           onClose={() => setShowAssignmentCreationModal(false)}
           groupId={group.id}
           onAssignmentCreated={fetchGroup}
+        />
+      )}
+
+      {/* Модальное окно выбора тестов */}
+      {showQuizSelectionModal && (
+        <QuizSelectionModal
+          isOpen={showQuizSelectionModal}
+          onClose={() => setShowQuizSelectionModal(false)}
+          groupId={group.id}
+          groupName={group.name}
+          assignedQuizIds={assignedQuizIds}
+          onQuizAssign={handleQuizAssign}
         />
       )}
 
