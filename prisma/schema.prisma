@@ -737,6 +737,6 @@ model Payment {
 }
 
 // Конфигурация для seed скрипта
-generator seed {
-  provider = "tsx prisma/test-seed.ts"
-}
+// generator seed {
+//   provider = "tsx prisma/test-seed.ts"
+// }
