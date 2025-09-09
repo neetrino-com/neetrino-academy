@@ -91,7 +91,12 @@ export async function POST(
         type: 'HOMEWORK',
         status: 'PUBLISHED',
         maxScore: 100,
-        createdBy: user.id
+        createdBy: user.id,
+        creator: {
+          connect: {
+            id: user.id
+          }
+        }
       }
     })
 
