@@ -168,7 +168,7 @@ export async function GET(
         status: groupAssignment.assignment.status,
         maxScore: groupAssignment.assignment.maxScore,
         source: 'group',
-        course: groupAssignment.assignment.lesson.module.course,
+        course: groupAssignment.assignment.lesson?.module?.course || null,
         lesson: groupAssignment.assignment.lesson,
         creator: groupAssignment.assignment.creator,
         group: groupAssignment.group
@@ -184,7 +184,7 @@ export async function GET(
         status: courseAssignment!.status,
         maxScore: courseAssignment!.maxScore,
         source: 'course',
-        course: courseAssignment!.lesson.module.course,
+        course: courseAssignment!.lesson?.module?.course || null,
         lesson: courseAssignment!.lesson,
         creator: courseAssignment!.creator,
         group: null
