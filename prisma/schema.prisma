@@ -173,18 +173,21 @@ model QuizOption {
 }
 
 model QuizAttempt {
-  id          String    @id @default(cuid())
-  userId      String
-  quizId      String
-  score       Float?
-  maxScore    Int
-  passed      Boolean   @default(false)
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
-  quiz        Quiz      @relation(fields: [quizId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
+  id           String    @id @default(cuid())
+  userId       String
+  quizId       String
+  assignmentId String?   // ID назначения теста (для групповых тестов)
+  score        Float?
+  maxScore     Int
+  passed       Boolean   @default(false)
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  quiz         Quiz      @relation(fields: [quizId], references: [id])
+  user         User      @relation(fields: [userId], references: [id])
 
-  @@unique([userId, quizId])
+  // Убираем уникальное ограничение, чтобы разрешить множественные попытки
+  @@index([userId, quizId])
+  @@index([userId, assignmentId])
 }
 
 model Assignment {

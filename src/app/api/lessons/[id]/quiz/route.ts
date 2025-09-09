@@ -41,19 +41,21 @@ export async function GET(
       );
     }
 
-    // Проверяем, проходил ли пользователь этот тест
-    const userAttempt = await prisma.quizAttempt.findUnique({
+    // Получаем все попытки пользователя по этому тесту
+    const userAttempts = await prisma.quizAttempt.findMany({
       where: {
-        userId_quizId: {
-          userId: session.user.id,
-          quizId: quiz.id
-        }
+        userId: session.user.id,
+        quizId: quiz.id
+      },
+      orderBy: {
+        completedAt: 'desc'
       }
     });
 
     return NextResponse.json({
       quiz,
-      userAttempt
+      userAttempts,
+      latestAttempt: userAttempts[0] || null
     });
   } catch (error) {
     console.error('Ошибка при получении теста:', error);
@@ -79,7 +81,7 @@ export async function POST(
     const { id } = await params;
 
     const body = await request.json();
-    const { answers } = body; // answers: { questionId: string, selectedOptions: string[] }[]
+    const { answers, assignmentId } = body; // answers: { questionId: string, selectedOptions: string[] }[], assignmentId: string (опционально)
 
     // Получаем тест с вопросами и правильными ответами
     const quiz = await prisma.quiz.findUnique({
@@ -100,22 +102,7 @@ export async function POST(
       );
     }
 
-    // Проверяем, не проходил ли пользователь тест ранее
-    const existingAttempt = await prisma.quizAttempt.findUnique({
-      where: {
-        userId_quizId: {
-          userId: session.user.id,
-          quizId: quiz.id
-        }
-      }
-    });
-
-    if (existingAttempt) {
-      return NextResponse.json(
-        { error: 'Вы уже проходили этот тест' },
-        { status: 400 }
-      );
-    }
+    // Убираем проверку на существующую попытку - теперь разрешаем множественные попытки
 
     // Подсчитываем результаты
     let totalScore = 0;
@@ -160,6 +147,7 @@ export async function POST(
       data: {
         userId: session.user.id,
         quizId: quiz.id,
+        assignmentId: assignmentId || null,
         score: percentageScore,
         maxScore,
         passed,

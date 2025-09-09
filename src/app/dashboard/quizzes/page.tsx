@@ -108,41 +108,51 @@ export default async function StudentQuizzesPage() {
       module: null,
       course: null,
       group: groupStudent.group,
+      assignmentId: assignment.id, // Добавляем ID назначения
       type: 'group' as const
     }))
   )
 
-  // Объединяем все тесты и убираем дубликаты по ID
+  // Объединяем все тесты - теперь не убираем дубликаты, так как один тест может быть назначен несколько раз
   const allQuizzes = [...courseQuizzes, ...groupQuizzes]
-  const uniqueQuizzes = allQuizzes.reduce((acc, quiz) => {
-    if (!acc.find(q => q.id === quiz.id)) {
-      acc.push(quiz)
-    }
-    return acc
-  }, [] as typeof allQuizzes)
 
-  // Получаем попытки прохождения тестов студентом
-  const quizIds = uniqueQuizzes.map(q => q.id)
+  // Получаем все попытки прохождения тестов студентом
+  const quizIds = allQuizzes.map(q => q.id)
   const attempts = await prisma.quizAttempt.findMany({
     where: {
       userId: session.user.id,
       quizId: {
         in: quizIds
       }
+    },
+    orderBy: {
+      completedAt: 'desc'
     }
   })
 
-  // Создаем маппинг попыток по ID теста
-  const attemptMap = new Map(
-    attempts.map(attempt => [attempt.quizId, attempt])
-  )
+  // Группируем попытки по ID теста и assignmentId
+  const attemptsByQuiz = new Map<string, typeof attempts>()
+  attempts.forEach(attempt => {
+    const key = attempt.assignmentId ? `${attempt.quizId}-${attempt.assignmentId}` : attempt.quizId
+    if (!attemptsByQuiz.has(key)) {
+      attemptsByQuiz.set(key, [])
+    }
+    attemptsByQuiz.get(key)!.push(attempt)
+  })
 
   // Добавляем информацию о попытках к тестам
-  const quizzesWithAttempts = uniqueQuizzes.map(quiz => ({
-    ...quiz,
-    attempt: attemptMap.get(quiz.id) || null,
-    status: getQuizStatus(quiz, attemptMap.get(quiz.id))
-  }))
+  const quizzesWithAttempts = allQuizzes.map(quiz => {
+    const key = quiz.assignmentId ? `${quiz.id}-${quiz.assignmentId}` : quiz.id
+    const quizAttempts = attemptsByQuiz.get(key) || []
+    const latestAttempt = quizAttempts[0] || null
+    
+    return {
+      ...quiz,
+      attempts: quizAttempts,
+      latestAttempt,
+      status: getQuizStatus(quiz, latestAttempt, quizAttempts.length)
+    }
+  })
 
   // Подсчет статистики
   const stats = {
@@ -161,20 +171,20 @@ export default async function StudentQuizzesPage() {
     timeLimit: number;
     passingScore: number;
     type: 'course' | 'group';
-  }, attempt: {
+  }, latestAttempt: {
     id: string;
     passed: boolean;
     score: number;
     completedAt: string;
-  } | null) {
-    if (!attempt) {
+  } | null, attemptsCount: number) {
+    if (!latestAttempt) {
       return 'available' // Доступен для прохождения
     }
     
-    if (attempt.passed) {
+    if (latestAttempt.passed) {
       return 'passed' // Пройден успешно
     } else {
-      return 'failed' // Не пройден
+      return 'failed' // Не пройден (но можно попробовать снова)
     }
   }
 
@@ -465,9 +475,9 @@ export default async function StudentQuizzesPage() {
                         </div>
                         
                         <div className="flex flex-col gap-3 ml-6">
-                          {quiz.attempt ? (
+                          {quiz.latestAttempt ? (
                             <div className="text-center">
-                              {quiz.attempt.passed ? (
+                              {quiz.latestAttempt.passed ? (
                                 <div className="p-3 bg-green-100 rounded-xl mb-2">
                                   <Award className="w-6 h-6 text-green-600 mx-auto" />
                                 </div>
@@ -477,13 +487,18 @@ export default async function StudentQuizzesPage() {
                                 </div>
                               )}
                               <p className={`text-sm font-semibold ${
-                                quiz.attempt.passed ? 'text-green-700' : 'text-red-700'
+                                quiz.latestAttempt.passed ? 'text-green-700' : 'text-red-700'
                               }`}>
-                                {quiz.attempt.passed ? 'Пройден' : 'Не пройден'}
+                                {quiz.latestAttempt.passed ? 'Пройден' : 'Не пройден'}
                               </p>
                               <p className="text-xs text-gray-600">
-                                Оценка: {quiz.attempt.score}/{quiz.attempt.maxScore}
+                                Оценка: {quiz.latestAttempt.score?.toFixed(1)}%
                               </p>
+                              {quiz.attempts.length > 1 && (
+                                <p className="text-xs text-blue-600 font-medium">
+                                  Попыток: {quiz.attempts.length}
+                                </p>
+                              )}
                             </div>
                           ) : (
                             <div className="text-center">
@@ -497,10 +512,10 @@ export default async function StudentQuizzesPage() {
                           )}
                           
                           <Link
-                            href={`/quizzes/${quiz.id}`}
+                            href={`/quizzes/${quiz.id}${quiz.assignmentId ? `?assignmentId=${quiz.assignmentId}` : ''}`}
                             className="bg-gradient-to-r from-rose-600 to-red-700 text-white px-6 py-3 rounded-xl hover:from-rose-700 hover:to-red-800 transition-all duration-300 text-sm font-semibold text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
                           >
-                            {quiz.attempt ? 'Повторить' : 'Начать тест'}
+                            {quiz.latestAttempt ? 'Пройти снова' : 'Начать тест'}
                             <ArrowRight className="w-4 h-4" />
                           </Link>
                         </div>
