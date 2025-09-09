@@ -116,12 +116,17 @@ export async function POST(
           select: {
             id: true,
             title: true,
-            module: {
+            lesson: {
               select: {
                 title: true,
-                course: {
+                module: {
                   select: {
-                    title: true
+                    title: true,
+                    course: {
+                      select: {
+                        title: true
+                      }
+                    }
                   }
                 }
               }
