@@ -11,12 +11,18 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-interface Module {
+interface Lesson {
   id: string
   title: string
-  course: {
+  order: number
+  module: {
     id: string
     title: string
+    order: number
+    course: {
+      id: string
+      title: string
+    }
   }
 }
 
@@ -36,40 +42,40 @@ export default function AssignmentCreationModal({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    moduleId: '',
+    lessonId: '',
     dueDate: '',
     dueTime: '23:59'
   })
-  const [modules, setModules] = useState<Module[]>([])
+  const [lessons, setLessons] = useState<Lesson[]>([])
   const [loading, setLoading] = useState(false)
-  const [loadingModules, setLoadingModules] = useState(false)
+  const [loadingLessons, setLoadingLessons] = useState(false)
 
-  // Загружаем модули группы при открытии модального окна
+  // Загружаем уроки группы при открытии модального окна
   useEffect(() => {
     if (isOpen) {
-      fetchGroupModules()
+      fetchGroupLessons()
     }
   }, [isOpen, groupId])
 
-  const fetchGroupModules = async () => {
-    setLoadingModules(true)
+  const fetchGroupLessons = async () => {
+    setLoadingLessons(true)
     try {
-      const response = await fetch(`/api/admin/groups/${groupId}/modules`)
+      const response = await fetch(`/api/admin/groups/${groupId}/lessons`)
       if (response.ok) {
-        const modulesData = await response.json()
-        setModules(modulesData)
+        const lessonsData = await response.json()
+        setLessons(lessonsData)
       }
     } catch (error) {
-      console.error('Error fetching modules:', error)
+      console.error('Error fetching lessons:', error)
     } finally {
-      setLoadingModules(false)
+      setLoadingLessons(false)
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.title.trim() || !formData.moduleId || !formData.dueDate) {
+    if (!formData.title.trim() || !formData.lessonId || !formData.dueDate) {
       alert('Пожалуйста, заполните все обязательные поля')
       return
     }
@@ -87,7 +93,7 @@ export default function AssignmentCreationModal({
         body: JSON.stringify({
           title: formData.title.trim(),
           description: formData.description.trim(),
-          moduleId: formData.moduleId,
+          lessonId: formData.lessonId,
           dueDate: dueDateTime.toISOString()
         })
       })
@@ -97,7 +103,7 @@ export default function AssignmentCreationModal({
         setFormData({
           title: '',
           description: '',
-          moduleId: '',
+          lessonId: '',
           dueDate: '',
           dueTime: '23:59'
         })
@@ -122,7 +128,7 @@ export default function AssignmentCreationModal({
       setFormData({
         title: '',
         description: '',
-        moduleId: '',
+        lessonId: '',
         dueDate: '',
         dueTime: '23:59'
       })
@@ -190,36 +196,36 @@ export default function AssignmentCreationModal({
             />
           </div>
 
-          {/* Выбор модуля */}
+          {/* Выбор урока */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <BookOpen className="w-4 h-4 inline mr-2" />
-              Модуль курса *
+              Урок курса *
             </label>
-            {loadingModules ? (
+            {loadingLessons ? (
               <div className="flex items-center justify-center py-4">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600"></div>
-                <span className="ml-2 text-gray-600 text-sm">Загрузка модулей...</span>
+                <span className="ml-2 text-gray-600 text-sm">Загрузка уроков...</span>
               </div>
             ) : (
               <select
-                value={formData.moduleId}
-                onChange={(e) => setFormData(prev => ({ ...prev, moduleId: e.target.value }))}
+                value={formData.lessonId}
+                onChange={(e) => setFormData(prev => ({ ...prev, lessonId: e.target.value }))}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={loading}
                 required
               >
-                <option value="">Выберите модуль</option>
-                {modules.map((module) => (
-                  <option key={module.id} value={module.id}>
-                    {module.course.title} → {module.title}
+                <option value="">Выберите урок</option>
+                {lessons.map((lesson) => (
+                  <option key={lesson.id} value={lesson.id}>
+                    {lesson.module.course.title} → {lesson.module.title} → {lesson.title}
                   </option>
                 ))}
               </select>
             )}
-            {modules.length === 0 && !loadingModules && (
+            {lessons.length === 0 && !loadingLessons && (
               <p className="text-amber-600 text-xs mt-1">
-                ⚠️ У группы нет назначенных курсов. Сначала назначьте курсы группе.
+                ⚠️ У группы нет назначенных курсов с уроками. Сначала назначьте курсы группе.
               </p>
             )}
           </div>
@@ -268,7 +274,7 @@ export default function AssignmentCreationModal({
             </button>
             <button
               type="submit"
-              disabled={loading || modules.length === 0}
+              disabled={loading || lessons.length === 0}
               className="flex-1 px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
