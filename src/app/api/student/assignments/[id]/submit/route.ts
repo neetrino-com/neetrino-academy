@@ -12,6 +12,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Params }
 ) {
+  console.log('🚀 [Submit API] ROUTE CALLED!')
   try {
     console.log('🚀 [Submit API] Starting submission process')
     const session = await auth()

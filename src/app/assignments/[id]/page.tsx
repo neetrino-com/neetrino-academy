@@ -187,9 +187,12 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
     console.log('🚀 [Assignment Page] Content:', content.trim())
     console.log('🚀 [Assignment Page] File URL:', fileUrl)
 
+    const submitUrl = `/api/student/assignments/${resolvedParams.id}/submit`
+    console.log('🚀 [Assignment Page] Submit URL:', submitUrl)
+
     setSubmitting(true)
     try {
-      const response = await fetch(`/api/student/assignments/${resolvedParams.id}/submit`, {
+      const response = await fetch(submitUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
