@@ -41,11 +41,15 @@ export default async function StudentQuizzesPage() {
             include: {
               lessons: {
                 include: {
-                  quiz: {
+                  quizLessons: {
                     include: {
-                      questions: {
+                      quiz: {
                         include: {
-                          options: true
+                          questions: {
+                            include: {
+                              options: true
+                            }
+                          }
                         }
                       }
                     }
@@ -88,15 +92,15 @@ export default async function StudentQuizzesPage() {
   // Собираем тесты из курсов
   const courseQuizzes = enrollments.flatMap(enrollment =>
     enrollment.course.modules.flatMap(module =>
-      module.lessons
-        .filter(lesson => lesson.quiz)
-        .map(lesson => ({
-          ...lesson.quiz!,
+      module.lessons.flatMap(lesson =>
+        lesson.quizLessons.map(quizLesson => ({
+          ...quizLesson.quiz,
           lesson: lesson,
           module: module,
           course: enrollment.course,
           type: 'course' as const
         }))
+      )
     )
   )
 
@@ -129,6 +133,21 @@ export default async function StudentQuizzesPage() {
       completedAt: 'desc'
     }
   })
+
+  // Получаем информацию о тестах для определения типа попыток
+  const quizzesInfo = await prisma.quiz.findMany({
+    where: {
+      id: {
+        in: quizIds
+      }
+    },
+    select: {
+      id: true,
+      attemptType: true
+    }
+  })
+
+  const quizAttemptTypes = new Map(quizzesInfo.map(q => [q.id, q.attemptType]))
 
   // Группируем попытки по ID теста и assignmentId
   const attemptsByQuiz = new Map<string, typeof attempts>()
@@ -186,6 +205,37 @@ export default async function StudentQuizzesPage() {
     } else {
       return 'failed' // Не пройден (но можно попробовать снова)
     }
+  }
+
+  const getButtonText = (quiz: {
+    id: string;
+    title: string;
+    description?: string;
+    timeLimit: number;
+    passingScore: number;
+    type: 'course' | 'group';
+    latestAttempt: {
+      id: string;
+      passed: boolean;
+      score: number;
+      completedAt: string;
+    } | null;
+    attempts: any[];
+  }) => {
+    if (!quiz.latestAttempt) {
+      return 'Начать тест'
+    }
+    
+    // Получаем тип попыток для этого теста
+    const attemptType = quizAttemptTypes.get(quiz.id)
+    
+    // Если тест однократный (SINGLE) и уже пройден - показываем "Результат"
+    if (attemptType === 'SINGLE' && quiz.attempts.length >= 1) {
+      return 'Результат'
+    }
+    
+    // Если тест многократный или групповой - показываем "Пройти снова"
+    return 'Пройти снова'
   }
 
   const getStatusColor = (status: string) => {
@@ -522,7 +572,7 @@ export default async function StudentQuizzesPage() {
                             href={`/quizzes/${quiz.id}${quiz.assignmentId ? `?assignmentId=${quiz.assignmentId}` : ''}`}
                             className="bg-gradient-to-r from-rose-600 to-red-700 text-white px-6 py-3 rounded-xl hover:from-rose-700 hover:to-red-800 transition-all duration-300 text-sm font-semibold text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
                           >
-                            {quiz.latestAttempt ? 'Пройти снова' : 'Начать тест'}
+                            {getButtonText(quiz)}
                             <ArrowRight className="w-4 h-4" />
                           </Link>
                         </div>

@@ -59,6 +59,12 @@ export default function QuizPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [modalContent, setModalContent] = useState<{
+    title: string
+    message: string
+    type: 'success' | 'error' | 'warning' | 'info'
+  } | null>(null)
 
   useEffect(() => {
     // Получаем assignmentId из URL параметров
@@ -77,6 +83,16 @@ export default function QuizPage() {
       handleSubmit()
     }
   }, [timeLeft])
+
+  const showNotification = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+    setModalContent({ title, message, type })
+    setShowModal(true)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setModalContent(null)
+  }
 
   const fetchQuiz = async () => {
     try {
@@ -154,20 +170,43 @@ export default function QuizPage() {
         const percentage = result.score
         
         if (result.passed) {
-          alert(`Поздравляем! Вы прошли тест с результатом ${percentage.toFixed(1)}%`)
+          showNotification(
+            'Поздравляем! 🎉',
+            `Вы прошли тест с результатом ${percentage.toFixed(1)}%`,
+            'success'
+          )
         } else {
-          alert(`Тест не пройден. Ваш результат: ${percentage.toFixed(1)}%. Необходимо набрать минимум ${quiz.passingScore}%`)
+          showNotification(
+            'Тест не пройден',
+            `Ваш результат: ${percentage.toFixed(1)}%. Необходимо набрать минимум ${quiz.passingScore}%`,
+            'warning'
+          )
         }
         
         // Обновляем список попыток
         await fetchQuiz()
       } else {
         const error = await response.json()
-        alert('Ошибка при сохранении результатов теста')
+        
+        if (response.status === 400 && error.error) {
+          // Специальная обработка для уже пройденного теста
+          if (error.existingAttempt) {
+            const attempt = error.existingAttempt
+            showNotification(
+              'Тест уже пройден',
+              `Результат: ${attempt.score.toFixed(1)}%\nСтатус: ${attempt.passed ? 'Пройден' : 'Не пройден'}\nДата: ${new Date(attempt.completedAt).toLocaleString()}`,
+              'info'
+            )
+          } else {
+            showNotification('Ошибка', error.error, 'error')
+          }
+        } else {
+          showNotification('Ошибка', 'Ошибка при сохранении результатов теста', 'error')
+        }
       }
     } catch (error) {
       console.error('Ошибка при отправке результатов теста:', error)
-      alert('Ошибка при сохранении результатов теста')
+      showNotification('Ошибка', 'Ошибка при сохранении результатов теста', 'error')
     } finally {
       setIsSubmitting(false)
     }
@@ -221,6 +260,7 @@ export default function QuizPage() {
   const currentQ = quiz.questions[currentQuestion]
   const isLastQuestion = currentQuestion === quiz.questions.length - 1
   const isFirstQuestion = currentQuestion === 0
+  const isQuizCompleted = quiz.attemptType === 'SINGLE' && attempts.length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -274,10 +314,27 @@ export default function QuizPage() {
             </div>
 
             {attempts.length > 0 && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-700">
+              <div className={`mt-4 p-3 rounded-lg ${
+                quiz.attemptType === 'SINGLE' && attempts.length > 0
+                  ? 'bg-amber-50 border border-amber-200'
+                  : 'bg-blue-50'
+              }`}>
+                <p className={`text-sm ${
+                  quiz.attemptType === 'SINGLE' && attempts.length > 0
+                    ? 'text-amber-700'
+                    : 'text-blue-700'
+                }`}>
                   <RotateCcw className="w-4 h-4 inline mr-1" />
-                  Попыток: {attempts.length} | Последний результат: {attempts[0].score.toFixed(1)}%
+                  {quiz.attemptType === 'SINGLE' && attempts.length > 0 ? (
+                    <>
+                      Тест уже пройден | Результат: {attempts[0].score.toFixed(1)}% | 
+                      Статус: {attempts[0].passed ? 'Пройден' : 'Не пройден'}
+                    </>
+                  ) : (
+                    <>
+                      Попыток: {attempts.length} | Последний результат: {attempts[0].score.toFixed(1)}%
+                    </>
+                  )}
                 </p>
               </div>
             )}
@@ -304,6 +361,14 @@ export default function QuizPage() {
 
         {/* Question */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+          {isQuizCompleted && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-amber-800 font-medium">
+                ⚠️ Этот тест уже был пройден. Вы можете просмотреть вопросы, но не можете изменить ответы.
+              </p>
+            </div>
+          )}
+          
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               {currentQ.question}
@@ -324,7 +389,11 @@ export default function QuizPage() {
               return (
                 <label
                   key={option.id}
-                  className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                  className={`flex items-center p-4 rounded-xl border-2 transition-all duration-200 ${
+                    isQuizCompleted
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer'
+                  } ${
                     isSelected
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
@@ -334,7 +403,8 @@ export default function QuizPage() {
                     type={isMultiple ? 'checkbox' : 'radio'}
                     name={currentQ.id}
                     checked={isSelected}
-                    onChange={() => handleAnswerChange(currentQ.id, option.id, isMultiple)}
+                    onChange={() => !isQuizCompleted && handleAnswerChange(currentQ.id, option.id, isMultiple)}
+                    disabled={isQuizCompleted}
                     className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
                   <span className="ml-3 text-gray-900 font-medium">
@@ -370,7 +440,7 @@ export default function QuizPage() {
                 Следующий
                 <ArrowRight className="w-4 h-4" />
               </button>
-            ) : (
+            ) : !isQuizCompleted ? (
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
@@ -392,10 +462,81 @@ export default function QuizPage() {
                   </>
                 )}
               </button>
+            ) : (
+              <div className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold bg-gray-100 text-gray-600">
+                <CheckCircle className="w-4 h-4" />
+                Тест уже пройден
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Модальное окно уведомлений */}
+      {showModal && modalContent && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            {/* Заголовок */}
+            <div className={`flex items-center justify-between p-4 border-b border-gray-200 ${
+              modalContent.type === 'success' ? 'bg-green-50' :
+              modalContent.type === 'error' ? 'bg-red-50' :
+              modalContent.type === 'warning' ? 'bg-yellow-50' :
+              'bg-blue-50'
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  modalContent.type === 'success' ? 'bg-green-100' :
+                  modalContent.type === 'error' ? 'bg-red-100' :
+                  modalContent.type === 'warning' ? 'bg-yellow-100' :
+                  'bg-blue-100'
+                }`}>
+                  {modalContent.type === 'success' && <CheckCircle className="w-5 h-5 text-green-600" />}
+                  {modalContent.type === 'error' && <XCircle className="w-5 h-5 text-red-600" />}
+                  {modalContent.type === 'warning' && <Award className="w-5 h-5 text-yellow-600" />}
+                  {modalContent.type === 'info' && <Target className="w-5 h-5 text-blue-600" />}
+                </div>
+                <div>
+                  <h2 className={`text-lg font-semibold ${
+                    modalContent.type === 'success' ? 'text-green-800' :
+                    modalContent.type === 'error' ? 'text-red-800' :
+                    modalContent.type === 'warning' ? 'text-yellow-800' :
+                    'text-blue-800'
+                  }`}>
+                    {modalContent.title}
+                  </h2>
+                </div>
+              </div>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-gray-600 hover:text-gray-800" />
+              </button>
+            </div>
+
+            {/* Содержимое */}
+            <div className="p-4">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+                {modalContent.message}
+              </p>
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={closeModal}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    modalContent.type === 'success' ? 'bg-green-600 hover:bg-green-700 text-white' :
+                    modalContent.type === 'error' ? 'bg-red-600 hover:bg-red-700 text-white' :
+                    modalContent.type === 'warning' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' :
+                    'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  Понятно
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
