@@ -139,17 +139,11 @@ export async function POST(
       include: {
         assignment: {
           include: {
-            lesson: {
-              include: {
-                module: {
-                  include: {
-                    course: {
-                      select: {
-                        title: true
-                      }
-                    }
-                  }
-                }
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true
               }
             }
           }
@@ -192,20 +186,6 @@ export async function GET(
       include: {
         assignment: {
           include: {
-            lesson: {
-              include: {
-                module: {
-                  include: {
-                    course: {
-                      select: {
-                        id: true,
-                        title: true
-                      }
-                    }
-                  }
-                }
-              }
-            },
             creator: {
               select: {
                 id: true,
