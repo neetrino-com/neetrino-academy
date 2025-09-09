@@ -10,7 +10,7 @@ interface Params {
 // Выставить оценку за сдачу задания
 export async function POST(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     console.log('🚀 [API] Starting submission grading process')
@@ -151,9 +151,9 @@ export async function POST(
   } catch (error) {
     console.error('💥 [API] Error grading submission:', error)
     console.error('💥 [API] Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
     })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -162,7 +162,7 @@ export async function POST(
 // Получить детали сдачи для проверки
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     const session = await auth()
@@ -237,7 +237,12 @@ export async function GET(
 
     return NextResponse.json(submission)
   } catch (error) {
-    console.error('Error fetching submission:', error)
+    console.error('💥 [API] Error fetching submission:', error)
+    console.error('💥 [API] Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

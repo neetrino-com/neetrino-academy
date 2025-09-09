@@ -72,8 +72,8 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
 
     setLoading(true)
     try {
-      // Используем относительный URL, который будет работать с текущим портом
-      const url = `/api/teacher/submissions/${submission.id}/grade`
+      // Используем абсолютный URL с правильным портом
+      const url = `${window.location.origin}/api/teacher/submissions/${submission.id}/grade`
       const requestBody = {
         score: score,
         feedback: feedback.trim()
