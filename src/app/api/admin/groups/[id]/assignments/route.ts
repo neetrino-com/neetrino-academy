@@ -82,12 +82,12 @@ export async function POST(
     }
 
     // Создаем задание
-    const assignmentData: any = {
+    const assignmentData = {
       title: title.trim(),
       description: description?.trim() || null,
       dueDate: new Date(dueDate),
-      type: 'HOMEWORK',
-      status: 'PUBLISHED',
+      type: 'HOMEWORK' as const,
+      status: 'PUBLISHED' as const,
       maxScore: 100,
       createdBy: user.id,
       creator: {
