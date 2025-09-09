@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, User, Settings, LogOut, Home, ArrowLeft, CreditCard, Menu, X } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
-import { CanAccess, StudentOnly, StaffOnly, AdminOnly } from '@/components/auth/CanAccess'
+import { CanAccess, StudentOnly, StaffOnly } from '@/components/auth/CanAccess'
 import NotificationDropdown from './NotificationDropdown'
 
 export function AppHeader() {
@@ -120,21 +120,6 @@ export function AppHeader() {
                   </Link>
                 </StaffOnly>
 
-                {/* Только для админов */}
-                <AdminOnly>
-                  <Link 
-                    href="/admin/analytics" 
-                    className="relative text-orange-600 hover:text-orange-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-md min-w-[80px] text-center"
-                  >
-                    Аналитика
-                  </Link>
-                  <Link 
-                    href="/admin/security" 
-                    className="relative text-red-600 hover:text-red-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-md min-w-[80px] text-center"
-                  >
-                    Безопасность
-                  </Link>
-                </AdminOnly>
               </nav>
 
               {/* Мобильная кнопка меню */}
@@ -329,23 +314,6 @@ export function AppHeader() {
                 </Link>
               </StaffOnly>
 
-              {/* Только для админов */}
-              <AdminOnly>
-                <Link 
-                  href="/admin/analytics" 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="block text-orange-600 hover:text-orange-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-orange-50 hover:shadow-md"
-                >
-                  📈 Аналитика
-                </Link>
-                <Link 
-                  href="/admin/security" 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="block text-red-600 hover:text-red-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-red-50 hover:shadow-md"
-                >
-                  🔒 Безопасность
-                </Link>
-              </AdminOnly>
             </div>
           </div>
         )}
