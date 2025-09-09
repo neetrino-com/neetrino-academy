@@ -31,7 +31,32 @@ export async function POST(
     const body = await request.json()
     const { content, fileUrl } = body
 
-    // Проверяем, что задание существует и студент имеет к нему доступ
+    // Проверяем доступ к заданию через курсы и группы
+    const courseAssignment = await prisma.assignment.findFirst({
+      where: {
+        id: assignmentId,
+        lesson: {
+          module: {
+            course: {
+              enrollments: {
+                some: {
+                  userId: user.id,
+                  status: 'ACTIVE'
+                }
+              }
+            }
+          }
+        }
+      },
+      include: {
+        lesson: {
+          module: {
+            course: true
+          }
+        }
+      }
+    })
+
     const groupAssignment = await prisma.groupAssignment.findFirst({
       where: {
         assignment: {
@@ -52,7 +77,7 @@ export async function POST(
       }
     })
 
-    if (!groupAssignment) {
+    if (!courseAssignment && !groupAssignment) {
       return NextResponse.json({ 
         error: 'Assignment not found or access denied' 
       }, { status: 404 })
@@ -60,9 +85,15 @@ export async function POST(
 
     // Проверяем дедлайн
     const now = new Date()
-    const dueDate = new Date(groupAssignment.dueDate)
+    let dueDate: Date | null = null
     
-    if (now > dueDate) {
+    if (groupAssignment) {
+      dueDate = new Date(groupAssignment.dueDate)
+    } else if (courseAssignment) {
+      dueDate = courseAssignment.dueDate ? new Date(courseAssignment.dueDate) : null
+    }
+    
+    if (dueDate && now > dueDate) {
       return NextResponse.json({ 
         error: 'Assignment deadline has passed' 
       }, { status: 400 })
@@ -93,13 +124,16 @@ export async function POST(
 
       // Уведомляем преподавателей о повторной сдаче
       try {
-        await notifyGroupTeachersAboutSubmission(
-          groupAssignment.group.id,
-          groupAssignment.assignment.title,
-          user.name,
-          assignmentId,
-          updatedSubmission.id
-        )
+        if (groupAssignment) {
+          await notifyGroupTeachersAboutSubmission(
+            groupAssignment.group.id,
+            groupAssignment.assignment.title,
+            user.name,
+            assignmentId,
+            updatedSubmission.id
+          )
+        }
+        // Для заданий из курсов уведомления пока не реализованы
       } catch (notificationError) {
         console.error('Error sending notifications:', notificationError)
       }
@@ -122,13 +156,16 @@ export async function POST(
 
       // Уведомляем преподавателей о новой сдаче
       try {
-        await notifyGroupTeachersAboutSubmission(
-          groupAssignment.group.id,
-          groupAssignment.assignment.title,
-          user.name,
-          assignmentId,
-          newSubmission.id
-        )
+        if (groupAssignment) {
+          await notifyGroupTeachersAboutSubmission(
+            groupAssignment.group.id,
+            groupAssignment.assignment.title,
+            user.name,
+            assignmentId,
+            newSubmission.id
+          )
+        }
+        // Для заданий из курсов уведомления пока не реализованы
       } catch (notificationError) {
         console.error('Error sending notifications:', notificationError)
       }
