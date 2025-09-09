@@ -27,11 +27,22 @@ export async function POST(
     })
 
     if (!user) {
+      console.log('❌ [Submit API] User not found for email:', session.user.email)
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+    console.log('✅ [Submit API] User found:', user.id, user.name)
 
-    const { id: assignmentId } = await params
-    const body = await request.json()
+    const resolvedParams = await params
+    const assignmentId = resolvedParams.id
+    
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('❌ [Submit API] Error parsing JSON:', parseError)
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+    
     const { content, fileUrl } = body
 
     console.log('📝 [Submit API] Assignment ID:', assignmentId)
