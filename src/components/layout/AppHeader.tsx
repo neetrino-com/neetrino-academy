@@ -81,18 +81,18 @@ export function AppHeader() {
           {session?.user && (
             <>
               {/* Десктопная навигация */}
-              <nav className="hidden lg:flex space-x-1">
+              <nav className="hidden lg:flex items-center justify-center space-x-2 flex-1">
                 {/* Переключение между админкой и дашбордом для админов и учителей */}
                 <StaffOnly>
                   <Link 
                     href="/dashboard" 
-                    className="relative text-blue-600 hover:text-blue-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-sm"
+                    className="relative text-blue-600 hover:text-blue-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Дашборд
                   </Link>
                   <Link 
                     href="/admin" 
-                    className="relative text-emerald-600 hover:text-emerald-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-sm"
+                    className="relative text-emerald-600 hover:text-emerald-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Админка
                   </Link>
@@ -102,19 +102,19 @@ export function AppHeader() {
                 <StaffOnly>
                   <Link 
                     href="/admin/groups" 
-                    className="relative text-emerald-600 hover:text-emerald-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-sm"
+                    className="relative text-emerald-600 hover:text-emerald-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Группы
                   </Link>
                   <Link 
                     href="/admin/courses" 
-                    className="relative text-blue-600 hover:text-blue-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-sm"
+                    className="relative text-blue-600 hover:text-blue-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Курсы
                   </Link>
                   <Link 
                     href="/admin/tests" 
-                    className="relative text-purple-600 hover:text-purple-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:shadow-sm"
+                    className="relative text-purple-600 hover:text-purple-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Тесты
                   </Link>
@@ -124,13 +124,13 @@ export function AppHeader() {
                 <AdminOnly>
                   <Link 
                     href="/admin/analytics" 
-                    className="relative text-orange-600 hover:text-orange-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-sm"
+                    className="relative text-orange-600 hover:text-orange-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Аналитика
                   </Link>
                   <Link 
                     href="/admin/security" 
-                    className="relative text-red-600 hover:text-red-800 px-2 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-sm"
+                    className="relative text-red-600 hover:text-red-800 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-md min-w-[80px] text-center"
                   >
                     Безопасность
                   </Link>
@@ -285,20 +285,20 @@ export function AppHeader() {
         {/* Мобильное меню */}
         {showMobileMenu && session?.user && (
           <div ref={mobileMenuRef} className="lg:hidden border-t border-gray-200 bg-white">
-            <div className="px-4 py-3 space-y-2">
+            <div className="px-4 py-4 space-y-3">
               {/* Переключение между админкой и дашбордом для админов и учителей */}
               <StaffOnly>
                 <Link 
                   href="/dashboard" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-blue-600 hover:text-blue-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-blue-50"
+                  className="block text-blue-600 hover:text-blue-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-blue-50 hover:shadow-md"
                 >
                   📊 Дашборд
                 </Link>
                 <Link 
                   href="/admin" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-emerald-600 hover:text-emerald-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-emerald-50"
+                  className="block text-emerald-600 hover:text-emerald-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-emerald-50 hover:shadow-md"
                 >
                   ⚙️ Админка
                 </Link>
@@ -309,21 +309,21 @@ export function AppHeader() {
                 <Link 
                   href="/admin/groups" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-emerald-600 hover:text-emerald-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-emerald-50"
+                  className="block text-emerald-600 hover:text-emerald-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-emerald-50 hover:shadow-md"
                 >
                   👥 Группы
                 </Link>
                 <Link 
                   href="/admin/courses" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-blue-600 hover:text-blue-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-blue-50"
+                  className="block text-blue-600 hover:text-blue-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-blue-50 hover:shadow-md"
                 >
                   📚 Курсы
                 </Link>
                 <Link 
                   href="/admin/tests" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-purple-600 hover:text-purple-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-purple-50"
+                  className="block text-purple-600 hover:text-purple-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-purple-50 hover:shadow-md"
                 >
                   🧪 Тесты
                 </Link>
@@ -334,14 +334,14 @@ export function AppHeader() {
                 <Link 
                   href="/admin/analytics" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-orange-600 hover:text-orange-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-orange-50"
+                  className="block text-orange-600 hover:text-orange-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-orange-50 hover:shadow-md"
                 >
                   📈 Аналитика
                 </Link>
                 <Link 
                   href="/admin/security" 
                   onClick={() => setShowMobileMenu(false)}
-                  className="block text-red-600 hover:text-red-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-red-50"
+                  className="block text-red-600 hover:text-red-800 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:bg-red-50 hover:shadow-md"
                 >
                   🔒 Безопасность
                 </Link>
