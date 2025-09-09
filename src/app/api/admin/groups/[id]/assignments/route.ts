@@ -102,9 +102,18 @@ export async function POST(
       assignmentData.lessonId = lessonId
     }
 
-    const assignment = await prisma.assignment.create({
-      data: assignmentData
-    })
+    console.log('Creating assignment with data:', assignmentData)
+
+    let assignment
+    try {
+      assignment = await prisma.assignment.create({
+        data: assignmentData
+      })
+      console.log('Assignment created successfully:', assignment.id)
+    } catch (error) {
+      console.error('Error creating assignment:', error)
+      throw error
+    }
 
     // Назначаем задание группе
     await prisma.groupAssignment.create({
