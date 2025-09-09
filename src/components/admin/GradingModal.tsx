@@ -72,6 +72,7 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           score: score,
           feedback: feedback.trim()
