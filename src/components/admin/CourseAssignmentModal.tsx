@@ -70,7 +70,8 @@ export default function CourseAssignmentModal({
       
       if (response.ok) {
         const data = await response.json()
-        setCourses(data)
+        // API возвращает { courses: [...] }, поэтому извлекаем массив курсов
+        setCourses(data.courses || [])
       } else {
         setError('Ошибка загрузки курсов')
       }
@@ -124,7 +125,7 @@ export default function CourseAssignmentModal({
   }
 
   // Фильтрация курсов
-  const filteredCourses = courses.filter(course => {
+  const filteredCourses = Array.isArray(courses) ? courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.direction?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -136,7 +137,7 @@ export default function CourseAssignmentModal({
                          (filter === 'available' && !isAssigned)
     
     return matchesSearch && matchesFilter
-  })
+  }) : []
 
   const availableCourses = filteredCourses.filter(course => !assignedCourseIds.includes(course.id))
 
