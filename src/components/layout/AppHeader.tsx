@@ -82,6 +82,22 @@ export function AppHeader() {
             <>
               {/* Десктопная навигация */}
               <nav className="hidden lg:flex items-center justify-center space-x-2 flex-1">
+                 {/* Переключение между админкой и дашбордом для админов и учителей */}
+                 <StaffOnly>
+                   <Link 
+                     href="/dashboard" 
+                     className="relative bg-blue-600 text-white hover:bg-blue-700 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-md min-w-[80px] text-center"
+                   >
+                     Дашборд
+                   </Link>
+                   <Link 
+                     href="/admin" 
+                     className="relative bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-md min-w-[80px] text-center"
+                   >
+                     Админка
+                   </Link>
+                 </StaffOnly>
+
                 {/* Для преподавателей и админов - основное меню админки */}
                 <StaffOnly>
                   <Link 
@@ -255,6 +271,24 @@ export function AppHeader() {
         {showMobileMenu && session?.user && (
           <div ref={mobileMenuRef} className="lg:hidden border-t border-gray-200 bg-white">
             <div className="px-4 py-4 space-y-3">
+               {/* Переключение между админкой и дашбордом для админов и учителей */}
+               <StaffOnly>
+                 <Link 
+                   href="/dashboard" 
+                   onClick={() => setShowMobileMenu(false)}
+                   className="block bg-blue-600 text-white hover:bg-blue-700 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:shadow-md"
+                 >
+                   📊 Дашборд
+                 </Link>
+                 <Link 
+                   href="/admin" 
+                   onClick={() => setShowMobileMenu(false)}
+                   className="block bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-3 rounded-lg text-base font-semibold transition-all duration-300 hover:shadow-md"
+                 >
+                   ⚙️ Админка
+                 </Link>
+               </StaffOnly>
+
               {/* Для преподавателей и админов - основное меню админки */}
               <StaffOnly>
                 <Link 
