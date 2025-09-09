@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { File, Image } from 'lucide-react'
 import VideoPlayer from '@/components/ui/VideoPlayer'
-import Quiz from '@/components/ui/Quiz'
 import { AccessControl } from '@/components/courses/AccessControl'
 
 interface UploadedFile {
@@ -108,8 +107,6 @@ export default function LessonStudyPage() {
     passed: boolean;
     completedAt: string;
   } | null>(null)
-  const [showQuiz, setShowQuiz] = useState(false)
-  const [answers, setAnswers] = useState<Record<string, string[]>>({})
 
 
   const courseId = params.id as string
@@ -436,44 +433,10 @@ export default function LessonStudyPage() {
 
 
 
-  const handleQuizComplete = async (score: number, maxScore: number, passed: boolean) => {
-    const percentage = (score / maxScore) * 100
-    
-    try {
-      // Отправляем результаты на сервер
-      const response = await fetch(`/api/lessons/${lessonId}/quiz`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          answers: Object.entries(answers).map(([questionId, selectedOptions]) => ({
-            questionId,
-            selectedOptions
-          }))
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setUserAttempt(result.attempt);
-        
-        if (passed) {
-          alert(`Поздравляем! Вы прошли тест с результатом ${percentage.toFixed(1)}%`)
-        } else {
-          alert(`Тест не пройден. Ваш результат: ${percentage.toFixed(1)}%. Необходимо набрать минимум 70%`)
-        }
-      } else {
-        const error = await response.json();
-        if (error.error === 'Вы уже проходили этот тест') {
-          alert('Вы уже проходили этот тест ранее!')
-        } else {
-          alert('Ошибка при сохранении результатов теста')
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка при отправке результатов теста:', error);
-      alert('Ошибка при сохранении результатов теста')
+  const handleQuizClick = () => {
+    if (quiz?.id) {
+      // Редиректим на страницу теста
+      router.push(`/quizzes/${quiz.id}`)
     }
   }
 
@@ -913,7 +876,7 @@ export default function LessonStudyPage() {
                         </p>
                       </div>
                       <button
-                        onClick={() => setShowQuiz(true)}
+                        onClick={handleQuizClick}
                         className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-medium"
                       >
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -929,49 +892,6 @@ export default function LessonStudyPage() {
 
 
 
-            {/* Модальное окно с тестом */}
-            {showQuiz && quiz && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        {quiz.title}
-                      </h2>
-                      <button
-                        onClick={() => setShowQuiz(false)}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                    
-                    <Quiz
-                      quiz={{
-                        ...quiz,
-                        passingScore: 70,
-                        questions: quiz.questions.map(q => ({
-                          id: q.id,
-                          question: q.text,
-                          type: 'SINGLE_CHOICE' as const,
-                          points: 1,
-                          options: q.options.map(opt => ({
-                            id: opt.id,
-                            text: opt.text,
-                            isCorrect: false // Будет определено на сервере
-                          }))
-                        }))
-                      }}
-                      onComplete={handleQuizComplete}
-                      onAnswersChange={setAnswers}
-                      onClose={() => setShowQuiz(false)}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
         </div>
       </div>
     </div>

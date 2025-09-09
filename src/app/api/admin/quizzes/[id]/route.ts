@@ -26,18 +26,27 @@ export async function PUT(
     console.log('Quiz ID:', id)
     console.log('Quiz data:', JSON.stringify(body, null, 2))
 
-    const { title, description, lessonId, timeLimit, passingScore, isActive, questions } = body
+    const { title, description, timeLimit, passingScore, attemptType, isActive, questions } = body
 
     const result = await prisma.$transaction(async (tx) => {
+      // Сначала получаем текущий тест
+      const currentQuiz = await tx.quiz.findUnique({
+        where: { id }
+      })
+
+      if (!currentQuiz) {
+        throw new Error('Quiz not found')
+      }
+
       // Обновляем основной тест
       const quiz = await tx.quiz.update({
         where: { id },
         data: {
           title,
           description,
-          lessonId,
           timeLimit: timeLimit || 30,
           passingScore: passingScore || 70,
+          attemptType: attemptType || 'SINGLE',
           isActive: isActive !== undefined ? isActive : true
         }
       })
@@ -87,7 +96,25 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating quiz:', error)
     console.error('Quiz data received:', JSON.stringify(body, null, 2))
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    
+    // Более детальная обработка ошибок
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json({ 
+          error: 'Урок уже имеет тест. Выберите другой урок или удалите существующий тест.' 
+        }, { status: 400 })
+      }
+      if (error.message === 'Quiz not found') {
+        return NextResponse.json({ 
+          error: 'Тест не найден' 
+        }, { status: 404 })
+      }
+    }
+    
+    return NextResponse.json({ 
+      error: 'Внутренняя ошибка сервера',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 
@@ -113,6 +140,26 @@ export async function GET(
             options: true
           },
           orderBy: { order: 'asc' }
+        },
+        quizLessons: {
+          include: {
+            lesson: {
+              select: {
+                id: true,
+                title: true,
+                module: {
+                  select: {
+                    title: true,
+                    course: {
+                      select: {
+                        title: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     })

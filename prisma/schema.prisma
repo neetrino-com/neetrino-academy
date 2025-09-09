@@ -126,7 +126,7 @@ model Lesson {
   lecture     Lecture?         @relation(fields: [lectureId], references: [id])
   checklist   Checklist?       @relation(fields: [checklistId], references: [id])
   progress    LessonProgress[]
-  quiz        Quiz?
+  quizLessons QuizLesson[]   // Связь с тестами через промежуточную таблицу
   assignments Assignment[]
 }
 
@@ -134,18 +134,31 @@ model Quiz {
   id           String         @id @default(cuid())
   title        String
   description  String?
-  lessonId     String         @unique
   timeLimit    Int?
   passingScore Int            @default(70)
+  attemptType  AttemptType    @default(SINGLE) // SINGLE - однократный, MULTIPLE - многократный
   isActive     Boolean        @default(true)
   createdBy    String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  lesson       Lesson         @relation(fields: [lessonId], references: [id])
   creator      User?          @relation(fields: [createdBy], references: [id])
   attempts     QuizAttempt[]
   questions    QuizQuestion[]
   groupQuizAssignments GroupQuizAssignment[]
+  quizLessons  QuizLesson[]   // Связь с уроками через промежуточную таблицу
+}
+
+model QuizLesson {
+  id        String   @id @default(cuid())
+  quizId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@unique([quizId, lessonId]) // Один тест может быть связан с одним уроком только один раз
 }
 
 model QuizQuestion {
@@ -321,6 +334,11 @@ enum QuestionType {
   MULTIPLE_CHOICE
   SINGLE_CHOICE
   TRUE_FALSE
+}
+
+enum AttemptType {
+  SINGLE    // Однократный тест - можно проходить только один раз
+  MULTIPLE  // Многократный тест - можно проходить много раз
 }
 
 enum GroupType {

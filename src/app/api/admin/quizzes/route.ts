@@ -20,16 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { lessonId, title, description, timeLimit, passingScore, isActive, questions } = body
-
-    // Проверяем, что урок существует
-    const lesson = await prisma.lesson.findUnique({
-      where: { id: lessonId }
-    })
-
-    if (!lesson) {
-      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
-    }
+    const { title, description, timeLimit, passingScore, attemptType, isActive, questions } = body
 
     // Создаем тест в транзакции
     const result = await prisma.$transaction(async (tx) => {
@@ -40,8 +31,9 @@ export async function POST(request: NextRequest) {
           description,
           timeLimit,
           passingScore,
+          attemptType: attemptType || 'SINGLE',
           isActive,
-          lessonId
+          createdBy: user.id
         }
       })
 
@@ -92,11 +84,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const lessonId = searchParams.get('lessonId')
 
-    const where: {
-      lessonId?: string;
-    } = {}
+    const where: any = {}
     if (lessonId) {
-      where.lessonId = lessonId
+      where.quizLessons = {
+        some: {
+          lessonId: lessonId
+        }
+      }
     }
 
     const quizzes = await prisma.quiz.findMany({
@@ -109,15 +103,20 @@ export async function GET(request: NextRequest) {
             email: true
           }
         },
-        lesson: {
-          select: {
-            title: true,
-            module: {
+        quizLessons: {
+          include: {
+            lesson: {
               select: {
+                id: true,
                 title: true,
-                course: {
+                module: {
                   select: {
-                    title: true
+                    title: true,
+                    course: {
+                      select: {
+                        title: true
+                      }
+                    }
                   }
                 }
               }

@@ -33,6 +33,7 @@ interface Quiz {
   description?: string
   timeLimit?: number
   passingScore: number
+  attemptType: 'SINGLE' | 'MULTIPLE'
   questions: QuizQuestion[]
 }
 
@@ -257,6 +258,12 @@ export default function QuizPage() {
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4" />
                 <span>Проходной балл: {quiz.passingScore}%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4" />
+                <span>
+                  {quiz.attemptType === 'SINGLE' ? 'Однократный тест' : 'Многократный тест'}
+                </span>
               </div>
               {quiz.timeLimit && (
                 <div className="flex items-center gap-2">

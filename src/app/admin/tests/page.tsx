@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
-import QuizBuilder from '@/components/admin/QuizBuilder'
 import { 
   Plus, 
   Edit, 
@@ -31,15 +30,18 @@ interface Quiz {
   passingScore: number
   isActive: boolean
   createdAt: string
-  lesson: {
-    title: string
-    module: {
+  quizLessons: Array<{
+    lesson: {
+      id: string
       title: string
-      course: {
+      module: {
         title: string
+        course: {
+          title: string
+        }
       }
     }
-  }
+  }>
   questions: Array<{
     id: string
     question: string
@@ -64,8 +66,6 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
   const router = useRouter()
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
   const [loading, setLoading] = useState(true)
-  const [showQuizBuilder, setShowQuizBuilder] = useState(false)
-  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState('all') // all, active, inactive
   const [stats, setStats] = useState<QuizStats>({
@@ -156,9 +156,11 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
   // Фильтрация тестов
   const filteredQuizzes = quizzes.filter(quiz => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quiz.lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quiz.lesson.module.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quiz.lesson.module.course.title.toLowerCase().includes(searchTerm.toLowerCase())
+                         quiz.quizLessons.some(ql => 
+                           ql.lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           ql.lesson.module.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           ql.lesson.module.course.title.toLowerCase().includes(searchTerm.toLowerCase())
+                         )
     
     const matchesFilter = filter === 'all' || 
                          (filter === 'active' && quiz.isActive) ||
@@ -190,10 +192,7 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
               </p>
             </div>
             <button
-              onClick={() => {
-                setEditingQuiz(null)
-                setShowQuizBuilder(true)
-              }}
+              onClick={() => router.push('/admin/tests/create')}
               className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg hover:from-violet-700 hover:to-purple-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <Plus className="w-4 h-4" />
@@ -303,18 +302,27 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
                       <p className="text-gray-600 mb-3">{quiz.description}</p>
                     )}
                     
-                    {/* Информация о курсе и уроке */}
-                    <div className="text-sm text-gray-500 mb-3">
-                      <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs mr-2">
-                        {quiz.lesson.module.course.title}
-                      </span>
-                      <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full text-xs mr-2">
-                        {quiz.lesson.module.title}
-                      </span>
-                      <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded-full text-xs">
-                        {quiz.lesson.title}
-                      </span>
-                    </div>
+                    {/* Информация о связанных уроках */}
+                    {quiz.quizLessons && quiz.quizLessons.length > 0 && (
+                      <div className="text-sm text-gray-500 mb-3">
+                        <span className="text-gray-600 font-medium">Связанные уроки:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {quiz.quizLessons.map((ql, index) => (
+                            <span key={index} className="bg-violet-100 text-violet-700 px-2 py-1 rounded-full text-xs">
+                              {ql.lesson.module.course.title} → {ql.lesson.module.title} → {ql.lesson.title}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {(!quiz.quizLessons || quiz.quizLessons.length === 0) && (
+                      <div className="text-sm text-gray-500 mb-3">
+                        <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                          Не привязан к урокам
+                        </span>
+                      </div>
+                    )}
 
                     {/* Характеристики теста */}
                     <div className="flex gap-6 text-sm text-gray-500">
@@ -340,10 +348,7 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
                   {/* Действия */}
                   <div className="flex gap-2 ml-4">
                     <button
-                      onClick={() => {
-                        setEditingQuiz(quiz)
-                        setShowQuizBuilder(true)
-                      }}
+                      onClick={() => router.push(`/admin/tests/${quiz.id}/edit`)}
                       className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all duration-200 hover:scale-110"
                       title="Редактировать"
                     >
@@ -396,10 +401,7 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
                 </p>
                 {!searchTerm && filter === 'all' && (
                   <button
-                    onClick={() => {
-                      setEditingQuiz(null)
-                      setShowQuizBuilder(true)
-                    }}
+                    onClick={() => router.push('/admin/tests/create')}
                     className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-violet-400 hover:bg-violet-50 transition-colors"
                   >
                     Создать первый тест
@@ -411,54 +413,6 @@ function TestsManagementComponent({ userRole, isLoading }: WithRoleProtectionPro
         </div>
       </div>
 
-      {/* Модальное окно QuizBuilder */}
-      {showQuizBuilder && (
-        <QuizBuilder
-          lessonId=""
-          initialQuiz={editingQuiz}
-          onSave={async (quizData) => {
-            try {
-              let response
-              
-              if (editingQuiz) {
-                // Редактирование существующего теста
-                response = await fetch(`/api/admin/quizzes/${editingQuiz.id}`, {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(quizData)
-                })
-              } else {
-                // Создание нового теста
-                response = await fetch('/api/admin/quizzes', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(quizData)
-                })
-              }
-              
-              if (response.ok) {
-                setShowQuizBuilder(false)
-                setEditingQuiz(null)
-                await fetchQuizzes()
-              } else {
-                const error = await response.json()
-                alert(`Ошибка сохранения теста: ${error.error}`)
-              }
-            } catch (error) {
-              console.error('Ошибка сохранения теста:', error)
-              alert('Ошибка сохранения теста')
-            }
-          }}
-          onCancel={() => {
-            setShowQuizBuilder(false)
-            setEditingQuiz(null)
-          }}
-        />
-      )}
     </div>
   )
 }

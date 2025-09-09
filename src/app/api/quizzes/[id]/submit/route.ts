@@ -81,6 +81,29 @@ export async function POST(
 
     console.log('📊 Quiz results:', { totalScore, maxScore, percentageScore, passed })
 
+    // Проверяем тип теста и существующие попытки
+    if (quiz.attemptType === 'SINGLE') {
+      const existingAttempt = await prisma.quizAttempt.findFirst({
+        where: {
+          userId: session.user.id,
+          quizId: quiz.id
+        }
+      })
+
+      if (existingAttempt) {
+        console.log('❌ Single attempt quiz already completed:', existingAttempt.id)
+        return NextResponse.json({ 
+          error: 'Этот тест можно пройти только один раз. Вы уже проходили его ранее.',
+          existingAttempt: {
+            id: existingAttempt.id,
+            score: existingAttempt.score,
+            passed: existingAttempt.passed,
+            completedAt: existingAttempt.completedAt
+          }
+        }, { status: 400 })
+      }
+    }
+
     // Сохраняем попытку
     const attempt = await prisma.quizAttempt.create({
       data: {
