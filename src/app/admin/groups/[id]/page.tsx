@@ -247,10 +247,23 @@ export default function GroupDetail({ params }: GroupDetailProps) {
 
   const handleEventSubmit = async (eventData: {
     title: string;
-    description?: string;
-    startDate: string;
-    endDate: string;
+    description: string;
+    type: string;
+    eventDate: string;
+    startTime: string;
+    endTime: string;
+    location: string;
     groupId: string;
+    courseId: string;
+    assignmentId: string;
+    attendeeIds: string[];
+    isRecurring: boolean;
+    recurringRule: {
+      frequency: string;
+      interval: number;
+      daysOfWeek: number[];
+      endDate: string;
+    };
   }) => {
     try {
       const url = editingEventId 
@@ -259,12 +272,28 @@ export default function GroupDetail({ params }: GroupDetailProps) {
       
       const method = editingEventId ? 'PATCH' : 'POST'
 
+      // Преобразуем данные в формат, ожидаемый API
+      const apiEventData = {
+        title: eventData.title,
+        description: eventData.description,
+        type: eventData.type,
+        startDate: `${eventData.eventDate}T${eventData.startTime}`,
+        endDate: `${eventData.eventDate}T${eventData.endTime}`,
+        location: eventData.location,
+        groupId: eventData.groupId,
+        courseId: eventData.courseId || null,
+        assignmentId: eventData.assignmentId || null,
+        attendeeIds: eventData.attendeeIds,
+        isRecurring: eventData.isRecurring,
+        recurringRule: eventData.isRecurring ? eventData.recurringRule : null
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(eventData)
+        body: JSON.stringify(apiEventData)
       })
 
       if (response.ok) {
@@ -387,6 +416,30 @@ export default function GroupDetail({ params }: GroupDetailProps) {
     } catch (error) {
       console.error('Error removing assignment from group:', error)
       alert('Ошибка удаления задания из группы')
+    }
+  }
+
+  const removeQuizFromGroup = async (quizId: string, quizTitle: string) => {
+    if (!confirm(`Вы уверены, что хотите удалить тест "${quizTitle}" из группы? Это действие нельзя отменить.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/groups/${resolvedParams.id}/quizzes?quizId=${quizId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Перезагружаем данные группы и тестов
+        await fetchGroup()
+        await fetchGroupQuizzes()
+      } else {
+        const error = await response.json()
+        alert(`Ошибка удаления теста: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error removing quiz from group:', error)
+      alert('Ошибка удаления теста из группы')
     }
   }
 
@@ -878,7 +931,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                       </div>
                       <div className="space-y-2 mb-3">
                         <p className="text-xs text-gray-600">
-                          {groupAssignment.assignment.lessonId ? 'Привязано к уроку' : 'Общее задание для группы'}
+                          {groupAssignment.assignment.lesson ? 'Привязано к уроку' : 'Общее задание для группы'}
                         </p>
                         <p className="text-xs text-red-600 font-medium">
                           Срок: {formatDate(groupAssignment.assignment.dueDate)}
@@ -981,6 +1034,13 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                               title="Аналитика теста"
                             >
                               <Award className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => removeQuizFromGroup(quiz.id, quiz.title)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                              title="Удалить тест из группы"
+                            >
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </div>

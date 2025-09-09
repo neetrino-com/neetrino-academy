@@ -236,3 +236,145 @@ export async function GET(
     }, { status: 500 })
   }
 }
+
+// Удалить тест из группы
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  console.log('=== DELETE /api/admin/groups/[id]/quizzes - Удаление теста из группы ===')
+  
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      console.log('❌ Unauthorized: No session')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Проверяем роль пользователя
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'TEACHER')) {
+      console.log('❌ Forbidden: User role not allowed', { userId: user?.id, role: user?.role })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    console.log('✅ User authorized', { userId: user.id, role: user.role })
+
+    const { id: groupId } = await params
+    const { searchParams } = new URL(request.url)
+    const quizId = searchParams.get('quizId')
+
+    console.log('📝 Delete data received:', { groupId, quizId })
+
+    // Валидация
+    if (!quizId) {
+      console.log('❌ Validation failed: quizId is required')
+      return NextResponse.json({ 
+        error: 'quizId is required' 
+      }, { status: 400 })
+    }
+
+    // Проверяем, что группа существует
+    const group = await prisma.group.findUnique({
+      where: { id: groupId }
+    })
+
+    if (!group) {
+      console.log('❌ Group not found:', groupId)
+      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+    }
+
+    console.log('✅ Group found:', group.name)
+
+    // Проверяем, что тест существует
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId }
+    })
+
+    if (!quiz) {
+      console.log('❌ Quiz not found:', quizId)
+      return NextResponse.json({ error: 'Quiz not found' }, { status: 404 })
+    }
+
+    console.log('✅ Quiz found:', quiz.title)
+
+    // Удаляем назначение теста для группы
+    console.log('🗑️ Removing quiz assignment...')
+    const deletedAssignment = await prisma.groupQuizAssignment.deleteMany({
+      where: { 
+        groupId,
+        quizId 
+      }
+    })
+
+    if (deletedAssignment.count === 0) {
+      console.log('❌ Quiz assignment not found')
+      return NextResponse.json({ error: 'Quiz assignment not found' }, { status: 404 })
+    }
+
+    console.log('✅ Quiz assignment removed successfully')
+
+    // Получаем обновленную группу с тестами
+    const updatedGroup = await prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        groupQuizAssignments: {
+          include: {
+            quiz: {
+              include: {
+                creator: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true
+                  }
+                },
+                questions: {
+                  select: {
+                    id: true,
+                    question: true,
+                    type: true,
+                    points: true
+                  },
+                  orderBy: {
+                    order: 'asc'
+                  }
+                },
+                attempts: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: {
+            assignedAt: 'desc'
+          }
+        }
+      }
+    })
+
+    console.log('🎉 Quiz removal completed successfully')
+    return NextResponse.json(updatedGroup)
+
+  } catch (error) {
+    console.error('❌ Error removing quiz from group:', error)
+    
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+    }
+    
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 })
+  }
+}
