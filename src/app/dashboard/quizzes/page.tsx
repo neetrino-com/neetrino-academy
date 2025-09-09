@@ -394,7 +394,7 @@ export default async function StudentQuizzesPage() {
               ) : (
                 <div className="space-y-6">
                   {quizzesWithAttempts.map((quiz) => (
-                    <div key={quiz.id} className={`border rounded-2xl p-6 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${getStatusBgColor(quiz.status)}`}>
+                    <div key={`${quiz.id}-${quiz.assignmentId || 'course'}`} className={`border rounded-2xl p-6 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${getStatusBgColor(quiz.status)}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-4 mb-4">
@@ -404,7 +404,14 @@ export default async function StudentQuizzesPage() {
                               </div>
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-bold text-gray-900 text-xl mb-2">{quiz.title}</h3>
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-bold text-gray-900 text-xl">{quiz.title}</h3>
+                                {quiz.assignmentId && (
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                                    Назначение #{quiz.assignmentId.slice(-6)}
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                                 {quiz.type === 'course' ? (
                                   <>
