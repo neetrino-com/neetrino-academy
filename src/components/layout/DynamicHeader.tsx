@@ -26,7 +26,7 @@ export function DynamicHeader() {
   // Страницы приложения без префикса /app (для совместимости)
   if (
     pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/assignments') ||
+    pathname.startsWith('/dashboard/assignments') ||
     pathname.startsWith('/calendar') ||
     pathname.startsWith('/notifications') ||
     pathname.startsWith('/profile') ||

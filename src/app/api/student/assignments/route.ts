@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-// Получить все задания студента из его групп
+// Получить все задания студента (из курсов и групп)
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -19,8 +19,50 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Получаем все задания из групп, где студент состоит
-    const assignments = await prisma.groupAssignment.findMany({
+    // 1. Получаем задания из курсов (через Enrollment)
+    const courseAssignments = await prisma.assignment.findMany({
+      where: {
+        lesson: {
+          module: {
+            course: {
+              enrollments: {
+                some: {
+                  userId: user.id,
+                  status: 'ACTIVE'
+                }
+              }
+            }
+          }
+        }
+      },
+      include: {
+        lesson: {
+          include: {
+            module: {
+              include: {
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                    direction: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    // 2. Получаем задания из групп
+    const groupAssignments = await prisma.groupAssignment.findMany({
       where: {
         group: {
           students: {
@@ -34,13 +76,17 @@ export async function GET(request: NextRequest) {
       include: {
         assignment: {
           include: {
-            module: {
+            lesson: {
               include: {
-                course: {
-                  select: {
-                    id: true,
-                    title: true,
-                    direction: true
+                module: {
+                  include: {
+                    course: {
+                      select: {
+                        id: true,
+                        title: true,
+                        direction: true
+                      }
+                    }
                   }
                 }
               }
@@ -60,14 +106,60 @@ export async function GET(request: NextRequest) {
             name: true
           }
         }
-      },
-      orderBy: {
-        dueDate: 'asc'
       }
     })
 
-    // Получаем информацию о сдачах студента
-    const assignmentIds = assignments.map(ga => ga.assignment.id)
+    // 3. Объединяем все задания
+    const allAssignments = [
+      // Задания из курсов
+      ...courseAssignments.map(assignment => ({
+        id: assignment.id,
+        title: assignment.title,
+        description: assignment.description,
+        dueDate: assignment.dueDate,
+        type: assignment.type,
+        status: assignment.status,
+        maxScore: assignment.maxScore,
+        source: 'course' as const,
+        course: assignment.lesson.module.course,
+        lesson: assignment.lesson,
+        creator: assignment.creator,
+        group: null
+      })),
+      // Задания из групп
+      ...groupAssignments.map(ga => ({
+        id: ga.assignment.id,
+        title: ga.assignment.title,
+        description: ga.assignment.description,
+        dueDate: ga.dueDate, // Используем дату из GroupAssignment
+        type: ga.assignment.type,
+        status: ga.assignment.status,
+        maxScore: ga.assignment.maxScore,
+        source: 'group' as const,
+        course: ga.assignment.lesson.module.course,
+        lesson: ga.assignment.lesson,
+        creator: ga.assignment.creator,
+        group: ga.group
+      }))
+    ]
+
+    // 4. Убираем дубликаты по ID задания (если задание есть и в курсе, и в группе)
+    const uniqueAssignments = allAssignments.reduce((acc, current) => {
+      const existing = acc.find(item => item.id === current.id)
+      if (!existing) {
+        acc.push(current)
+      } else {
+        // Если задание есть и в курсе, и в группе, приоритет у группы
+        if (current.source === 'group') {
+          const index = acc.findIndex(item => item.id === current.id)
+          acc[index] = current
+        }
+      }
+      return acc
+    }, [] as typeof allAssignments)
+
+    // 5. Получаем информацию о сдачах студента
+    const assignmentIds = uniqueAssignments.map(a => a.id)
     const submissions = await prisma.submission.findMany({
       where: {
         userId: user.id,
@@ -77,17 +169,24 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Создаем маппинг сдач по ID задания
+    // 6. Создаем маппинг сдач по ID задания
     const submissionMap = new Map(
       submissions.map(sub => [sub.assignmentId, sub])
     )
 
-    // Добавляем информацию о сдачах к заданиям
-    const assignmentsWithSubmissions = assignments.map(groupAssignment => ({
-      ...groupAssignment,
-      submission: submissionMap.get(groupAssignment.assignment.id) || null,
-      status: getAssignmentStatus(groupAssignment.dueDate, submissionMap.get(groupAssignment.assignment.id))
-    }))
+    // 7. Добавляем информацию о сдачах и сортируем по дате дедлайна
+    const assignmentsWithSubmissions = uniqueAssignments
+      .map(assignment => ({
+        ...assignment,
+        submission: submissionMap.get(assignment.id) || null,
+        status: getAssignmentStatus(assignment.dueDate, submissionMap.get(assignment.id))
+      }))
+      .sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      })
 
     return NextResponse.json(assignmentsWithSubmissions)
   } catch (error) {
@@ -97,7 +196,11 @@ export async function GET(request: NextRequest) {
 }
 
 // Определить статус задания для студента
-function getAssignmentStatus(dueDate: Date, submission: { gradedAt?: Date } | null) {
+function getAssignmentStatus(dueDate: Date | null, submission: { gradedAt?: Date } | null) {
+  if (!dueDate) {
+    return submission ? (submission.gradedAt ? 'graded' : 'submitted') : 'pending'
+  }
+
   const now = new Date()
   const due = new Date(dueDate)
 

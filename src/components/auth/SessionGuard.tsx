@@ -21,7 +21,7 @@ export default function SessionGuard({ children }: SessionGuardProps) {
     if (!isClient) return 'public' // На сервере всегда считаем публичной страницей
     if (pathname.startsWith('/admin')) return 'admin'
     if (pathname.startsWith('/dashboard') || 
-        pathname.startsWith('/assignments') ||
+        pathname.startsWith('/dashboard/assignments') ||
         pathname.startsWith('/calendar') ||
         pathname.startsWith('/courses') ||
         pathname.startsWith('/lectures')) return 'student'

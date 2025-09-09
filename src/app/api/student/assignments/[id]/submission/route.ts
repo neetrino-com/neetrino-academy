@@ -52,7 +52,9 @@ export async function GET(
     console.log('🔍 [Assignment API] Searching for groupAssignment...')
     const groupAssignment = await prisma.groupAssignment.findFirst({
       where: {
-        assignmentId,
+        assignment: {
+          id: assignmentId
+        },
         group: {
           students: {
             some: {

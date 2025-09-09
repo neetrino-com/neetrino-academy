@@ -34,7 +34,9 @@ export async function POST(
     // Проверяем, что задание существует и студент имеет к нему доступ
     const groupAssignment = await prisma.groupAssignment.findFirst({
       where: {
-        assignmentId,
+        assignment: {
+          id: assignmentId
+        },
         group: {
           students: {
             some: {

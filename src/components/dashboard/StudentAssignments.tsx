@@ -173,7 +173,7 @@ export default function StudentAssignments() {
             </div>
           </div>
           <Link
-            href="/assignments"
+            href="/dashboard/assignments"
             className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
           >
             Все задания
@@ -301,7 +301,7 @@ export default function StudentAssignments() {
             {assignments.length >= 5 && (
               <div className="text-center pt-6">
                 <Link
-                  href="/assignments"
+                  href="/dashboard/assignments"
                   className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold text-lg hover:scale-105 transition-all duration-300"
                 >
                   Показать все задания

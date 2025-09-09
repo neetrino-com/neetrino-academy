@@ -19,7 +19,10 @@ import {
   Star,
   Calendar,
   User,
-  GraduationCap
+  GraduationCap,
+  Target,
+  Award,
+  TrendingUp
 } from 'lucide-react'
 import GradingModal from '@/components/admin/GradingModal'
 
@@ -41,14 +44,24 @@ interface Submission {
     id: string
     title: string
     description: string | null
-    dueDate: string
-    module: {
+    dueDate: string | null
+    maxScore: number | null
+    lesson: {
+      id: string
       title: string
-      course: {
-        id: string
+      module: {
         title: string
-        direction: string
+        course: {
+          id: string
+          title: string
+          direction: string
+        }
       }
+    }
+    creator: {
+      id: string
+      name: string
+      email: string
     }
   }
   groups: Array<{
@@ -100,7 +113,7 @@ export default function SubmissionsManagement() {
   const fetchSubmissions = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/teacher/submissions?status=${filter}`)
+      const response = await fetch(`/api/admin/submissions?status=${filter}`)
       if (response.ok) {
         const data = await response.json()
         setSubmissions(data)
@@ -126,292 +139,316 @@ export default function SubmissionsManagement() {
     setShowGradingModal(true)
   }
 
+  const closeGradingModal = () => {
+    setSelectedSubmission(null)
+    setShowGradingModal(false)
+  }
+
+  const handleGradingSuccess = () => {
+    fetchSubmissions()
+    closeGradingModal()
+  }
+
   const filteredSubmissions = submissions.filter(submission => {
     const matchesSearch = 
-      submission.assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       submission.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      submission.assignment.lesson.module.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      submission.groups.some(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      submission.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      submission.assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      submission.assignment.lesson.module.course.title.toLowerCase().includes(searchTerm.toLowerCase())
     
     return matchesSearch
   })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'long',
-      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     })
   }
 
-  const getStatusColor = (submission: Submission) => {
+  const getStatusBadge = (submission: Submission) => {
     if (submission.gradedAt) {
-      return submission.score! >= 4 ? 'text-green-600' : 
-             submission.score! >= 3 ? 'text-yellow-600' : 'text-red-600'
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Проверено
+        </span>
+      )
     }
-    
-    const isOverdue = new Date() > new Date(submission.assignment.dueDate)
-    return isOverdue ? 'text-red-600' : 'text-blue-600'
-  }
-
-  const getStatusIcon = (submission: Submission) => {
-    if (submission.gradedAt) {
-      return <CheckCircle className="w-4 h-4" />
-    }
-    
-    const isOverdue = new Date() > new Date(submission.assignment.dueDate)
-    return isOverdue ? <AlertCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />
-  }
-
-  const getStatusText = (submission: Submission) => {
-    if (submission.gradedAt) {
-      return `Проверено (${submission.score}/5)`
-    }
-    
-    const isOverdue = new Date() > new Date(submission.assignment.dueDate)
-    return isOverdue ? 'Просрочено' : 'На проверке'
+    return (
+      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        Ожидает проверки
+      </span>
+    )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка сдач...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Заголовок */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/admin')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Проверка заданий
-                </h1>
-                <p className="text-gray-600">Сдачи заданий от студентов</p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="p-6">
+        {/* Заголовок */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-3xl font-bold text-gray-900">Управление сдачами</h1>
           </div>
+          <p className="text-gray-600">Проверка и оценка всех сдач заданий</p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-slate-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Всего сдач</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <Target className="w-8 h-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Всего сдач</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">На проверке</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.ungraded}</p>
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <Clock className="w-8 h-8 text-yellow-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Ожидают проверки</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.ungraded}</p>
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Проверено</p>
-                <p className="text-2xl font-bold text-green-600">{stats.graded}</p>
+          
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Проверено</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.graded}</p>
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Star className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Средний балл</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.averageScore}</p>
+          
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center">
+              <TrendingUp className="w-8 h-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Средняя оценка</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.averageScore}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Фильтры и поиск */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
-          <div className="flex flex-col sm:flex-row gap-4">
+        {/* Фильтры */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Поиск */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Поиск по заданию, студенту, курсу, группе..."
+                  placeholder="Поиск по студенту, заданию или курсу..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
+
+            {/* Фильтр по статусу */}
             <div className="flex gap-2">
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Все сдачи</option>
-                <option value="ungraded">На проверке</option>
-                <option value="graded">Проверенные</option>
+                <option value="ungraded">Ожидают проверки</option>
+                <option value="graded">Проверено</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Список сдач */}
-        <div className="space-y-4">
-          {filteredSubmissions.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Сдач не найдено</h3>
-              <p className="text-gray-600">
-                {searchTerm || filter !== 'all' 
-                  ? 'Попробуйте изменить фильтры поиска' 
-                  : 'Пока нет сдач от студентов'}
-              </p>
-            </div>
-          ) : (
-            filteredSubmissions.map((submission) => (
-              <div key={submission.id} className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow">
-                <div className="p-6">
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Студенческие работы</h2>
+          </div>
+          
+          <div className="divide-y divide-gray-200">
+            {filteredSubmissions.length === 0 ? (
+              <div className="p-12 text-center">
+                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Сдач не найдено</h3>
+                <p className="text-gray-600">
+                  {searchTerm || filter !== 'all' 
+                    ? 'Попробуйте изменить фильтры поиска'
+                    : 'Пока нет сдач заданий'
+                  }
+                </p>
+              </div>
+            ) : (
+              filteredSubmissions.map((submission) => (
+                <div key={submission.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-indigo-600" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{submission.assignment.title}</h3>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <User className="w-4 h-4" />
-                              {submission.user.name}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <BookOpen className="w-4 h-4" />
-                              {submission.assignment.lesson.module.course.title}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {submission.groups.map(g => g.name).join(', ')}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {submission.user.name}
+                        </h3>
+                        {getStatusBadge(submission)}
                       </div>
-
-                      <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
-                        <span className="flex items-center gap-1">
+                      
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          <span>{submission.user.email}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <BookOpen className="w-4 h-4" />
+                          <span>{submission.assignment.lesson.module.course.title}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <FileText className="w-4 h-4" />
+                          <span>{submission.assignment.title}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          Сдано: {formatDate(submission.submittedAt)}
-                        </span>
-                        {submission.gradedAt && (
-                          <span className="flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4" />
-                            Проверено: {formatDate(submission.gradedAt)}
-                          </span>
+                          <span>Сдано: {formatDate(submission.submittedAt)}</span>
+                        </div>
+                        
+                        {submission.assignment.dueDate && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>Дедлайн: {formatDate(submission.assignment.dueDate)}</span>
+                          </div>
                         )}
                       </div>
 
+                      {/* Группы */}
+                      {submission.groups.length > 0 && (
+                        <div className="flex items-center gap-2 mb-3">
+                          <Users className="w-4 h-4 text-gray-400" />
+                          <div className="flex flex-wrap gap-1">
+                            {submission.groups.map((group) => (
+                              <span
+                                key={group.id}
+                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                              >
+                                {group.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Содержимое сдачи */}
                       {submission.content && (
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                          <h4 className="font-medium text-gray-900 mb-2">Решение студента:</h4>
-                          <p className="text-gray-700 text-sm line-clamp-3">{submission.content}</p>
+                        <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                          <p className="text-sm text-gray-700 line-clamp-3">
+                            {submission.content}
+                          </p>
                         </div>
                       )}
 
-                      {submission.feedback && (
-                        <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                          <h4 className="font-medium text-gray-900 mb-2">Ваш комментарий:</h4>
-                          <p className="text-gray-700 text-sm">{submission.feedback}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col items-end gap-3 ml-6">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(submission)}`}>
-                        {getStatusIcon(submission)}
-                        {getStatusText(submission)}
-                      </span>
-
-                      <div className="flex gap-2">
-                        {submission.fileUrl && (
+                      {/* Файл */}
+                      {submission.fileUrl && (
+                        <div className="flex items-center gap-2 mb-3">
+                          <Download className="w-4 h-4 text-gray-400" />
                           <a
                             href={submission.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                            title="Скачать файл"
+                            className="text-sm text-blue-600 hover:text-blue-800"
                           >
-                            <Download className="w-4 h-4" />
+                            Скачать файл
                           </a>
-                        )}
-                        
+                        </div>
+                      )}
+
+                      {/* Оценка */}
+                      {submission.score !== null && (
+                        <div className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-yellow-600" />
+                          <span className="text-sm font-medium text-gray-900">
+                            Оценка: {submission.score}
+                            {submission.assignment.maxScore && `/${submission.assignment.maxScore}`}
+                          </span>
+                          {submission.gradedAt && (
+                            <span className="text-sm text-gray-600">
+                              ({formatDate(submission.gradedAt)})
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Обратная связь */}
+                      {submission.feedback && (
+                        <div className="mt-2 p-3 bg-yellow-50 rounded-lg">
+                          <p className="text-sm text-gray-700">
+                            <strong>Обратная связь:</strong> {submission.feedback}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-4">
+                      {!submission.gradedAt ? (
                         <button
                           onClick={() => openGradingModal(submission)}
-                          className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
-                          title={submission.gradedAt ? "Изменить оценку" : "Оценить"}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
-                          {submission.gradedAt ? <Edit className="w-4 h-4" /> : <GraduationCap className="w-4 h-4" />}
+                          <Edit className="w-4 h-4" />
+                          Проверить
                         </button>
-                      </div>
+                      ) : (
+                        <button
+                          onClick={() => openGradingModal(submission)}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Просмотреть
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Модальное окно оценивания */}
-      {showGradingModal && selectedSubmission && (
-        <GradingModal
-          submission={selectedSubmission}
-          onClose={() => {
-            setShowGradingModal(false)
-            setSelectedSubmission(null)
-          }}
-          onSuccess={() => {
-            setShowGradingModal(false)
-            setSelectedSubmission(null)
-            fetchSubmissions()
-          }}
-        />
-      )}
+        {/* Модальное окно оценки */}
+        {showGradingModal && selectedSubmission && (
+          <GradingModal
+            submission={selectedSubmission}
+            onClose={closeGradingModal}
+            onSuccess={handleGradingSuccess}
+          />
+        )}
+      </div>
     </div>
   )
 }
-
-

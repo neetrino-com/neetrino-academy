@@ -153,7 +153,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
         console.error('❌ [Assignment Page] Final error message:', errorMessage)
         
         alert(`Ошибка загрузки задания: ${errorMessage}`)
-        router.push('/assignments')
+        router.push('/dashboard/assignments')
       }
     } catch (error) {
       console.error('❌ [Assignment Page] Network error:', error)

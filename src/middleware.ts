@@ -67,7 +67,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Защита студенческих страниц
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/assignments') || pathname.startsWith('/calendar')) {
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/calendar')) {
     try {
       const session = await auth()
 
@@ -105,7 +105,6 @@ export const config = {
     '/api/:path*',
     '/admin/:path*',
     '/dashboard/:path*',
-    '/assignments/:path*',
     '/calendar/:path*'
   ]
 }
