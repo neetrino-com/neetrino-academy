@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
         status: ga.assignment.status,
         maxScore: ga.assignment.maxScore,
         source: 'group' as const,
-        course: ga.assignment.lesson.module.course,
+        course: ga.assignment.lesson?.module?.course || null,
         lesson: ga.assignment.lesson,
         creator: ga.assignment.creator,
         group: ga.group

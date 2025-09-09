@@ -129,7 +129,9 @@ export default function StudentAssignmentsPage() {
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          assignment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.course.title.toLowerCase().includes(searchTerm.toLowerCase())
+                         assignment.course?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         assignment.lesson?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         assignment.group?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesStatus = filter === 'all' || assignment.status === filter
     const matchesSource = sourceFilter === 'all' || assignment.source === sourceFilter
@@ -362,21 +364,25 @@ export default function StudentAssignmentsPage() {
                             )}
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                                <BookOpen className="w-5 h-5 text-blue-600" />
-                                <div>
-                                  <p className="text-sm text-gray-600">Курс</p>
-                                  <p className="font-semibold text-gray-900">{assignment.course.title}</p>
+                              {assignment.course && (
+                                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+                                  <BookOpen className="w-5 h-5 text-blue-600" />
+                                  <div>
+                                    <p className="text-sm text-gray-600">Курс</p>
+                                    <p className="font-semibold text-gray-900">{assignment.course.title}</p>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                               
-                              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
-                                <FileText className="w-5 h-5 text-green-600" />
-                                <div>
-                                  <p className="text-sm text-gray-600">Урок</p>
-                                  <p className="font-semibold text-gray-900">{assignment.lesson.title}</p>
+                              {assignment.lesson && (
+                                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+                                  <FileText className="w-5 h-5 text-green-600" />
+                                  <div>
+                                    <p className="text-sm text-gray-600">Урок</p>
+                                    <p className="font-semibold text-gray-900">{assignment.lesson.title}</p>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                               
                               {assignment.group && (
                                 <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
