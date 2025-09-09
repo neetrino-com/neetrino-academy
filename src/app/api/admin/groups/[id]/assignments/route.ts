@@ -82,29 +82,33 @@ export async function POST(
     }
 
     // Создаем задание
-    const assignment = await prisma.assignment.create({
-      data: {
-        title: title.trim(),
-        description: description?.trim() || null,
-        dueDate: new Date(dueDate),
-        lessonId: lessonId || null, // lessonId теперь опциональный
-        type: 'HOMEWORK',
-        status: 'PUBLISHED',
-        maxScore: 100,
-        createdBy: user.id,
-        creator: {
-          connect: {
-            id: user.id
-          }
-        },
-        ...(lessonId && {
-          lesson: {
-            connect: {
-              id: lessonId
-            }
-          }
-        })
+    const assignmentData: any = {
+      title: title.trim(),
+      description: description?.trim() || null,
+      dueDate: new Date(dueDate),
+      type: 'HOMEWORK',
+      status: 'PUBLISHED',
+      maxScore: 100,
+      createdBy: user.id,
+      creator: {
+        connect: {
+          id: user.id
+        }
       }
+    }
+
+    // Добавляем lessonId только если он предоставлен
+    if (lessonId) {
+      assignmentData.lessonId = lessonId
+      assignmentData.lesson = {
+        connect: {
+          id: lessonId
+        }
+      }
+    }
+
+    const assignment = await prisma.assignment.create({
+      data: assignmentData
     })
 
     // Назначаем задание группе
