@@ -20,7 +20,7 @@ import {
   Download
 } from 'lucide-react'
 import FileUpload from '@/components/ui/FileUpload'
-import { AppHeader } from '@/components/layout/AppHeader'
+// AppHeader импортируется через DynamicHeader в layout.tsx
 
 interface AssignmentDetailProps {
   params: Promise<{ id: string }>
@@ -292,7 +292,6 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <AppHeader />
       <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Заголовок */}

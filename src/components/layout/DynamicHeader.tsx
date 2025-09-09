@@ -27,6 +27,7 @@ export function DynamicHeader() {
   if (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/dashboard/assignments') ||
+    pathname.startsWith('/assignments') ||
     pathname.startsWith('/calendar') ||
     pathname.startsWith('/notifications') ||
     pathname.startsWith('/profile') ||
