@@ -456,8 +456,6 @@ export default function StudentAssignmentsPage() {
           </div>
         </div>
       </div>
-        </div>
-      </div>
     </div>
   )
 }
