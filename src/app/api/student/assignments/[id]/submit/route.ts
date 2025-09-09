@@ -13,10 +13,13 @@ export async function POST(
   { params }: { params: Params }
 ) {
   try {
+    console.log('🚀 [Submit API] Starting submission process')
     const session = await auth()
     if (!session?.user) {
+      console.log('❌ [Submit API] No session found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    console.log('✅ [Submit API] Session found for user:', session.user.email)
 
     // Получаем пользователя
     const user = await prisma.user.findUnique({
@@ -30,6 +33,10 @@ export async function POST(
     const { id: assignmentId } = await params
     const body = await request.json()
     const { content, fileUrl } = body
+
+    console.log('📝 [Submit API] Assignment ID:', assignmentId)
+    console.log('📝 [Submit API] Content length:', content?.length || 0)
+    console.log('📝 [Submit API] File URL:', fileUrl || 'none')
 
     // Проверяем доступ к заданию через курсы и группы
     const courseAssignment = await prisma.assignment.findFirst({
@@ -77,7 +84,11 @@ export async function POST(
       }
     })
 
+    console.log('🔍 [Submit API] Course assignment found:', !!courseAssignment)
+    console.log('🔍 [Submit API] Group assignment found:', !!groupAssignment)
+
     if (!courseAssignment && !groupAssignment) {
+      console.log('❌ [Submit API] No access found for assignment')
       return NextResponse.json({ 
         error: 'Assignment not found or access denied' 
       }, { status: 404 })
@@ -176,7 +187,8 @@ export async function POST(
       })
     }
   } catch (error) {
-    console.error('Error submitting assignment:', error)
+    console.error('❌ [Submit API] Error submitting assignment:', error)
+    console.error('❌ [Submit API] Error stack:', error instanceof Error ? error.stack : 'No stack')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
