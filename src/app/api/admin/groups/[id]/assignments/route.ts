@@ -100,11 +100,6 @@ export async function POST(
     // Добавляем lessonId только если он предоставлен
     if (lessonId) {
       assignmentData.lessonId = lessonId
-      assignmentData.lesson = {
-        connect: {
-          id: lessonId
-        }
-      }
     }
 
     const assignment = await prisma.assignment.create({
