@@ -13,6 +13,9 @@ export async function POST(
   { params }: { params: Params }
 ) {
   console.log('🚀 [Submit API] ROUTE CALLED!')
+  console.log('🚀 [Submit API] Request URL:', request.url)
+  console.log('🚀 [Submit API] Request method:', request.method)
+  console.log('🚀 [Submit API] Request headers:', Object.fromEntries(request.headers.entries()))
   try {
     console.log('🚀 [Submit API] Starting submission process')
     const session = await auth()
@@ -33,6 +36,19 @@ export async function POST(
     }
     console.log('✅ [Submit API] User found:', user.id, user.name)
 
+    // Проверим схему Prisma
+    console.log('🔍 [Submit API] Checking Prisma schema...')
+    try {
+      const testQuery = await prisma.lesson.findFirst({
+        include: {
+          module: true
+        }
+      })
+      console.log('✅ [Submit API] Prisma schema test successful:', !!testQuery)
+    } catch (schemaError) {
+      console.error('❌ [Submit API] Prisma schema test failed:', schemaError)
+    }
+
     const resolvedParams = await params
     const assignmentId = resolvedParams.id
     
@@ -50,51 +66,101 @@ export async function POST(
     console.log('📝 [Submit API] Content length:', content?.length || 0)
     console.log('📝 [Submit API] File URL:', fileUrl || 'none')
 
-    // Проверяем доступ к заданию через курсы и группы
-    const courseAssignment = await prisma.assignment.findFirst({
-      where: {
-        id: assignmentId,
+    // Сначала проверим, существует ли задание
+    console.log('🔍 [Submit API] Checking if assignment exists...')
+    const assignmentExists = await prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: {
         lesson: {
-          module: {
-            course: {
-              enrollments: {
-                some: {
-                  userId: user.id,
-                  status: 'ACTIVE'
+          include: {
+            module: {
+              include: {
+                course: true
+              }
+            }
+          }
+        }
+      }
+    })
+    console.log('🔍 [Submit API] Assignment exists:', !!assignmentExists)
+    if (assignmentExists) {
+      console.log('🔍 [Submit API] Assignment lesson module course:', assignmentExists.lesson?.module?.course?.title)
+    }
+
+    // Проверяем доступ к заданию через курсы и группы
+    console.log('🔍 [Submit API] Checking course assignment access...')
+    let courseAssignment = null
+    try {
+      // Сначала найдем задание
+      const assignment = await prisma.assignment.findUnique({
+        where: { id: assignmentId },
+        include: {
+          lesson: {
+            include: {
+              module: {
+                include: {
+                  course: true
                 }
               }
             }
           }
         }
-      },
-      include: {
-        lesson: {
-          module: {
-            course: true
+      })
+      
+      if (assignment?.lesson?.module?.course) {
+        // Проверим, есть ли у пользователя доступ к курсу
+        const enrollment = await prisma.enrollment.findFirst({
+          where: {
+            userId: user.id,
+            courseId: assignment.lesson.module.course.id,
+            status: 'ACTIVE'
           }
+        })
+        
+        if (enrollment) {
+          courseAssignment = assignment
+          console.log('✅ [Submit API] Course assignment access granted')
+        } else {
+          console.log('❌ [Submit API] No course enrollment found')
         }
+      } else {
+        console.log('❌ [Submit API] Assignment not linked to course')
       }
-    })
+    } catch (error) {
+      console.error('❌ [Submit API] Error checking course assignment:', error)
+    }
 
-    const groupAssignment = await prisma.groupAssignment.findFirst({
-      where: {
-        assignment: {
-          id: assignmentId
-        },
-        group: {
-          students: {
-            some: {
-              userId: user.id,
-              status: 'ACTIVE'
+    console.log('🔍 [Submit API] Checking group assignment access...')
+    let groupAssignment = null
+    try {
+      groupAssignment = await prisma.groupAssignment.findFirst({
+        where: {
+          assignment: {
+            id: assignmentId
+          },
+          group: {
+            students: {
+              some: {
+                userId: user.id,
+                status: 'ACTIVE'
+              }
             }
           }
+        },
+        include: {
+          assignment: true,
+          group: true
         }
-      },
-      include: {
-        assignment: true,
-        group: true
+      })
+      
+      if (groupAssignment) {
+        console.log('✅ [Submit API] Group assignment access granted')
+      } else {
+        console.log('❌ [Submit API] No group assignment access found')
       }
-    })
+    } catch (error) {
+      console.error('❌ [Submit API] Error checking group assignment:', error)
+    }
 
     console.log('🔍 [Submit API] Course assignment found:', !!courseAssignment)
     console.log('🔍 [Submit API] Group assignment found:', !!groupAssignment)
@@ -148,6 +214,7 @@ export async function POST(
       // Уведомляем преподавателей о повторной сдаче
       try {
         if (groupAssignment) {
+          console.log('🔔 [Submit API] Sending notification for group assignment')
           await notifyGroupTeachersAboutSubmission(
             groupAssignment.group.id,
             groupAssignment.assignment.title,
@@ -155,10 +222,12 @@ export async function POST(
             assignmentId,
             updatedSubmission.id
           )
+          console.log('✅ [Submit API] Notification sent successfully')
         }
         // Для заданий из курсов уведомления пока не реализованы
       } catch (notificationError) {
-        console.error('Error sending notifications:', notificationError)
+        console.error('❌ [Submit API] Error sending notifications:', notificationError)
+        // Не прерываем выполнение из-за ошибки уведомлений
       }
 
       return NextResponse.json({
@@ -180,6 +249,7 @@ export async function POST(
       // Уведомляем преподавателей о новой сдаче
       try {
         if (groupAssignment) {
+          console.log('🔔 [Submit API] Sending notification for new group assignment')
           await notifyGroupTeachersAboutSubmission(
             groupAssignment.group.id,
             groupAssignment.assignment.title,
@@ -187,10 +257,12 @@ export async function POST(
             assignmentId,
             newSubmission.id
           )
+          console.log('✅ [Submit API] Notification sent successfully')
         }
         // Для заданий из курсов уведомления пока не реализованы
       } catch (notificationError) {
-        console.error('Error sending notifications:', notificationError)
+        console.error('❌ [Submit API] Error sending notifications:', notificationError)
+        // Не прерываем выполнение из-за ошибки уведомлений
       }
 
       return NextResponse.json({
@@ -201,6 +273,8 @@ export async function POST(
   } catch (error) {
     console.error('❌ [Submit API] Error submitting assignment:', error)
     console.error('❌ [Submit API] Error stack:', error instanceof Error ? error.stack : 'No stack')
+    console.error('❌ [Submit API] Error name:', error instanceof Error ? error.name : 'Unknown')
+    console.error('❌ [Submit API] Error message:', error instanceof Error ? error.message : 'Unknown')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

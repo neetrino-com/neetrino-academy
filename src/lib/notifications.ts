@@ -7,6 +7,13 @@ export type NotificationType =
   | 'DEADLINE_REMINDER'
   | 'COURSE_ASSIGNED'
   | 'GROUP_ADDED'
+  | 'NEW_MESSAGE'
+  | 'EVENT_REMINDER'
+  | 'EVENT_CANCELLED'
+  | 'EVENT_UPDATED'
+  | 'PAYMENT_REMINDER'
+  | 'PAYMENT_OVERDUE'
+  | 'PAYMENT_SUCCESSFUL'
 
 interface CreateNotificationParams {
   userId: string

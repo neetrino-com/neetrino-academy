@@ -186,12 +186,15 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
     console.log('🚀 [Assignment Page] Submitting assignment:', resolvedParams.id)
     console.log('🚀 [Assignment Page] Content:', content.trim())
     console.log('🚀 [Assignment Page] File URL:', fileUrl)
+    console.log('🚀 [Assignment Page] Session status:', status)
+    console.log('🚀 [Assignment Page] Session data:', session)
 
     const submitUrl = `/api/student/assignments/${resolvedParams.id}/submit`
     console.log('🚀 [Assignment Page] Submit URL:', submitUrl)
 
     setSubmitting(true)
     try {
+      console.log('🚀 [Assignment Page] Making fetch request...')
       const response = await fetch(submitUrl, {
         method: 'POST',
         headers: {
@@ -202,6 +205,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
           fileUrl: fileUrl
         })
       })
+      console.log('🚀 [Assignment Page] Response received:', response.status)
 
       if (response.ok) {
         const result = await response.json()
