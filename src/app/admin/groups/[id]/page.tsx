@@ -83,10 +83,13 @@ interface GroupAssignment {
     title: string
     description: string
     dueDate: string
-    module: {
+    lesson: {
       title: string
-      course: {
+      module: {
         title: string
+        course: {
+          title: string
+        }
       }
     }
   }

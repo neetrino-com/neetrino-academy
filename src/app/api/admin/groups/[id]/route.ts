@@ -77,12 +77,17 @@ export async function GET(
                 title: true,
                 description: true,
                 dueDate: true,
-                module: {
+                lesson: {
                   select: {
                     title: true,
-                    course: {
+                    module: {
                       select: {
-                        title: true
+                        title: true,
+                        course: {
+                          select: {
+                            title: true
+                          }
+                        }
                       }
                     }
                   }
