@@ -20,6 +20,7 @@ import {
   Download
 } from 'lucide-react'
 import FileUpload from '@/components/ui/FileUpload'
+import AppHeader from '@/components/layout/AppHeader'
 
 interface AssignmentDetailProps {
   params: Promise<{ id: string }>
@@ -274,6 +275,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <AppHeader />
       <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Заголовок */}
@@ -289,7 +291,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                 <h1 className="text-4xl font-bold mb-3">
                   {assignment.assignment.title}
                 </h1>
-                <div className="flex items-center gap-6 text-lg text-blue-100">
+                <div className="flex flex-wrap items-center gap-4 text-lg text-blue-100">
                   <span className="flex items-center gap-2">
                     <BookOpen className="w-5 h-5" />
                     {assignment.assignment.course.title}
@@ -307,7 +309,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
             </div>
             
             {/* Статус и дедлайн */}
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Calendar className="w-5 h-5 text-white" />
@@ -326,7 +328,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                 </div>
                 <div>
                   <p className="text-sm text-blue-100">Статус</p>
-                  <p className={`font-semibold ${timeInfo.color.replace('text-', 'text-')}`}>
+                  <p className={`font-semibold text-white`}>
                     {timeInfo.text}
                   </p>
                 </div>
@@ -346,11 +348,11 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
             {/* Основное содержимое */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="xl:col-span-3 space-y-6">
               {/* Информация о задании */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-8">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="p-4 bg-amber-100 rounded-2xl">
                     <Target className="w-6 h-6 text-amber-600" />
@@ -359,9 +361,9 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                 </div>
                 
                 {assignment.assignment.description ? (
-                  <div className="prose prose-lg max-w-none text-gray-700">
+                  <div className="prose prose-lg max-w-none text-gray-800">
                     {assignment.assignment.description.split('\n').map((line, index) => (
-                      <p key={index} className="mb-4 leading-relaxed text-lg">{line}</p>
+                      <p key={index} className="mb-4 leading-relaxed text-lg font-medium">{line}</p>
                     ))}
                   </div>
                 ) : (
@@ -379,7 +381,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                       </div>
                       <div>
                         <h3 className="text-2xl font-bold text-gray-900">Ваша сдача</h3>
-                        <p className="text-gray-600">
+                        <p className="text-gray-700 font-medium">
                           Сдано {formatDate(assignment.submission.submittedAt)}
                         </p>
                       </div>
@@ -388,21 +390,21 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                   
                   {assignment.submission.content && (
                     <div className="mb-6">
-                      <p className="text-lg font-semibold text-gray-700 mb-3">Текст решения:</p>
-                      <div className="bg-white/60 rounded-xl p-6 border border-white/40">
-                        <pre className="whitespace-pre-wrap text-gray-800 text-lg leading-relaxed font-sans">{assignment.submission.content}</pre>
+                      <p className="text-lg font-semibold text-gray-800 mb-3">Текст решения:</p>
+                      <div className="bg-white/80 rounded-xl p-6 border border-white/60">
+                        <pre className="whitespace-pre-wrap text-gray-900 text-lg leading-relaxed font-sans font-medium">{assignment.submission.content}</pre>
                       </div>
                     </div>
                   )}
                   
                   {assignment.submission.fileUrl && (
                     <div className="mb-6">
-                      <p className="text-lg font-semibold text-gray-700 mb-3">Прикрепленный файл:</p>
+                      <p className="text-lg font-semibold text-gray-800 mb-3">Прикрепленный файл:</p>
                       <a
                         href={assignment.submission.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-3 px-6 py-3 bg-white/60 rounded-xl border border-white/40 hover:bg-white/80 transition-colors text-blue-600 hover:text-blue-800 font-semibold"
+                        className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 rounded-xl border border-white/60 hover:bg-white/90 transition-colors text-blue-600 hover:text-blue-800 font-semibold"
                       >
                         <Download className="w-5 h-5" />
                         Скачать файл
@@ -412,7 +414,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                   
                   {assignment.submission.score !== null && (
                     <div className="mb-6">
-                      <p className="text-lg font-semibold text-gray-700 mb-3">Оценка:</p>
+                      <p className="text-lg font-semibold text-gray-800 mb-3">Оценка:</p>
                       <div className="flex items-center gap-4">
                         <div className="p-4 bg-yellow-100 rounded-2xl">
                           <Target className="w-6 h-6 text-yellow-600" />
@@ -432,9 +434,9 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                   
                   {assignment.submission.feedback && (
                     <div className="mb-6">
-                      <p className="text-lg font-semibold text-gray-700 mb-3">Обратная связь от преподавателя:</p>
-                      <div className="bg-white/60 rounded-xl p-6 border border-white/40">
-                        <p className="text-gray-800 text-lg leading-relaxed">{assignment.submission.feedback}</p>
+                      <p className="text-lg font-semibold text-gray-800 mb-3">Обратная связь от преподавателя:</p>
+                      <div className="bg-white/80 rounded-xl p-6 border border-white/60">
+                        <p className="text-gray-900 text-lg leading-relaxed font-medium">{assignment.submission.feedback}</p>
                       </div>
                     </div>
                   )}
@@ -443,7 +445,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
 
               {/* Форма сдачи */}
               {!showSubmissionForm ? (
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-8">
                   <div className="text-center">
                     {canSubmit() ? (
                       <>
@@ -453,7 +455,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">
                           {assignment.submission ? 'Изменить сдачу' : 'Сдать задание'}
                         </h3>
-                        <p className="text-gray-600 mb-8 text-lg">
+                        <p className="text-gray-700 mb-8 text-lg font-medium">
                           {assignment.submission 
                             ? 'Вы можете изменить своё решение до истечения дедлайна'
                             : 'Добавьте текст решения или прикрепите файл'
@@ -473,7 +475,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                           <AlertCircle className="w-12 h-12 text-red-600" />
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">Дедлайн истёк</h3>
-                        <p className="text-gray-600 text-lg">
+                        <p className="text-gray-700 text-lg font-medium">
                           Срок сдачи задания уже прошел. Обратитесь к преподавателю для уточнения возможности сдачи.
                         </p>
                       </>
@@ -553,36 +555,36 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
             {/* Боковая панель */}
             <div className="space-y-6">
               {/* Информация о дедлайне */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Информация о задании</h3>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Информация о задании</h3>
               
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl">
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                    <Calendar className="w-5 h-5 text-blue-600" />
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">Дедлайн</p>
-                      <p className="font-semibold text-gray-900 text-lg">
+                      <p className="text-xs text-gray-600 mb-1">Дедлайн</p>
+                      <p className="font-semibold text-gray-900 text-sm">
                         {assignment.assignment.dueDate ? formatDate(assignment.assignment.dueDate) : 'Без дедлайна'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl">
-                    <Clock className="w-6 h-6 text-orange-600" />
+                  <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
+                    <Clock className="w-5 h-5 text-orange-600" />
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">Осталось времени</p>
-                      <p className={`font-semibold text-lg ${timeInfo.color}`}>
+                      <p className="text-xs text-gray-600 mb-1">Осталось времени</p>
+                      <p className={`font-semibold text-sm ${timeInfo.color}`}>
                         {timeInfo.text}
                       </p>
                     </div>
                   </div>
 
                   {assignment.submission && (
-                    <div className="flex items-center gap-4 p-4 bg-green-50 rounded-xl">
-                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
                       <div>
-                        <p className="text-sm text-gray-600 mb-1">Статус</p>
-                        <p className="font-semibold text-green-600 text-lg">
+                        <p className="text-xs text-gray-600 mb-1">Статус</p>
+                        <p className="font-semibold text-green-600 text-sm">
                           {assignment.submission.gradedAt ? 'Проверено' : 'Сдано'}
                         </p>
                       </div>
@@ -592,27 +594,27 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
             </div>
 
               {/* Курс и модуль */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Детали курса</h3>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Детали курса</h3>
                 
-                <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-xl">
-                    <p className="text-sm text-gray-600 mb-1">Курс</p>
-                    <p className="font-semibold text-gray-900 text-lg">
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Курс</p>
+                    <p className="font-semibold text-gray-900 text-sm">
                       {assignment.assignment.course.title}
                     </p>
                   </div>
                   
-                  <div className="p-4 bg-green-50 rounded-xl">
-                    <p className="text-sm text-gray-600 mb-1">Модуль</p>
-                    <p className="font-semibold text-gray-900 text-lg">
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Модуль</p>
+                    <p className="font-semibold text-gray-900 text-sm">
                       {assignment.assignment.lesson.module.title}
                     </p>
                   </div>
 
-                  <div className="p-4 bg-purple-50 rounded-xl">
-                    <p className="text-sm text-gray-600 mb-1">Группа</p>
-                    <p className="font-semibold text-gray-900 text-lg">
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Группа</p>
+                    <p className="font-semibold text-gray-900 text-sm">
                       {assignment.assignment.group?.name || 'Из курса'}
                     </p>
                   </div>
