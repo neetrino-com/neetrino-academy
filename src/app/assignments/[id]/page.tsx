@@ -273,153 +273,213 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
   const timeInfo = getDaysUntilDue(assignment.assignment.dueDate)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Заголовок */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/assignments')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">
-                {assignment.assignment.title}
-              </h1>
-              <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                <span className="flex items-center gap-1">
-                  <BookOpen className="w-4 h-4" />
-                  {assignment.assignment.course.title} • {assignment.assignment.lesson.module.title}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {assignment.assignment.group?.name || 'Из курса'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Основное содержимое */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Информация о задании */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Target className="w-5 h-5 text-amber-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">Описание задания</h2>
-              </div>
-              
-              {assignment.assignment.description ? (
-                <div className="prose prose-sm max-w-none text-gray-700">
-                  {assignment.assignment.description.split('\n').map((line, index) => (
-                    <p key={index} className="mb-3 leading-relaxed">{line}</p>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 italic">Описание задания отсутствует</p>
-              )}
-            </div>
-
-            {/* Текущая сдача */}
-            {assignment.submission && (
-              <div className="bg-white rounded-xl shadow-sm border p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Ваша сдача</h2>
-                  <span className="text-sm text-gray-600">
-                    Сдано: {formatDate(assignment.submission.submittedAt)}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {/* Заголовок */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl p-8 mb-8 text-white">
+            <div className="flex items-center gap-4 mb-6">
+              <button
+                onClick={() => router.push('/dashboard/assignments')}
+                className="p-3 bg-white/20 rounded-xl backdrop-blur-sm hover:bg-white/30 transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-white" />
+              </button>
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold mb-3">
+                  {assignment.assignment.title}
+                </h1>
+                <div className="flex items-center gap-6 text-lg text-blue-100">
+                  <span className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    {assignment.assignment.course.title}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    {assignment.assignment.lesson.module.title}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    {assignment.assignment.group?.name || 'Из курса'}
                   </span>
                 </div>
-
-                {assignment.submission.content && (
-                  <div className="mb-4">
-                    <h3 className="font-medium text-gray-900 mb-2">Текст решения:</h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <pre className="whitespace-pre-wrap text-gray-700 font-sans">{assignment.submission.content}</pre>
-                    </div>
-                  </div>
-                )}
-
-                {assignment.submission.fileUrl && (
-                  <div className="mb-4">
-                    <h3 className="font-medium text-gray-900 mb-2">Прикрепленный файл:</h3>
-                    <a
-                      href={assignment.submission.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-                    >
-                      <Download className="w-4 h-4 text-blue-600" />
-                      <span className="text-blue-600">Скачать файл</span>
-                    </a>
-                  </div>
-                )}
-
-                {assignment.submission.score !== null && (
-                  <div className="mb-4">
-                    <h3 className="font-medium text-gray-900 mb-2">Оценка:</h3>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      assignment.submission.score >= 4 ? 'bg-green-100 text-green-800' :
-                      assignment.submission.score >= 3 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {assignment.submission.score}/5
-                    </span>
-                  </div>
-                )}
-
-                {assignment.submission.feedback && (
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Обратная связь от преподавателя:</h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-gray-700">{assignment.submission.feedback}</p>
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
-
-            {/* Форма сдачи */}
-            {!showSubmissionForm ? (
-              <div className="bg-white rounded-xl shadow-sm border p-6">
-                <div className="text-center">
-                  {canSubmit() ? (
-                    <>
-                      <Target className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {assignment.submission ? 'Изменить сдачу' : 'Сдать задание'}
-                      </h3>
-                      <p className="text-gray-600 mb-6">
-                        {assignment.submission 
-                          ? 'Вы можете изменить своё решение до истечения дедлайна'
-                          : 'Добавьте текст решения или прикрепите файл'
-                        }
-                      </p>
-                      <button
-                        onClick={() => setShowSubmissionForm(true)}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 mx-auto"
-                      >
-                        <Upload className="w-5 h-5" />
-                        {assignment.submission ? 'Изменить сдачу' : 'Сдать задание'}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-300" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Дедлайн истек</h3>
-                      <p className="text-gray-600">
-                        Срок сдачи задания уже прошел. Обратитесь к преподавателю для уточнения возможности сдачи.
-                      </p>
-                    </>
-                  )}
+            </div>
+            
+            {/* Статус и дедлайн */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-100">Дедлайн</p>
+                  <p className="font-semibold text-white">
+                    {assignment.assignment.dueDate ? formatDate(assignment.assignment.dueDate) : 'Без дедлайна'}
+                  </p>
                 </div>
               </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-100">Статус</p>
+                  <p className={`font-semibold ${timeInfo.color.replace('text-', 'text-')}`}>
+                    {timeInfo.text}
+                  </p>
+                </div>
+              </div>
+              
+              {assignment.assignment.maxScore && (
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-100">Макс. балл</p>
+                    <p className="font-semibold text-white">{assignment.assignment.maxScore}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Основное содержимое */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Информация о задании */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-4 bg-amber-100 rounded-2xl">
+                    <Target className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Описание задания</h2>
+                </div>
+                
+                {assignment.assignment.description ? (
+                  <div className="prose prose-lg max-w-none text-gray-700">
+                    {assignment.assignment.description.split('\n').map((line, index) => (
+                      <p key={index} className="mb-4 leading-relaxed text-lg">{line}</p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 italic text-lg">Описание задания отсутствует</p>
+                )}
+              </div>
+
+              {/* Текущая сдача */}
+              {assignment.submission && (
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl shadow-lg border border-green-200 p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-4 bg-green-100 rounded-2xl">
+                        <CheckCircle className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">Ваша сдача</h3>
+                        <p className="text-gray-600">
+                          Сдано {formatDate(assignment.submission.submittedAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {assignment.submission.content && (
+                    <div className="mb-6">
+                      <p className="text-lg font-semibold text-gray-700 mb-3">Текст решения:</p>
+                      <div className="bg-white/60 rounded-xl p-6 border border-white/40">
+                        <pre className="whitespace-pre-wrap text-gray-800 text-lg leading-relaxed font-sans">{assignment.submission.content}</pre>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {assignment.submission.fileUrl && (
+                    <div className="mb-6">
+                      <p className="text-lg font-semibold text-gray-700 mb-3">Прикрепленный файл:</p>
+                      <a
+                        href={assignment.submission.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-3 px-6 py-3 bg-white/60 rounded-xl border border-white/40 hover:bg-white/80 transition-colors text-blue-600 hover:text-blue-800 font-semibold"
+                      >
+                        <Download className="w-5 h-5" />
+                        Скачать файл
+                      </a>
+                    </div>
+                  )}
+                  
+                  {assignment.submission.score !== null && (
+                    <div className="mb-6">
+                      <p className="text-lg font-semibold text-gray-700 mb-3">Оценка:</p>
+                      <div className="flex items-center gap-4">
+                        <div className="p-4 bg-yellow-100 rounded-2xl">
+                          <Target className="w-6 h-6 text-yellow-600" />
+                        </div>
+                        <div>
+                          <span className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-bold ${
+                            assignment.submission.score >= 4 ? 'bg-green-100 text-green-800' :
+                            assignment.submission.score >= 3 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {assignment.submission.score}/5
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {assignment.submission.feedback && (
+                    <div className="mb-6">
+                      <p className="text-lg font-semibold text-gray-700 mb-3">Обратная связь от преподавателя:</p>
+                      <div className="bg-white/60 rounded-xl p-6 border border-white/40">
+                        <p className="text-gray-800 text-lg leading-relaxed">{assignment.submission.feedback}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Форма сдачи */}
+              {!showSubmissionForm ? (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+                  <div className="text-center">
+                    {canSubmit() ? (
+                      <>
+                        <div className="p-6 bg-blue-100 rounded-2xl w-fit mx-auto mb-6">
+                          <Target className="w-12 h-12 text-blue-600" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                          {assignment.submission ? 'Изменить сдачу' : 'Сдать задание'}
+                        </h3>
+                        <p className="text-gray-600 mb-8 text-lg">
+                          {assignment.submission 
+                            ? 'Вы можете изменить своё решение до истечения дедлайна'
+                            : 'Добавьте текст решения или прикрепите файл'
+                          }
+                        </p>
+                        <button
+                          onClick={() => setShowSubmissionForm(true)}
+                          className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex items-center gap-3 mx-auto font-semibold text-lg"
+                        >
+                          <Upload className="w-6 h-6" />
+                          {assignment.submission ? 'Изменить сдачу' : 'Сдать задание'}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="p-6 bg-red-100 rounded-2xl w-fit mx-auto mb-6">
+                          <AlertCircle className="w-12 h-12 text-red-600" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">Дедлайн истёк</h3>
+                        <p className="text-gray-600 text-lg">
+                          Срок сдачи задания уже прошел. Обратитесь к преподавателю для уточнения возможности сдачи.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
             ) : (
               <div className="bg-white rounded-xl shadow-sm border p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -490,71 +550,72 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
             )}
           </div>
 
-          {/* Боковая панель */}
-          <div className="space-y-6">
-            {/* Информация о дедлайне */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Информация о задании</h3>
+            {/* Боковая панель */}
+            <div className="space-y-6">
+              {/* Информация о дедлайне */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Информация о задании</h3>
               
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <Calendar className="w-4 h-4" />
-                    Дедлайн
-                  </div>
-                  <p className="font-medium text-gray-900">
-                    {assignment.assignment.dueDate ? formatDate(assignment.assignment.dueDate) : 'Без дедлайна'}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <Clock className="w-4 h-4" />
-                    Осталось времени
-                  </div>
-                  <p className={`font-medium ${timeInfo.color}`}>
-                    {timeInfo.text}
-                  </p>
-                </div>
-
-                {assignment.submission && (
-                  <div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                      <CheckCircle className="w-4 h-4" />
-                      Статус
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Дедлайн</p>
+                      <p className="font-semibold text-gray-900 text-lg">
+                        {assignment.assignment.dueDate ? formatDate(assignment.assignment.dueDate) : 'Без дедлайна'}
+                      </p>
                     </div>
-                    <p className="font-medium text-green-600">
-                      {assignment.submission.gradedAt ? 'Проверено' : 'Сдано'}
-                    </p>
                   </div>
-                )}
-              </div>
+
+                  <div className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl">
+                    <Clock className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Осталось времени</p>
+                      <p className={`font-semibold text-lg ${timeInfo.color}`}>
+                        {timeInfo.text}
+                      </p>
+                    </div>
+                  </div>
+
+                  {assignment.submission && (
+                    <div className="flex items-center gap-4 p-4 bg-green-50 rounded-xl">
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Статус</p>
+                        <p className="font-semibold text-green-600 text-lg">
+                          {assignment.submission.gradedAt ? 'Проверено' : 'Сдано'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
             </div>
 
-            {/* Курс и модуль */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Курс</h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Курс</p>
-                  <p className="font-medium text-gray-900">
-                    {assignment.assignment.course.title}
-                  </p>
-                </div>
+              {/* Курс и модуль */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Детали курса</h3>
                 
-                <div>
-                  <p className="text-sm text-gray-600">Модуль</p>
-                  <p className="font-medium text-gray-900">
-                    {assignment.assignment.lesson.module.title}
-                  </p>
-                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">Курс</p>
+                    <p className="font-semibold text-gray-900 text-lg">
+                      {assignment.assignment.course.title}
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-green-50 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">Модуль</p>
+                    <p className="font-semibold text-gray-900 text-lg">
+                      {assignment.assignment.lesson.module.title}
+                    </p>
+                  </div>
 
-                <div>
-                  <p className="text-sm text-gray-600">Группа</p>
-                  <p className="font-medium text-gray-900">
-                    {assignment.assignment.group?.name || 'Из курса'}
-                  </p>
+                  <div className="p-4 bg-purple-50 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">Группа</p>
+                    <p className="font-semibold text-gray-900 text-lg">
+                      {assignment.assignment.group?.name || 'Из курса'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
