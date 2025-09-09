@@ -28,27 +28,34 @@ interface AssignmentDetailProps {
 interface AssignmentDetail {
   assignment: {
     id: string
-    assignmentId: string
-    dueDate: string
-    assignedAt: string
-    assignment: {
+    title: string
+    description: string | null
+    dueDate: string | null
+    type: string
+    status: string
+    maxScore: number | null
+    source: 'course' | 'group'
+    course: {
       id: string
       title: string
-      description: string | null
-      dueDate: string
-      lesson: {
+      direction: string
+    }
+    lesson: {
+      id: string
+      title: string
+      module: {
         title: string
-        module: {
-          title: string
-          course: {
-            title: string
-          }
-        }
       }
     }
-    group: {
+    creator: {
+      id: string
       name: string
+      email: string
     }
+    group: {
+      id: string
+      name: string
+    } | null
   }
   submission: {
     id: string
@@ -210,7 +217,9 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
     })
   }
 
-  const getDaysUntilDue = (dueDate: string) => {
+  const getDaysUntilDue = (dueDate: string | null) => {
+    if (!dueDate) return { text: 'Без дедлайна', color: 'text-gray-600' }
+    
     const now = new Date()
     const due = new Date(dueDate)
     const diffTime = due.getTime() - now.getTime()
@@ -224,7 +233,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
   }
 
   const isOverdue = () => {
-    if (!assignment) return false
+    if (!assignment || !assignment.assignment.dueDate) return false
     return new Date() > new Date(assignment.assignment.dueDate)
   }
 
@@ -277,16 +286,16 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
             </button>
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900">
-                {assignment.assignment.assignment.title}
+                {assignment.assignment.title}
               </h1>
               <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                 <span className="flex items-center gap-1">
                   <BookOpen className="w-4 h-4" />
-                  {assignment.assignment.assignment.lesson.module.course.title} • {assignment.assignment.assignment.lesson.module.title}
+                  {assignment.assignment.course.title} • {assignment.assignment.lesson.module.title}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="w-4 h-4" />
-                  {assignment.assignment.group.name}
+                  {assignment.assignment.group?.name || 'Из курса'}
                 </span>
               </div>
             </div>
@@ -307,9 +316,9 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                 <h2 className="text-xl font-semibold text-gray-900">Описание задания</h2>
               </div>
               
-              {assignment.assignment.assignment.description ? (
+              {assignment.assignment.description ? (
                 <div className="prose prose-sm max-w-none text-gray-700">
-                  {assignment.assignment.assignment.description.split('\n').map((line, index) => (
+                  {assignment.assignment.description.split('\n').map((line, index) => (
                     <p key={index} className="mb-3 leading-relaxed">{line}</p>
                   ))}
                 </div>
@@ -494,7 +503,7 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                     Дедлайн
                   </div>
                   <p className="font-medium text-gray-900">
-                    {formatDate(assignment.assignment.dueDate)}
+                    {assignment.assignment.dueDate ? formatDate(assignment.assignment.dueDate) : 'Без дедлайна'}
                   </p>
                 </div>
 
@@ -530,21 +539,21 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
                 <div>
                   <p className="text-sm text-gray-600">Курс</p>
                   <p className="font-medium text-gray-900">
-                    {assignment.assignment.assignment.lesson.module.course.title}
+                    {assignment.assignment.course.title}
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-600">Модуль</p>
                   <p className="font-medium text-gray-900">
-                    {assignment.assignment.assignment.lesson.module.title}
+                    {assignment.assignment.lesson.module.title}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm text-gray-600">Группа</p>
                   <p className="font-medium text-gray-900">
-                    {assignment.assignment.group.name}
+                    {assignment.assignment.group?.name || 'Из курса'}
                   </p>
                 </div>
               </div>

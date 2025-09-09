@@ -48,8 +48,53 @@ export async function GET(
       return NextResponse.json({ error: 'Assignment ID is required' }, { status: 400 })
     }
 
-    // Проверяем доступ к заданию
-    console.log('🔍 [Assignment API] Searching for groupAssignment...')
+    // Проверяем доступ к заданию (из курсов или групп)
+    console.log('🔍 [Assignment API] Searching for assignment access...')
+    
+    // 1. Проверяем доступ через курсы
+    const courseAssignment = await prisma.assignment.findFirst({
+      where: {
+        id: assignmentId,
+        lesson: {
+          module: {
+            course: {
+              enrollments: {
+                some: {
+                  userId: user.id,
+                  status: 'ACTIVE'
+                }
+              }
+            }
+          }
+        }
+      },
+      include: {
+        lesson: {
+          include: {
+            module: {
+              include: {
+                course: {
+                  select: {
+                    id: true,
+                    title: true,
+                    direction: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    // 2. Проверяем доступ через группы
     const groupAssignment = await prisma.groupAssignment.findFirst({
       where: {
         assignment: {
@@ -73,32 +118,80 @@ export async function GET(
                   include: {
                     course: {
                       select: {
-                        title: true
+                        id: true,
+                        title: true,
+                        direction: true
                       }
                     }
                   }
                 }
+              }
+            },
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                email: true
               }
             }
           }
         },
         group: {
           select: {
+            id: true,
             name: true
           }
         }
       }
     })
-    console.log('🔍 [Assignment API] GroupAssignment query completed')
 
-    if (!groupAssignment) {
-      console.log('❌ [Assignment API] GroupAssignment not found for assignment:', assignmentId)
+    console.log('🔍 [Assignment API] Course assignment found:', !!courseAssignment)
+    console.log('🔍 [Assignment API] Group assignment found:', !!groupAssignment)
+
+    if (!courseAssignment && !groupAssignment) {
+      console.log('❌ [Assignment API] No access found for assignment:', assignmentId)
       return NextResponse.json({ 
         error: 'Assignment not found or access denied' 
       }, { status: 404 })
     }
 
-    console.log('✅ [Assignment API] GroupAssignment found:', groupAssignment.id)
+    // Определяем источник задания и формируем результат
+    let assignmentData
+    if (groupAssignment) {
+      // Приоритет у группового задания
+      assignmentData = {
+        id: groupAssignment.assignment.id,
+        title: groupAssignment.assignment.title,
+        description: groupAssignment.assignment.description,
+        dueDate: groupAssignment.dueDate, // Используем дату из GroupAssignment
+        type: groupAssignment.assignment.type,
+        status: groupAssignment.assignment.status,
+        maxScore: groupAssignment.assignment.maxScore,
+        source: 'group',
+        course: groupAssignment.assignment.lesson.module.course,
+        lesson: groupAssignment.assignment.lesson,
+        creator: groupAssignment.assignment.creator,
+        group: groupAssignment.group
+      }
+    } else {
+      // Задание из курса
+      assignmentData = {
+        id: courseAssignment!.id,
+        title: courseAssignment!.title,
+        description: courseAssignment!.description,
+        dueDate: courseAssignment!.dueDate,
+        type: courseAssignment!.type,
+        status: courseAssignment!.status,
+        maxScore: courseAssignment!.maxScore,
+        source: 'course',
+        course: courseAssignment!.lesson.module.course,
+        lesson: courseAssignment!.lesson,
+        creator: courseAssignment!.creator,
+        group: null
+      }
+    }
+
+    console.log('✅ [Assignment API] Assignment data prepared')
 
     // Получаем сдачу студента
     const submission = await prisma.submission.findFirst({
@@ -111,7 +204,7 @@ export async function GET(
     console.log('📄 [Assignment API] Submission found:', submission ? 'Yes' : 'No')
 
     const result = {
-      assignment: groupAssignment,
+      assignment: assignmentData,
       submission: submission
     }
 
