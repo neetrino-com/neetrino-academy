@@ -831,7 +831,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                       </div>
                       <div className="space-y-2 mb-3">
                         <p className="text-xs text-gray-600">
-                          {groupAssignment.assignment.lesson.module.course.title} • {groupAssignment.assignment.lesson.module.title}
+                          {groupAssignment.assignment.lessonId ? 'Привязано к уроку' : 'Общее задание для группы'}
                         </p>
                         <p className="text-xs text-red-600 font-medium">
                           Срок: {formatDate(groupAssignment.assignment.dueDate)}
