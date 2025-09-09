@@ -178,6 +178,15 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
       return
     }
 
+    if (!resolvedParams?.id) {
+      alert('Ошибка: ID задания не найден')
+      return
+    }
+
+    console.log('🚀 [Assignment Page] Submitting assignment:', resolvedParams.id)
+    console.log('🚀 [Assignment Page] Content:', content.trim())
+    console.log('🚀 [Assignment Page] File URL:', fileUrl)
+
     setSubmitting(true)
     try {
       const response = await fetch(`/api/student/assignments/${resolvedParams.id}/submit`, {
@@ -198,10 +207,11 @@ export default function AssignmentDetail({ params }: AssignmentDetailProps) {
         await fetchAssignment() // Перезагружаем данные
       } else {
         const error = await response.json()
+        console.error('❌ [Assignment Page] Submit error:', error)
         alert(`Ошибка: ${error.error}`)
       }
     } catch (error) {
-      console.error('Ошибка отправки:', error)
+      console.error('❌ [Assignment Page] Network error submitting assignment:', error)
       alert('Ошибка отправки задания')
     } finally {
       setSubmitting(false)
