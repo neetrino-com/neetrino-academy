@@ -133,34 +133,34 @@ export default function AssignmentCreationModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-2">
-      <div className="bg-white rounded-lg shadow-xl w-[95vw] h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Заголовок */}
-        <div className="flex items-center justify-between p-8 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-yellow-50">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-              <Target className="w-6 h-6 text-amber-600" />
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-yellow-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+              <Target className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Создать задание</h2>
-              <p className="text-base text-gray-600">Добавьте новое задание для группы</p>
+              <h2 className="text-xl font-semibold text-gray-900">Создать задание</h2>
+              <p className="text-sm text-gray-600">Добавьте новое задание для группы</p>
             </div>
           </div>
           <button
             onClick={handleClose}
             disabled={loading}
-            className="p-3 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 border border-gray-300 hover:border-red-300"
+            className="p-2 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 border border-gray-300 hover:border-red-300"
           >
-            <X className="w-6 h-6 text-gray-600 hover:text-red-600" />
+            <X className="w-5 h-5 text-gray-600 hover:text-red-600" />
           </button>
         </div>
 
         {/* Форма */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Название задания */}
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-3">
-              <FileText className="w-5 h-5 inline mr-2" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <FileText className="w-4 h-4 inline mr-2" />
               Название задания *
             </label>
             <input
@@ -168,7 +168,7 @@ export default function AssignmentCreationModal({
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Введите название задания"
-              className="w-full px-6 py-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               disabled={loading}
               required
             />
@@ -176,36 +176,36 @@ export default function AssignmentCreationModal({
 
           {/* Описание */}
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-3">
-              <FileText className="w-5 h-5 inline mr-2" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <FileText className="w-4 h-4 inline mr-2" />
               Описание
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Опишите задание, требования и критерии оценки..."
-              rows={8}
-              className="w-full px-6 py-4 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+              rows={4}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
               disabled={loading}
             />
           </div>
 
           {/* Выбор модуля */}
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-3">
-              <BookOpen className="w-5 h-5 inline mr-2" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <BookOpen className="w-4 h-4 inline mr-2" />
               Модуль курса *
             </label>
             {loadingModules ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600"></div>
-                <span className="ml-2 text-gray-600">Загрузка модулей...</span>
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600"></div>
+                <span className="ml-2 text-gray-600 text-sm">Загрузка модулей...</span>
               </div>
             ) : (
               <select
                 value={formData.moduleId}
                 onChange={(e) => setFormData(prev => ({ ...prev, moduleId: e.target.value }))}
-                className="w-full px-6 py-4 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={loading}
                 required
               >
@@ -218,67 +218,67 @@ export default function AssignmentCreationModal({
               </select>
             )}
             {modules.length === 0 && !loadingModules && (
-              <p className="text-amber-600 text-sm mt-2">
+              <p className="text-amber-600 text-xs mt-1">
                 ⚠️ У группы нет назначенных курсов. Сначала назначьте курсы группе.
               </p>
             )}
           </div>
 
           {/* Срок выполнения */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-base font-medium text-gray-700 mb-3">
-                <Calendar className="w-5 h-5 inline mr-2" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
                 Дата сдачи *
               </label>
               <input
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                className="w-full px-6 py-4 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={loading}
                 required
                 min={new Date().toISOString().split('T')[0]}
               />
             </div>
             <div>
-              <label className="block text-base font-medium text-gray-700 mb-3">
-                <Clock className="w-5 h-5 inline mr-2" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-2" />
                 Время
               </label>
               <input
                 type="time"
                 value={formData.dueTime}
                 onChange={(e) => setFormData(prev => ({ ...prev, dueTime: e.target.value }))}
-                className="w-full px-6 py-4 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={loading}
               />
             </div>
           </div>
 
           {/* Кнопки */}
-          <div className="flex gap-4 pt-6">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="flex-1 px-8 py-4 text-lg border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Отмена
             </button>
             <button
               type="submit"
               disabled={loading || modules.length === 0}
-              className="flex-1 px-8 py-4 text-lg bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                   Создание...
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="w-3 h-3" />
                   Создать задание
                 </>
               )}

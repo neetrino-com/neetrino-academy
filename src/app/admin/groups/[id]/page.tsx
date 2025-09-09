@@ -809,12 +809,11 @@ export default function GroupDetail({ params }: GroupDetailProps) {
                   <h3 className="text-lg font-semibold text-gray-900">Задания группы</h3>
                   <button 
                     onClick={() => setShowAssignmentCreationModal(true)}
-                    className="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2"
-                    disabled
-                    title="Функционал временно отключен - обновляется для работы с уроками"
+                    className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors flex items-center gap-2"
+                    title="Создать новое задание для группы"
                   >
                     <Plus className="w-4 h-4" />
-                    Создать задание (временно отключено)
+                    Создать задание
                   </button>
                 </div>
                 
