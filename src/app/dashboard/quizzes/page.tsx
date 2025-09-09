@@ -112,11 +112,17 @@ export default async function StudentQuizzesPage() {
     }))
   )
 
-  // Объединяем все тесты
+  // Объединяем все тесты и убираем дубликаты по ID
   const allQuizzes = [...courseQuizzes, ...groupQuizzes]
+  const uniqueQuizzes = allQuizzes.reduce((acc, quiz) => {
+    if (!acc.find(q => q.id === quiz.id)) {
+      acc.push(quiz)
+    }
+    return acc
+  }, [] as typeof allQuizzes)
 
   // Получаем попытки прохождения тестов студентом
-  const quizIds = allQuizzes.map(q => q.id)
+  const quizIds = uniqueQuizzes.map(q => q.id)
   const attempts = await prisma.quizAttempt.findMany({
     where: {
       userId: session.user.id,
@@ -132,7 +138,7 @@ export default async function StudentQuizzesPage() {
   )
 
   // Добавляем информацию о попытках к тестам
-  const quizzesWithAttempts = allQuizzes.map(quiz => ({
+  const quizzesWithAttempts = uniqueQuizzes.map(quiz => ({
     ...quiz,
     attempt: attemptMap.get(quiz.id) || null,
     status: getQuizStatus(quiz, attemptMap.get(quiz.id))

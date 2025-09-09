@@ -103,7 +103,7 @@ export async function POST(
     const updatedGroup = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        quizAssignments: {
+        groupQuizAssignments: {
           include: {
             quiz: {
               include: {
@@ -182,7 +182,7 @@ export async function GET(
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        quizAssignments: {
+        groupQuizAssignments: {
           include: {
             quiz: {
               include: {
@@ -224,8 +224,8 @@ export async function GET(
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    console.log('✅ Group quizzes fetched:', group.quizAssignments.length)
-    return NextResponse.json(group.quizAssignments.map(qa => qa.quiz))
+    console.log('✅ Group quizzes fetched:', group.groupQuizAssignments.length)
+    return NextResponse.json(group.groupQuizAssignments.map(qa => qa.quiz))
 
   } catch (error) {
     console.error('❌ Error fetching group quizzes:', error)
