@@ -96,7 +96,14 @@ export async function POST(
           connect: {
             id: user.id
           }
-        }
+        },
+        ...(lessonId && {
+          lesson: {
+            connect: {
+              id: lessonId
+            }
+          }
+        })
       }
     })
 
