@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use, useCallback } from 'react'
+import { useState, useEffect, use, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { 
@@ -93,34 +93,24 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null)
   const [grade, setGrade] = useState('')
   const [feedback, setFeedback] = useState('')
+  const fetchingRef = useRef(false)
 
   // Развертываем промис params
   const resolvedParams = use(params)
 
-  useEffect(() => {
-    if (status === 'loading') return
-    
-    if (!session) {
-      router.push('/login')
+  const fetchAssignment = useCallback(async (assignmentId: string) => {
+    // Предотвращаем повторные запросы
+    if (fetchingRef.current) {
+      console.log('🔍 [Admin Assignment Page] Request already in progress, skipping...')
       return
     }
 
-    if (resolvedParams?.id) {
-      fetchAssignment()
-    }
-  }, [session, status, router, resolvedParams?.id, fetchAssignment])
-
-  const fetchAssignment = useCallback(async () => {
-    if (!resolvedParams?.id) {
-      console.log('🔍 [Admin Assignment Page] No assignment ID yet')
-      return
-    }
-    
     try {
-      console.log('🔍 [Admin Assignment Page] Starting fetch for assignment:', resolvedParams.id)
+      console.log('🔍 [Admin Assignment Page] Starting fetch for assignment:', assignmentId)
+      fetchingRef.current = true
       setLoading(true)
       
-      const response = await fetch(`/api/assignments/${resolvedParams.id}`, {
+      const response = await fetch(`/api/assignments/${assignmentId}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -141,8 +131,22 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
       router.push('/admin/assignments')
     } finally {
       setLoading(false)
+      fetchingRef.current = false
     }
-  }, [resolvedParams?.id, router])
+  }, [router])
+
+  useEffect(() => {
+    if (status === 'loading') return
+    
+    if (!session) {
+      router.push('/login')
+      return
+    }
+
+    if (resolvedParams?.id) {
+      fetchAssignment(resolvedParams.id)
+    }
+  }, [session, status, resolvedParams?.id, fetchAssignment])
 
   const handleGrade = async (submissionId: string) => {
     if (!grade.trim()) {
@@ -174,7 +178,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
         setSelectedSubmission(null)
         setGrade('')
         setFeedback('')
-        await fetchAssignment()
+        await fetchAssignment(resolvedParams.id)
       } else {
         const error = await response.json()
         alert(`Ошибка: ${error.error}`)
