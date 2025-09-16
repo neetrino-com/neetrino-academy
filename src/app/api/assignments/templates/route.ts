@@ -109,10 +109,20 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      where.title = {
-        contains: search,
-        mode: 'insensitive'
-      }
+      where.OR = [
+        {
+          title: {
+            contains: search,
+            mode: 'insensitive'
+          }
+        },
+        {
+          id: {
+            contains: search,
+            mode: 'insensitive'
+          }
+        }
+      ]
     }
 
     if (type && type !== 'ALL') {

@@ -240,6 +240,11 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
 
                       <div className="flex items-center gap-6 text-sm text-slate-500">
                         <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
+                            ID: {assignment.id}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
                           <User className="w-4 h-4" />
                           {assignment.creator.name}
                         </div>

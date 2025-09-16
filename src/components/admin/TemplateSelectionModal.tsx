@@ -158,7 +158,7 @@ export default function TemplateSelectionModal({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Поиск по названию..."
+                  placeholder="Поиск по названию или ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -223,6 +223,11 @@ export default function TemplateSelectionModal({
                       )}
 
                       <div className="flex items-center gap-6 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                            ID: {template.id}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-1">
                           <span>Автор: {template.creator.name}</span>
                         </div>
