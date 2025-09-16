@@ -56,14 +56,8 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   // Убираем все фильтры - всегда показываем только шаблоны
-  const [showCreateModal, setShowCreateModal] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null)
-
-  useEffect(() => {
-    if (isLoading) return
-    fetchAssignments()
-  }, [isLoading, searchTerm])
 
   const fetchAssignments = async () => {
     try {
@@ -72,10 +66,10 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
         ...(searchTerm && { search: searchTerm })
       })
       
-      const response = await fetch(`/api/assignments?${params}`)
+      const response = await fetch(`/api/assignments/templates?${params}`)
       if (response.ok) {
         const data = await response.json()
-        setAssignments(data.assignments || [])
+        setAssignments(data.templates || [])
       }
     } catch (error) {
       console.error('Ошибка загрузки шаблонов:', error)
@@ -83,6 +77,11 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (isLoading) return
+    fetchAssignments()
+  }, [isLoading, searchTerm])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Вы уверены, что хотите удалить этот шаблон?')) return
@@ -187,7 +186,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                   placeholder="Поиск по названию..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -200,7 +199,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setShowTemplateModal(true)}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-xl font-medium hover:from-orange-600 hover:to-orange-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
           >
             <Plus className="w-5 h-5" />
             Создать шаблон
@@ -225,7 +224,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                         <h3 className="text-lg font-semibold text-slate-800">
                           {assignment.title}
                         </h3>
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                        <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
                           Шаблон
                         </span>
                         <span className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(assignment.type)}`}>
@@ -269,7 +268,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                     <div className="flex items-center gap-2 ml-4">
                       <button
                         onClick={() => handleCopyTemplate(assignment.id)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"
                         title="Скопировать шаблон"
                       >
                         <Copy className="w-4 h-4" />

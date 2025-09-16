@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/assignments/templates - получение всех шаблонов заданий
+// GET /api/assignments/templates - получение шаблонов заданий с пагинацией и фильтрацией
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -95,11 +95,36 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Получаем все шаблоны заданий
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search') || ''
+    const type = searchParams.get('type') || ''
+
+    const skip = (page - 1) * limit
+
+    // Строим условия фильтрации
+    const where: Record<string, any> = { 
+      isTemplate: true 
+    }
+
+    if (search) {
+      where.title = {
+        contains: search,
+        mode: 'insensitive'
+      }
+    }
+
+    if (type && type !== 'ALL') {
+      where.type = type
+    }
+
+    // Получаем общее количество шаблонов
+    const total = await prisma.assignment.count({ where })
+
+    // Получаем шаблоны с пагинацией
     const templates = await prisma.assignment.findMany({
-      where: { 
-        isTemplate: true 
-      },
+      where,
       include: {
         creator: {
           select: {
@@ -110,16 +135,25 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            groupAssignments: true // Сколько раз использовался шаблон
+            groupAssignments: true, // Сколько раз использовался шаблон
+            submissions: true
           }
         }
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      skip,
+      take: limit
     })
 
-    return NextResponse.json(templates)
+    return NextResponse.json({
+      templates,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    })
   } catch (error) {
     console.error('Ошибка получения шаблонов:', error)
     return NextResponse.json(

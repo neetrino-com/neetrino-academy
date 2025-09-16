@@ -9,8 +9,10 @@ import {
   FileText,
   Clock,
   CheckCircle,
-  Tag
+  Tag,
+  Copy
 } from 'lucide-react'
+import TemplateSelectionModal from './TemplateSelectionModal'
 
 interface Lesson {
   id: string
@@ -24,6 +26,24 @@ interface Lesson {
       id: string
       title: string
     }
+  }
+}
+
+interface AssignmentTemplate {
+  id: string
+  title: string
+  description: string | null
+  type: string
+  maxScore: number | null
+  createdAt: string
+  creator: {
+    id: string
+    name: string
+    email: string
+  }
+  _count: {
+    submissions: number
+    groupAssignments: number
   }
 }
 
@@ -61,13 +81,8 @@ export default function AssignmentCreationModal({
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingLessons, setLoadingLessons] = useState(false)
-
-  // Загружаем уроки группы при открытии модального окна
-  useEffect(() => {
-    if (isOpen) {
-      fetchGroupLessons()
-    }
-  }, [isOpen, groupId])
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<AssignmentTemplate | null>(null)
 
   const fetchGroupLessons = async () => {
     setLoadingLessons(true)
@@ -83,6 +98,25 @@ export default function AssignmentCreationModal({
       setLoadingLessons(false)
     }
   }
+
+  // Загружаем уроки группы при открытии модального окна
+  useEffect(() => {
+    if (isOpen) {
+      fetchGroupLessons()
+    }
+  }, [isOpen, groupId])
+
+  // Заполняем форму данными из шаблона
+  useEffect(() => {
+    if (selectedTemplate) {
+      setFormData(prev => ({
+        ...prev,
+        title: selectedTemplate.title,
+        description: selectedTemplate.description || '',
+        type: selectedTemplate.type
+      }))
+    }
+  }, [selectedTemplate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -147,8 +181,14 @@ export default function AssignmentCreationModal({
         dueTime: '23:59',
         type: 'HOMEWORK'
       })
+      setSelectedTemplate(null)
       onClose()
     }
+  }
+
+  const handleTemplateSelected = (template: AssignmentTemplate) => {
+    setSelectedTemplate(template)
+    setShowTemplateModal(false)
   }
 
   if (!isOpen) return null
@@ -174,6 +214,39 @@ export default function AssignmentCreationModal({
           >
             <X className="w-5 h-5 text-gray-600 hover:text-red-600" />
           </button>
+        </div>
+
+        {/* Кнопки выбора способа создания */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowTemplateModal(true)}
+              className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Copy className="w-4 h-4" />
+              Выбрать из шаблонов
+            </button>
+            <button
+              onClick={() => setSelectedTemplate(null)}
+              className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                !selectedTemplate 
+                  ? 'bg-amber-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Создать новое
+            </button>
+          </div>
+          {selectedTemplate && (
+            <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-center gap-2 text-orange-800">
+                <Copy className="w-4 h-4" />
+                <span className="font-medium">Выбран шаблон:</span>
+                <span>{selectedTemplate.title}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Форма */}
@@ -326,6 +399,13 @@ export default function AssignmentCreationModal({
           </div>
         </form>
       </div>
+
+      {/* Модальное окно выбора шаблонов */}
+      <TemplateSelectionModal
+        isOpen={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        onTemplateSelected={handleTemplateSelected}
+      />
     </div>
   )
 }
