@@ -83,6 +83,7 @@ export default function AssignmentCreationModal({
   const [loadingLessons, setLoadingLessons] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<AssignmentTemplate | null>(null)
+  const [creationMode, setCreationMode] = useState<'new' | 'template'>('new')
 
   const fetchGroupLessons = async () => {
     setLoadingLessons(true)
@@ -182,13 +183,20 @@ export default function AssignmentCreationModal({
         type: 'HOMEWORK'
       })
       setSelectedTemplate(null)
+      setCreationMode('new')
       onClose()
     }
   }
 
   const handleTemplateSelected = (template: AssignmentTemplate) => {
     setSelectedTemplate(template)
+    setCreationMode('template')
     setShowTemplateModal(false)
+  }
+
+  const handleCreateNew = () => {
+    setCreationMode('new')
+    setSelectedTemplate(null)
   }
 
   if (!isOpen) return null
@@ -221,15 +229,19 @@ export default function AssignmentCreationModal({
           <div className="flex gap-3">
             <button
               onClick={() => setShowTemplateModal(true)}
-              className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
+              className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                creationMode === 'template'
+                  ? 'bg-orange-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
               <Copy className="w-4 h-4" />
               Выбрать из шаблонов
             </button>
             <button
-              onClick={() => setSelectedTemplate(null)}
+              onClick={handleCreateNew}
               className={`flex-1 px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                !selectedTemplate 
+                creationMode === 'new'
                   ? 'bg-amber-600 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
