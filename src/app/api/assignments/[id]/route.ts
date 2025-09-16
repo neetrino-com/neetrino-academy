@@ -108,7 +108,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, dueDate, lessonId } = body;
+    const { title, description, dueDate, lessonId, type, maxScore } = body;
 
     // Проверяем существование задания
     const existingAssignment = await prisma.assignment.findUnique({
@@ -138,6 +138,8 @@ export async function PUT(
         description: description !== undefined ? description : existingAssignment.description,
         dueDate: dueDate ? new Date(dueDate) : existingAssignment.dueDate,
         lessonId: lessonId || existingAssignment.lessonId,
+        type: type || existingAssignment.type,
+        maxScore: maxScore !== undefined ? (maxScore ? parseInt(maxScore.toString()) : null) : existingAssignment.maxScore,
       },
       include: {
         lesson: {

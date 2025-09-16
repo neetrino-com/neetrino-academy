@@ -93,6 +93,15 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null)
   const [grade, setGrade] = useState('')
   const [feedback, setFeedback] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    dueDate: '',
+    type: 'HOMEWORK' as string,
+    maxScore: ''
+  })
+  const [saving, setSaving] = useState(false)
   const fetchingRef = useRef(false)
   const fetchedAssignmentIdRef = useRef<string | null>(null)
 
@@ -214,6 +223,70 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
     }
   }
 
+  const handleEdit = () => {
+    if (!assignment) return
+    
+    setEditForm({
+      title: assignment.title,
+      description: assignment.description || '',
+      dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().slice(0, 16) : '',
+      type: assignment.type,
+      maxScore: assignment.maxScore?.toString() || ''
+    })
+    setIsEditing(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!assignment) return
+
+    if (!editForm.title.trim()) {
+      alert('Введите название задания')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/assignments/${assignment.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: editForm.title.trim(),
+          description: editForm.description.trim() || null,
+          dueDate: editForm.dueDate ? new Date(editForm.dueDate).toISOString() : null,
+          type: editForm.type,
+          maxScore: editForm.maxScore ? parseInt(editForm.maxScore) : null
+        })
+      })
+
+      if (response.ok) {
+        alert('Задание успешно обновлено')
+        setIsEditing(false)
+        await fetchAssignment(assignment.id)
+      } else {
+        const error = await response.json()
+        alert(`Ошибка: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error updating assignment:', error)
+      alert('Ошибка при обновлении задания')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditForm({
+      title: '',
+      description: '',
+      dueDate: '',
+      type: 'HOMEWORK',
+      maxScore: ''
+    })
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
       year: 'numeric',
@@ -304,9 +377,24 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
                 <ArrowLeft className="w-6 h-6 text-white" />
               </button>
               <div className="flex-1">
-                <h1 className="text-4xl font-bold mb-3">
-                  {assignment.title}
-                </h1>
+                <div className="flex items-center justify-between mb-3">
+                  <h1 className="text-4xl font-bold">
+                    {assignment.title}
+                  </h1>
+                  <div className="flex items-center gap-3">
+                    <div className="px-3 py-1 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <span className="text-sm text-blue-100">ID: </span>
+                      <span className="text-sm font-mono text-white">{assignment.id}</span>
+                    </div>
+                    <button
+                      onClick={handleEdit}
+                      className="p-3 bg-white/20 rounded-xl backdrop-blur-sm hover:bg-white/30 transition-colors"
+                      title="Редактировать задание"
+                    >
+                      <Edit className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                </div>
                 <div className="flex flex-wrap items-center gap-4 text-lg text-blue-100">
                   {assignment.lesson && (
                     <>
@@ -381,36 +469,145 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
             {/* Основное содержимое */}
             <div className="xl:col-span-3 space-y-6">
-              {/* Информация о задании */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-4 bg-amber-100 rounded-2xl">
-                    <Target className="w-6 h-6 text-amber-600" />
+              {/* Форма редактирования */}
+              {isEditing && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="p-4 bg-indigo-100 rounded-2xl">
+                      <Edit className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Редактирование задания</h2>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">Описание задания</h2>
-                </div>
-                
-                {assignment.description ? (
-                  <div className="prose prose-lg max-w-none text-gray-800">
-                    {assignment.description.split('\n').map((line, index) => (
-                      <p key={index} className="mb-4 leading-relaxed text-lg font-medium">{line}</p>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 italic text-lg">Описание задания отсутствует</p>
-                )}
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Название задания *
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.title}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg"
+                        placeholder="Введите название задания"
+                      />
+                    </div>
 
-                <div className="mt-6 flex items-center gap-4">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(assignment.type)}`}>
-                    {getTypeLabel(assignment.type)}
-                  </span>
-                  {assignment.isTemplate && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
-                      Шаблон
-                    </span>
-                  )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Описание задания
+                      </label>
+                      <textarea
+                        value={editForm.description}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                        rows={6}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                        placeholder="Введите описание задания"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Дедлайн
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={editForm.dueDate}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, dueDate: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Максимальный балл
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={editForm.maxScore}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, maxScore: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="Введите максимальный балл"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Тип задания
+                      </label>
+                      <select
+                        value={editForm.type}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, type: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      >
+                        <option value="HOMEWORK">Домашнее задание</option>
+                        <option value="PROJECT">Проект</option>
+                        <option value="QUIZ">Тест</option>
+                        <option value="EXAM">Экзамен</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-4 pt-6">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      >
+                        Отмена
+                      </button>
+                      <button
+                        onClick={handleSaveEdit}
+                        disabled={saving || !editForm.title.trim()}
+                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
+                      >
+                        {saving ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Сохранение...
+                          </>
+                        ) : (
+                          'Сохранить изменения'
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Информация о задании */}
+              {!isEditing && (
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30 p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="p-4 bg-amber-100 rounded-2xl">
+                      <Target className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Описание задания</h2>
+                  </div>
+                  
+                  {assignment.description ? (
+                    <div className="prose prose-lg max-w-none text-gray-800">
+                      {assignment.description.split('\n').map((line, index) => (
+                        <p key={index} className="mb-4 leading-relaxed text-lg font-medium">{line}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 italic text-lg">Описание задания отсутствует</p>
+                  )}
+
+                  <div className="mt-6 flex items-center gap-4">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(assignment.type)}`}>
+                      {getTypeLabel(assignment.type)}
+                    </span>
+                    {assignment.isTemplate && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                        Шаблон
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Сдачи студентов */}
               {assignment.submissions.length > 0 && (
