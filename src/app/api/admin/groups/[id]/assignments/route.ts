@@ -29,7 +29,7 @@ export async function POST(
 
     const { id: groupId } = await params
     const body = await request.json()
-    const { title, description, lessonId, dueDate } = body
+    const { title, description, lessonId, dueDate, type } = body
 
     // Валидация данных
     if (!title?.trim()) {
@@ -86,7 +86,7 @@ export async function POST(
       title: title.trim(),
       description: description?.trim() || null,
       dueDate: new Date(dueDate),
-      type: 'HOMEWORK' as const,
+      type: (type || 'HOMEWORK') as const,
       status: 'PUBLISHED' as const,
       maxScore: 100,
       creator: {

@@ -8,7 +8,8 @@ import {
   Calendar, 
   FileText,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Tag
 } from 'lucide-react'
 
 interface Lesson {
@@ -33,6 +34,16 @@ interface AssignmentCreationModalProps {
   onAssignmentCreated: () => void
 }
 
+const assignmentTypes = [
+  { value: 'HOMEWORK', label: 'Домашнее задание' },
+  { value: 'PROJECT', label: 'Проект' },
+  { value: 'EXAM', label: 'Экзамен' },
+  { value: 'QUIZ', label: 'Тест' },
+  { value: 'PRACTICAL', label: 'Практическая работа' },
+  { value: 'ESSAY', label: 'Эссе' },
+  { value: 'OTHER', label: 'Другое' }
+]
+
 export default function AssignmentCreationModal({
   isOpen,
   onClose,
@@ -44,7 +55,8 @@ export default function AssignmentCreationModal({
     description: '',
     lessonId: '',
     dueDate: '',
-    dueTime: '23:59'
+    dueTime: '23:59',
+    type: 'HOMEWORK'
   })
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [loading, setLoading] = useState(false)
@@ -94,7 +106,8 @@ export default function AssignmentCreationModal({
           title: formData.title.trim(),
           description: formData.description.trim(),
           lessonId: formData.lessonId || null, // lessonId теперь опциональный
-          dueDate: dueDateTime.toISOString()
+          dueDate: dueDateTime.toISOString(),
+          type: formData.type
         })
       })
 
@@ -105,7 +118,8 @@ export default function AssignmentCreationModal({
           description: '',
           lessonId: '',
           dueDate: '',
-          dueTime: '23:59'
+          dueTime: '23:59',
+          type: 'HOMEWORK'
         })
         
         // Закрываем модальное окно и обновляем данные
@@ -130,7 +144,8 @@ export default function AssignmentCreationModal({
         description: '',
         lessonId: '',
         dueDate: '',
-        dueTime: '23:59'
+        dueTime: '23:59',
+        type: 'HOMEWORK'
       })
       onClose()
     }
@@ -194,6 +209,26 @@ export default function AssignmentCreationModal({
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
               disabled={loading}
             />
+          </div>
+
+          {/* Тип задания */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Tag className="w-4 h-4 inline mr-2" />
+              Тип задания
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              disabled={loading}
+            >
+              {assignmentTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Выбор урока */}

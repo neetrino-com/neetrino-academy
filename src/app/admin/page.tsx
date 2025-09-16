@@ -232,7 +232,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
 
             {/* Задания */}
             <div 
-              onClick={() => router.push('/admin/submissions')}
+              onClick={() => router.push('/admin/assignments')}
               className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-blue-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300"
             >
               <div className="flex items-center justify-between mb-4">
@@ -251,7 +251,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">Задания</h3>
               <p className="text-slate-600 leading-relaxed">
-                Просмотр и управление студенческими работами
+                Управление заданиями и шаблонами
               </p>
             </div>
 
@@ -544,6 +544,31 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
                 <h3 className="text-xl font-bold text-slate-800 mb-3">Чеклисты</h3>
                 <p className="text-slate-600 leading-relaxed">
                   Создание и управление чеклистами для студентов
+                </p>
+              </div>
+
+              {/* Управление заданиями */}
+              <div 
+                onClick={() => router.push('/admin/assignments')}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-blue-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                      <FileText className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-none">
+                        📝
+                      </p>
+                      <p className="text-xs text-blue-600 font-medium mt-1">задания</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-blue-600 transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Шаблоны заданий</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  Создание и управление шаблонами заданий
                 </p>
               </div>
 
