@@ -10,7 +10,6 @@ import {
   Search, 
   Filter, 
   FileText, 
-  Copy, 
   Edit, 
   Trash2,
   Calendar,
@@ -149,28 +148,6 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
     }
   }
 
-  const handleCopyTemplate = async (templateId: string) => {
-    try {
-      const response = await fetch(`/api/assignments/templates/${templateId}/copy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
-      })
-      
-      if (response.ok) {
-        alert('Задание успешно создано из шаблона!')
-        fetchAssignments()
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Ошибка копирования шаблона')
-      }
-    } catch (error) {
-      console.error('Ошибка копирования шаблона:', error)
-      alert('Ошибка копирования шаблона')
-    }
-  }
 
   const getTypeLabel = (type: string) => {
     const types: Record<string, string> = {
@@ -404,14 +381,6 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                       title="Просмотреть"
                     >
                       <Eye className="w-5 h-5" />
-                    </button>
-                    
-                    <button
-                      onClick={() => handleCopyTemplate(assignment.id)}
-                      className="w-12 h-12 flex items-center justify-center text-orange-600 hover:text-white hover:bg-orange-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-orange-200 hover:border-orange-600 backdrop-blur-sm"
-                      title="Скопировать"
-                    >
-                      <Copy className="w-5 h-5" />
                     </button>
 
                     <button
