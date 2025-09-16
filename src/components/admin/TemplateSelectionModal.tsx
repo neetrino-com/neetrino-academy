@@ -128,11 +128,8 @@ export default function TemplateSelectionModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[60] p-4">
-      {/* Затемнение фона */}
-      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
-      
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center z-[60] p-2">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-6xl h-[96vh] overflow-hidden flex flex-col">
         {/* Заголовок */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
           <div className="flex items-center gap-3">
@@ -190,7 +187,7 @@ export default function TemplateSelectionModal({
         </div>
 
         {/* Список шаблонов */}
-        <div className="p-6 max-h-96 overflow-y-auto">
+        <div className="p-6 flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
@@ -256,7 +253,7 @@ export default function TemplateSelectionModal({
 
         {/* Пагинация */}
         {totalPages > 1 && (
-          <div className="p-6 border-t border-gray-200">
+          <div className="p-6 border-t border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
                 Страница {currentPage} из {totalPages}
