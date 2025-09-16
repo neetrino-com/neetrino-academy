@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, FileText, Save, Loader2 } from 'lucide-react'
 
 interface AssignmentTemplateModalProps {
@@ -33,13 +33,33 @@ export default function AssignmentTemplateModal({
   editingTemplate
 }: AssignmentTemplateModalProps) {
   const [formData, setFormData] = useState({
-    title: editingTemplate?.title || '',
-    description: editingTemplate?.description || '',
-    type: editingTemplate?.type || 'HOMEWORK',
-    maxScore: editingTemplate?.maxScore || 100
+    title: '',
+    description: '',
+    type: 'HOMEWORK',
+    maxScore: 100
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Обновляем форму при изменении editingTemplate
+  useEffect(() => {
+    if (editingTemplate) {
+      setFormData({
+        title: editingTemplate.title || '',
+        description: editingTemplate.description || '',
+        type: editingTemplate.type || 'HOMEWORK',
+        maxScore: editingTemplate.maxScore || 100
+      })
+    } else {
+      setFormData({
+        title: '',
+        description: '',
+        type: 'HOMEWORK',
+        maxScore: 100
+      })
+    }
+    setErrors({})
+  }, [editingTemplate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

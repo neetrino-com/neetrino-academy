@@ -94,20 +94,27 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
   const [grade, setGrade] = useState('')
   const [feedback, setFeedback] = useState('')
   const fetchingRef = useRef(false)
+  const fetchedAssignmentIdRef = useRef<string | null>(null)
 
   // Развертываем промис params
   const resolvedParams = use(params)
 
   const fetchAssignment = useCallback(async (assignmentId: string) => {
-    // Предотвращаем повторные запросы
+    // Предотвращаем повторные запросы для того же ID
     if (fetchingRef.current) {
       console.log('🔍 [Admin Assignment Page] Request already in progress, skipping...')
+      return
+    }
+
+    if (fetchedAssignmentIdRef.current === assignmentId) {
+      console.log('🔍 [Admin Assignment Page] Assignment already fetched for this ID, skipping...')
       return
     }
 
     try {
       console.log('🔍 [Admin Assignment Page] Starting fetch for assignment:', assignmentId)
       fetchingRef.current = true
+      fetchedAssignmentIdRef.current = assignmentId
       setLoading(true)
       
       const response = await fetch(`/api/assignments/${assignmentId}`, {
@@ -136,17 +143,33 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
   }, [router])
 
   useEffect(() => {
-    if (status === 'loading') return
+    console.log('🔄 [Admin Assignment Page] useEffect triggered', { 
+      status, 
+      hasSession: !!session, 
+      assignmentId: resolvedParams?.id,
+      isFetching: fetchingRef.current 
+    })
+
+    if (status === 'loading') {
+      console.log('⏳ [Admin Assignment Page] Session still loading, skipping...')
+      return
+    }
     
     if (!session) {
+      console.log('❌ [Admin Assignment Page] No session, redirecting to login...')
       router.push('/login')
       return
     }
 
-    if (resolvedParams?.id) {
+    if (resolvedParams?.id && !fetchingRef.current && fetchedAssignmentIdRef.current !== resolvedParams.id) {
+      console.log('🚀 [Admin Assignment Page] Starting fetch...')
       fetchAssignment(resolvedParams.id)
+    } else if (fetchingRef.current) {
+      console.log('⏸️ [Admin Assignment Page] Already fetching, skipping...')
+    } else if (fetchedAssignmentIdRef.current === resolvedParams?.id) {
+      console.log('✅ [Admin Assignment Page] Assignment already loaded for this ID')
     }
-  }, [session, status, resolvedParams?.id, fetchAssignment])
+  }, [session, status, resolvedParams?.id])
 
   const handleGrade = async (submissionId: string) => {
     if (!grade.trim()) {
