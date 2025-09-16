@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
 import AssignmentTemplateModal from '@/components/admin/AssignmentTemplateModal'
 import { 
@@ -14,7 +15,8 @@ import {
   Calendar,
   User,
   BookOpen,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react'
 
 interface Assignment {
@@ -52,6 +54,7 @@ interface Assignment {
 // Убираем FilterType - всегда показываем только шаблоны
 
 function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionProps) {
+  const router = useRouter()
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -271,6 +274,14 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Просмотреть задание"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      
                       <button
                         onClick={() => handleCopyTemplate(assignment.id)}
                         className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"
