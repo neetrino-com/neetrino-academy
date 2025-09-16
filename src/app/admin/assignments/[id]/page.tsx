@@ -108,14 +108,14 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
   // Развертываем промис params
   const resolvedParams = use(params)
 
-  const fetchAssignment = useCallback(async (assignmentId: string) => {
-    // Предотвращаем повторные запросы для того же ID
-    if (fetchingRef.current) {
+  const fetchAssignment = useCallback(async (assignmentId: string, forceRefresh = false) => {
+    // Предотвращаем повторные запросы для того же ID, если не принудительное обновление
+    if (fetchingRef.current && !forceRefresh) {
       console.log('🔍 [Admin Assignment Page] Request already in progress, skipping...')
       return
     }
 
-    if (fetchedAssignmentIdRef.current === assignmentId) {
+    if (fetchedAssignmentIdRef.current === assignmentId && !forceRefresh) {
       console.log('🔍 [Admin Assignment Page] Assignment already fetched for this ID, skipping...')
       return
     }
@@ -210,7 +210,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
         setSelectedSubmission(null)
         setGrade('')
         setFeedback('')
-        await fetchAssignment(resolvedParams.id)
+        await fetchAssignment(resolvedParams.id, true)
       } else {
         const error = await response.json()
         alert(`Ошибка: ${error.error}`)
@@ -263,7 +263,8 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
       if (response.ok) {
         alert('Задание успешно обновлено')
         setIsEditing(false)
-        await fetchAssignment(assignment.id)
+        // Принудительно обновляем данные
+        await fetchAssignment(assignment.id, true)
       } else {
         const error = await response.json()
         alert(`Ошибка: ${error.error}`)
