@@ -102,6 +102,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
     maxScore: ''
   })
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const fetchingRef = useRef(false)
   const fetchedAssignmentIdRef = useRef<string | null>(null)
 
@@ -233,6 +234,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
       type: assignment.type,
       maxScore: assignment.maxScore?.toString() || ''
     })
+    setSaved(false)
     setIsEditing(true)
   }
 
@@ -240,7 +242,6 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
     if (!assignment) return
 
     if (!editForm.title.trim()) {
-      alert('Введите название задания')
       return
     }
 
@@ -261,10 +262,12 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
       })
 
       if (response.ok) {
-        alert('Задание успешно обновлено')
+        setSaved(true)
         setIsEditing(false)
         // Принудительно обновляем данные
         await fetchAssignment(assignment.id, true)
+        // Сбрасываем индикатор сохранения через 2 секунды
+        setTimeout(() => setSaved(false), 2000)
       } else {
         const error = await response.json()
         alert(`Ошибка: ${error.error}`)
@@ -279,6 +282,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
 
   const handleCancelEdit = () => {
     setIsEditing(false)
+    setSaved(false)
     setEditForm({
       title: '',
       description: '',
@@ -561,12 +565,21 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
                       <button
                         onClick={handleSaveEdit}
                         disabled={saving || !editForm.title.trim()}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
+                        className={`px-6 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2 ${
+                          saved 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        }`}
                       >
                         {saving ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                             Сохранение...
+                          </>
+                        ) : saved ? (
+                          <>
+                            <CheckCircle className="w-4 h-4" />
+                            Сохранено!
                           </>
                         ) : (
                           'Сохранить изменения'
