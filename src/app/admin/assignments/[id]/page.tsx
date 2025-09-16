@@ -292,6 +292,16 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
     })
   }
 
+  const handleBack = () => {
+    // Проверяем, есть ли история браузера
+    if (window.history.length > 1) {
+      router.back()
+    } else {
+      // Fallback на страницу заданий
+      router.push('/admin/assignments')
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ru-RU', {
       year: 'numeric',
@@ -356,10 +366,10 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Задание не найдено</h2>
           <p className="text-gray-600 mb-4">Возможно, задание было удалено</p>
           <button
-            onClick={() => router.push('/admin/assignments')}
+            onClick={handleBack}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            Вернуться к заданиям
+            Назад
           </button>
         </div>
       </div>
@@ -376,8 +386,9 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl p-8 mb-8 text-white">
             <div className="flex items-center gap-4 mb-6">
               <button
-                onClick={() => router.push('/admin/assignments')}
+                onClick={handleBack}
                 className="p-3 bg-white/20 rounded-xl backdrop-blur-sm hover:bg-white/30 transition-colors"
+                title="Назад"
               >
                 <ArrowLeft className="w-6 h-6 text-white" />
               </button>
