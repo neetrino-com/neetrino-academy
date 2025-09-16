@@ -126,8 +126,8 @@ export default function AssignmentTemplateModal({
         {/* Заголовок */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 rounded-xl p-2">
-              <FileText className="w-6 h-6 text-blue-600" />
+            <div className="bg-amber-100 rounded-xl p-2">
+              <FileText className="w-6 h-6 text-amber-600" />
             </div>
             <h2 className="text-xl font-bold text-slate-800">
               {editingTemplate ? 'Редактировать шаблон' : 'Создать шаблон задания'}
@@ -159,7 +159,7 @@ export default function AssignmentTemplateModal({
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent ${
                   errors.title ? 'border-red-300' : 'border-slate-300'
                 }`}
                 placeholder="Введите название шаблона"
@@ -179,7 +179,7 @@ export default function AssignmentTemplateModal({
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
                 placeholder="Описание задания (необязательно)"
               />
             </div>
@@ -192,7 +192,7 @@ export default function AssignmentTemplateModal({
               <select
                 value={formData.type}
                 onChange={(e) => handleChange('type', e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               >
                 {assignmentTypes.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -212,7 +212,7 @@ export default function AssignmentTemplateModal({
                 value={formData.maxScore}
                 onChange={(e) => handleChange('maxScore', parseInt(e.target.value) || 0)}
                 min="1"
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent ${
                   errors.maxScore ? 'border-red-300' : 'border-slate-300'
                 }`}
                 placeholder="100"
@@ -236,7 +236,7 @@ export default function AssignmentTemplateModal({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-3 rounded-xl font-medium hover:from-amber-600 hover:to-amber-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
