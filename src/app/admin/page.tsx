@@ -371,21 +371,15 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
             {/* Сданные задания */}
             <div 
               onClick={() => router.push('/admin/submissions')}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-teal-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-teal-50 hover:to-cyan-50 hover:border-teal-300"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-amber-200/80 hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:bg-gradient-to-br hover:from-amber-50 hover:to-orange-50 hover:border-amber-300"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="bg-gradient-to-br from-teal-100 to-cyan-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="w-8 h-8 text-teal-600" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent leading-none">
-                      📋
-                    </p>
-                    <p className="text-xs text-teal-600 font-medium mt-1">сдано</p>
+                  <div className="bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl p-4 group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="w-8 h-8 text-amber-600" />
                   </div>
                 </div>
-                <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-teal-600 transition-colors duration-300" />
+                <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-amber-600 transition-colors duration-300" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">Сданные задания</h3>
               <p className="text-slate-600 leading-relaxed">
