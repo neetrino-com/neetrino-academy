@@ -31,6 +31,7 @@ interface DashboardStats {
   totalGroups: number
   totalLectures: number
   totalChecklists: number
+  totalAssignments: number
   activeCourses: number
   draftCourses: number
   completedTests: number
@@ -53,6 +54,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
     totalGroups: 0,
     totalLectures: 0,
     totalChecklists: 0,
+    totalAssignments: 0,
     activeCourses: 0,
     draftCourses: 0,
     completedTests: 0,
@@ -77,13 +79,14 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
       setLoading(true)
       
       // Загружаем статистику параллельно
-      const [coursesRes, testsRes, groupsRes, lecturesRes, checklistsRes, paymentsRes] = await Promise.all([
+      const [coursesRes, testsRes, groupsRes, lecturesRes, checklistsRes, paymentsRes, assignmentsRes] = await Promise.all([
         fetch('/api/admin/courses'),
         fetch('/api/admin/quizzes'),
         fetch('/api/admin/groups'),
         fetch('/api/admin/lectures'),
         fetch('/api/admin/checklists?limit=1000'), // Получаем все чеклисты для подсчета
-        fetch('/api/admin/payments') // Получаем данные о платежах
+        fetch('/api/admin/payments'), // Получаем данные о платежах
+        fetch('/api/assignments/templates') // Получаем данные о шаблонах заданий
       ])
       
       const coursesResponse = coursesRes.ok ? await coursesRes.json() : { courses: [] }
@@ -93,6 +96,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
       const lecturesData = lecturesRes.ok ? await lecturesRes.json() : { lectures: [] }
       const checklistsData = checklistsRes.ok ? await checklistsRes.json() : { checklists: [] }
       const paymentsData = paymentsRes.ok ? await paymentsRes.json() : { payments: [], stats: {} }
+      const assignmentsData = assignmentsRes.ok ? await assignmentsRes.json() : { templates: [] }
       
       setStats({
         totalCourses: coursesData.length,
@@ -101,6 +105,7 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
         totalGroups: groupsData.length,
         totalLectures: lecturesData.lectures?.length || 0,
         totalChecklists: checklistsData.checklists?.length || 0,
+        totalAssignments: assignmentsData.templates?.length || 0,
         activeCourses: coursesData.filter((c: { isActive?: boolean; isDraft?: boolean }) => c.isActive && !c.isDraft).length,
         draftCourses: coursesData.filter((c: { isDraft?: boolean }) => c.isDraft).length,
         completedTests: testsData.filter((t: { attempts?: Array<unknown> }) => t.attempts && t.attempts.length > 0).length,
@@ -531,9 +536,9 @@ function AdminDashboardComponent({ userRole, isLoading }: WithRoleProtectionProp
                     </div>
                     <div className="text-center">
                       <p className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-none">
-                        📝
+                        {stats.totalAssignments || 0}
                       </p>
-                      <p className="text-xs text-amber-600 font-medium mt-1">задания</p>
+                      <p className="text-xs text-amber-600 font-medium mt-1">шаблонов</p>
                     </div>
                   </div>
                   <ChevronRight className="w-6 h-6 text-slate-400 group-hover:text-amber-600 transition-colors duration-300" />
