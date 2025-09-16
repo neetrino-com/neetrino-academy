@@ -7,7 +7,8 @@ import {
   Check, 
   Clock, 
   Award, 
-  BookOpen, 
+  BookOpen,
+  FileText, 
   User,
   Loader2,
   AlertCircle
@@ -146,26 +147,29 @@ export default function QuizSelectionModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b p-6">
-          <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-green-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+              <FileText className="w-5 h-5 text-emerald-600" />
+            </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900">
                 Назначить тесты группе
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                {groupName}
+                Группа: <span className="font-semibold">{groupName}</span>
               </p>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="p-6 space-y-6">
@@ -205,7 +209,7 @@ export default function QuizSelectionModal({
                   key={quiz.id}
                   className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                     selectedQuizzes.includes(quiz.id)
-                      ? 'border-violet-500 bg-violet-50'
+                      ? 'border-emerald-500 bg-emerald-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                   onClick={() => handleQuizToggle(quiz.id)}
@@ -213,7 +217,7 @@ export default function QuizSelectionModal({
                   <div className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center mt-1 ${
                       selectedQuizzes.includes(quiz.id)
-                        ? 'border-violet-500 bg-violet-500'
+                        ? 'border-emerald-500 bg-emerald-500'
                         : 'border-gray-300'
                     }`}>
                       {selectedQuizzes.includes(quiz.id) && (
@@ -314,10 +318,10 @@ export default function QuizSelectionModal({
 
           {/* Selection Summary */}
           {selectedQuizzes.length > 0 && (
-            <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-violet-600" />
-                <span className="font-medium text-violet-900">
+                <Check className="w-5 h-5 text-emerald-600" />
+                <span className="font-medium text-emerald-900">
                   Выбрано тестов: {selectedQuizzes.length}
                 </span>
               </div>
@@ -338,7 +342,7 @@ export default function QuizSelectionModal({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? 'Сохранение...' : 'Назначить тесты'}
