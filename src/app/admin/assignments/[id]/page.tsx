@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { 
@@ -105,10 +105,17 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
       return
     }
 
-    fetchAssignment()
-  }, [session, status, router, resolvedParams.id])
+    if (resolvedParams?.id) {
+      fetchAssignment()
+    }
+  }, [session, status, router, resolvedParams?.id, fetchAssignment])
 
-  const fetchAssignment = async () => {
+  const fetchAssignment = useCallback(async () => {
+    if (!resolvedParams?.id) {
+      console.log('🔍 [Admin Assignment Page] No assignment ID yet')
+      return
+    }
+    
     try {
       console.log('🔍 [Admin Assignment Page] Starting fetch for assignment:', resolvedParams.id)
       setLoading(true)
@@ -135,7 +142,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [resolvedParams?.id, router])
 
   const handleGrade = async (submissionId: string) => {
     if (!grade.trim()) {
