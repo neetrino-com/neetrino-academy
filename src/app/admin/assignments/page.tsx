@@ -208,7 +208,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                   Управление заданиями
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
@@ -218,7 +218,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
             </div>
             <button
               onClick={() => setShowTemplateModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-700 hover:to-orange-700 flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <Plus className="w-4 h-4" />
               Создать шаблон
@@ -233,10 +233,10 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-indigo-600 font-semibold">Всего заданий</p>
+                <p className="text-sm text-amber-600 font-semibold">Всего заданий</p>
                 <p className="text-3xl font-bold mt-1 text-gray-900">{stats.total}</p>
               </div>
-              <FileText className="w-8 h-8 text-indigo-600" />
+              <FileText className="w-8 h-8 text-amber-600" />
             </div>
           </div>
 
@@ -291,14 +291,14 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                 placeholder="Поиск заданий по названию, описанию или типу..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
             
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             >
               <option value="all">Все задания</option>
               <option value="templates">Шаблоны</option>
@@ -317,18 +317,18 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
 
           <div className="divide-y divide-gray-100">
             {filteredAssignments.map(assignment => (
-              <div key={assignment.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-indigo-200 relative overflow-hidden">
+              <div key={assignment.id} className="group bg-white/60 hover:bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-amber-200 relative overflow-hidden">
                 {/* Декоративный элемент */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                 
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                         <FileText className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-700 transition-colors">{assignment.title}</h3>
+                        <h3 className="font-bold text-gray-900 text-lg group-hover:text-amber-700 transition-colors">{assignment.title}</h3>
                         <div className="flex items-center gap-2 mt-1">
                           {assignment.isTemplate && (
                             <span className="px-3 py-1 text-xs rounded-full font-medium shadow-sm bg-orange-100 text-orange-800">
@@ -377,7 +377,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
                   <div className="flex gap-3 ml-6 opacity-60 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => router.push(`/admin/assignments/${assignment.id}`)}
-                      className="w-12 h-12 flex items-center justify-center text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-indigo-200 hover:border-indigo-600 backdrop-blur-sm"
+                      className="w-12 h-12 flex items-center justify-center text-amber-600 hover:text-white hover:bg-amber-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-amber-200 hover:border-amber-600 backdrop-blur-sm"
                       title="Просмотреть"
                     >
                       <Eye className="w-5 h-5" />
@@ -385,7 +385,7 @@ function AssignmentsPageComponent({ userRole, isLoading }: WithRoleProtectionPro
 
                     <button
                       onClick={() => setEditingAssignment(assignment)}
-                      className="w-12 h-12 flex items-center justify-center text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-blue-200 hover:border-blue-600 backdrop-blur-sm"
+                      className="w-12 h-12 flex items-center justify-center text-amber-600 hover:text-white hover:bg-amber-600 rounded-xl transition-all duration-200 hover:scale-110 shadow-md hover:shadow-lg border-2 border-amber-200 hover:border-amber-600 backdrop-blur-sm"
                       title="Редактировать"
                     >
                       <Edit className="w-5 h-5" />
