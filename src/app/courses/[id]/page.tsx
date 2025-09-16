@@ -411,7 +411,7 @@ export default function CourseDetailPage() {
 
         {/* Модальное окно успешной записи */}
         {showPaymentModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
               <div className="text-green-600 mb-4">
                 <CreditCard className="w-16 h-16 mx-auto" />

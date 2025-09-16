@@ -117,7 +117,7 @@ export function AccessManagement({ studentId, studentName, onClose }: AccessMana
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Заголовок */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">

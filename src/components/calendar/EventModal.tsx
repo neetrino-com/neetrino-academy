@@ -272,7 +272,7 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
 
   if (loadingEvent) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Загрузка события...</p>
@@ -282,7 +282,7 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventId, groupId
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50 p-2">
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-2">
       <div className="bg-white rounded-2xl w-[95vw] h-[95vh] flex flex-col">
         {/* Заголовок */}
         <div className="p-6 border-b bg-gray-50 rounded-t-2xl">

@@ -378,7 +378,7 @@ export default function Calendar({ groupId, canCreateEvents = false, onEventCrea
 
       {/* Модальное окно события */}
       {selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               {/* Заголовок модального окна */}

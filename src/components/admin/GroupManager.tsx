@@ -228,7 +228,7 @@ export default function GroupManager({ onClose }: GroupManagerProps) {
 
   if (loading) {
     return (
-      <div className="fixed inset-0  flex items-center justify-center z-50">
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg p-6">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-2 text-slate-600">Загрузка...</p>
@@ -373,7 +373,7 @@ export default function GroupManager({ onClose }: GroupManagerProps) {
 
         {/* Модальное окно создания группы */}
         {showCreateForm && (
-          <div className="fixed inset-0  flex items-center justify-center z-50">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-slate-800">Создать группу</h3>
@@ -488,7 +488,7 @@ export default function GroupManager({ onClose }: GroupManagerProps) {
 
         {/* Модальное окно добавления студента */}
         {showAddStudent && selectedGroup && (
-          <div className="fixed inset-0  flex items-center justify-center z-50">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-slate-800">Добавить студента в группу "{selectedGroup.name}"</h3>
@@ -526,7 +526,7 @@ export default function GroupManager({ onClose }: GroupManagerProps) {
 
         {/* Модальное окно добавления учителя */}
         {showAddTeacher && selectedGroup && (
-          <div className="fixed inset-0  flex items-center justify-center z-50">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-slate-800">Добавить учителя в группу "{selectedGroup.name}"</h3>
@@ -585,7 +585,7 @@ export default function GroupManager({ onClose }: GroupManagerProps) {
 
         {/* Модальное окно добавления курса */}
         {showAddCourse && selectedGroup && (
-          <div className="fixed inset-0  flex items-center justify-center z-50">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-slate-800">Добавить курс в группу "{selectedGroup.name}"</h3>

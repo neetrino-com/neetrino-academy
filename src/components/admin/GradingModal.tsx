@@ -147,7 +147,7 @@ export default function GradingModal({ submission, onClose, onSuccess }: Grading
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 p-2">
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-2">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] h-[95vh] overflow-hidden flex flex-col">
         {/* Заголовок */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6">

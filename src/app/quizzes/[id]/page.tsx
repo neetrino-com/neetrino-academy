@@ -474,7 +474,7 @@ export default function QuizPage() {
 
       {/* Модальное окно уведомлений */}
       {showModal && modalContent && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
             {/* Заголовок */}
             <div className={`flex items-center justify-between p-4 border-b border-gray-200 ${

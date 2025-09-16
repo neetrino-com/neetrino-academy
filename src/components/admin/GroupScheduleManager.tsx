@@ -164,7 +164,7 @@ export default function GroupScheduleManager({ groupId, onClose, mode = 'modal' 
 
   if (loading) {
     return (
-      <div className={mode === 'modal' ? 'fixed inset-0 bg-black/50 flex items-center justify-center z-50' : 'p-6'}>
+      <div className={mode === 'modal' ? 'fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4' : 'p-6'}>
         <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-4" />
           <p className="text-gray-600">Загрузка расписания...</p>
@@ -174,7 +174,7 @@ export default function GroupScheduleManager({ groupId, onClose, mode = 'modal' 
   }
 
   return (
-    <div className={mode === 'modal' ? 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4' : ''}>
+    <div className={mode === 'modal' ? 'fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4' : ''}>
       <div className={mode === 'modal' ? 'bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden' : 'bg-white min-h-[calc(100vh-100px)]'}>
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6">
