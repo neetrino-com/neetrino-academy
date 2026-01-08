@@ -18,7 +18,7 @@ const createLessonSchema = z.object({
 // GET /api/admin/modules/[id]/lessons - получение уроков модуля
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -79,7 +79,7 @@ export async function GET(
 // POST /api/admin/modules/[id]/lessons - создание нового урока
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 // GET /api/courses/[id]/access - проверка доступа к курсу
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
 
     // Найти пользователя
     const user = await prisma.user.findUnique({

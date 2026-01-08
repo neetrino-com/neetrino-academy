@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 // POST /api/courses/[id]/request-access - запрос временного доступа
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
-    const courseId = params.id;
+    const { id: courseId } = await params;
     const { reason } = await request.json();
 
     // Найти пользователя

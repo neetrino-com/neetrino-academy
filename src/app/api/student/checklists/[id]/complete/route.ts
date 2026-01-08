@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const checklistId = params.id;
+    const { id: checklistId } = await params;
     const userId = session.user.id;
 
     // Получаем чеклист с группами и элементами

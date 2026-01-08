@@ -12,7 +12,7 @@ const updateModuleSchema = z.object({
 // GET /api/admin/modules/[id] - получение модуля
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -33,8 +33,9 @@ export async function GET(
       )
     }
 
+    const { id } = await params;
     const existingModule = await prisma.module.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         course: {
           select: {
@@ -69,7 +70,7 @@ export async function GET(
 // PUT /api/admin/modules/[id] - обновление модуля
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -90,9 +91,10 @@ export async function PUT(
       )
     }
 
+    const { id } = await params;
     // Проверяем существование модуля
     const existingModule = await prisma.module.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingModule) {
@@ -107,7 +109,7 @@ export async function PUT(
 
     // Обновляем модуль
     const updatedModule = await prisma.module.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title: validatedData.title,
         description: validatedData.description,
@@ -145,7 +147,7 @@ export async function PUT(
 // DELETE /api/admin/modules/[id] - удаление модуля
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -166,9 +168,10 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params;
     // Проверяем существование модуля
     const existingModule = await prisma.module.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingModule) {
@@ -180,7 +183,7 @@ export async function DELETE(
 
     // Удаляем модуль (каскадно удалятся и все уроки)
     await prisma.module.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Модуль успешно удален' })

@@ -12,7 +12,7 @@ const gradeSubmissionSchema = z.object({
 // POST /api/submissions/[id]/grade - оценка сданного задания
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -33,9 +33,10 @@ export async function POST(
       );
     }
 
+    const { id } = await params;
     // Проверяем существование сдачи
     const submission = await prisma.submission.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         assignment: {
           include: {
@@ -84,7 +85,7 @@ export async function POST(
 
     // Обновляем сдачу с оценкой
     const updatedSubmission = await prisma.submission.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         score: validatedData.score,
         feedback: validatedData.feedback,

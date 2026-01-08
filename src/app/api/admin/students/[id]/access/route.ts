@@ -12,7 +12,7 @@ const updateAccessSchema = z.object({
 // PUT /api/admin/students/[id]/access - управление доступом студента к курсам
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -30,7 +30,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 });
     }
 
-    const studentId = params.id;
+    const { id: studentId } = await params;
     const validatedData = updateAccessSchema.parse(await request.json());
     const { courseId, action, reason } = validatedData;
 
