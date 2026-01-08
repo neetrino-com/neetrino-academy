@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 // GET - получить лекцию по ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,8 +14,9 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const lecture = await prisma.lecture.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         creator: {
           select: {
@@ -73,7 +74,7 @@ export async function GET(
 // PUT - обновить лекцию
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -82,6 +83,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { title, content, description, thumbnail, isActive } = body;
 
@@ -93,7 +95,7 @@ export async function PUT(
     }
 
     const lecture = await prisma.lecture.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         content: JSON.stringify(content),
@@ -126,7 +128,7 @@ export async function PUT(
 // DELETE - удалить лекцию
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -135,9 +137,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     // Проверяем, используется ли лекция в уроках
     const lessonsWithLecture = await prisma.lesson.findMany({
-      where: { lectureId: params.id },
+      where: { lectureId: id },
       select: { id: true, title: true },
     });
 
@@ -152,7 +155,7 @@ export async function DELETE(
     }
 
     await prisma.lecture.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Lecture deleted successfully' });
