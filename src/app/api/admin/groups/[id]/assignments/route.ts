@@ -3,14 +3,10 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyGroupStudentsAboutNewAssignment } from '@/lib/notifications'
 
-interface Params {
-  id: string
-}
-
 // Создать задание для группы
 export async function POST(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -169,7 +165,7 @@ export async function POST(
 // Получить все задания группы
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -224,7 +220,7 @@ export async function GET(
 // Удалить задание из группы
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
