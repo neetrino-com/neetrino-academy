@@ -3,14 +3,10 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyGroupMembersAboutNewMessage } from '@/lib/notifications'
 
-interface Params {
-  id: string
-}
-
 // Получить сообщения группы
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -120,7 +116,7 @@ export async function GET(
 // Отправить новое сообщение
 export async function POST(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()

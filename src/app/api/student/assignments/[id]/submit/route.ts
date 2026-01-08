@@ -3,14 +3,10 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyGroupTeachersAboutSubmission } from '@/lib/notifications'
 
-interface Params {
-  id: string
-}
-
 // Отправить решение задания
 export async function POST(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   console.log('🚀 [Submit API] ROUTE CALLED!')
   console.log('🚀 [Submit API] Request URL:', request.url)
