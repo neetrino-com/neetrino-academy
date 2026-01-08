@@ -1335,15 +1335,15 @@ fetch('/admin/api/2023-04/graphql.json', {
   // Тест для WordPress урока
   if (wpLessons.length > 0) {
     const wpQuiz = await prisma.quiz.upsert({
-      where: { lessonId: wpLessons[0].id },
+      where: { id: 'wp-quiz-001' },
       update: {},
       create: {
+        id: 'wp-quiz-001',
         title: 'Тест по основам WordPress',
         description: 'Проверьте свои знания основ WordPress',
         timeLimit: 15, // 15 минут
         passingScore: 70,
         isActive: true,
-        lessonId: wpLessons[0].id,
         createdBy: teacher1.id,
         questions: {
           create: [
@@ -1431,21 +1431,37 @@ fetch('/admin/api/2023-04/graphql.json', {
         }
       }
     })
+    
+    // Создаем связь Quiz с Lesson через QuizLesson
+    await prisma.quizLesson.upsert({
+      where: {
+        quizId_lessonId: {
+          quizId: wpQuiz.id,
+          lessonId: wpLessons[0].id
+        }
+      },
+      update: {},
+      create: {
+        quizId: wpQuiz.id,
+        lessonId: wpLessons[0].id
+      }
+    })
+    
     console.log(`✅ Создан тест для WordPress: ${wpQuiz.title}`)
   }
 
   // Тест для Frontend урока
   if (frontendLessons.length > 0) {
     const frontendQuiz = await prisma.quiz.upsert({
-      where: { lessonId: frontendLessons[0].id },
+      where: { id: 'frontend-quiz-001' },
       update: {},
       create: {
+        id: 'frontend-quiz-001',
         title: 'Тест по JavaScript ES6+',
         description: 'Проверьте знания современного JavaScript',
         timeLimit: 20,
         passingScore: 75,
         isActive: true,
-        lessonId: frontendLessons[0].id,
         createdBy: teacher2.id,
         questions: {
           create: [
@@ -1508,21 +1524,37 @@ fetch('/admin/api/2023-04/graphql.json', {
         }
       }
     })
+    
+    // Создаем связь Quiz с Lesson через QuizLesson
+    await prisma.quizLesson.upsert({
+      where: {
+        quizId_lessonId: {
+          quizId: frontendQuiz.id,
+          lessonId: frontendLessons[0].id
+        }
+      },
+      update: {},
+      create: {
+        quizId: frontendQuiz.id,
+        lessonId: frontendLessons[0].id
+      }
+    })
+    
     console.log(`✅ Создан тест для Frontend: ${frontendQuiz.title}`)
   }
 
   // Тест для Shopify урока
   if (shopifyLessons.length > 0) {
     const shopifyQuiz = await prisma.quiz.upsert({
-      where: { lessonId: shopifyLessons[0].id },
+      where: { id: 'shopify-quiz-001' },
       update: {},
       create: {
+        id: 'shopify-quiz-001',
         title: 'Тест по Shopify REST API',
         description: 'Проверьте знания работы с Shopify API',
         timeLimit: 25,
         passingScore: 80,
         isActive: true,
-        lessonId: shopifyLessons[0].id,
         createdBy: teacher3.id,
         questions: {
           create: [
@@ -1585,6 +1617,22 @@ fetch('/admin/api/2023-04/graphql.json', {
         }
       }
     })
+    
+    // Создаем связь Quiz с Lesson через QuizLesson
+    await prisma.quizLesson.upsert({
+      where: {
+        quizId_lessonId: {
+          quizId: shopifyQuiz.id,
+          lessonId: shopifyLessons[0].id
+        }
+      },
+      update: {},
+      create: {
+        quizId: shopifyQuiz.id,
+        lessonId: shopifyLessons[0].id
+      }
+    })
+    
     console.log(`✅ Создан тест для Shopify: ${shopifyQuiz.title}`)
   }
 
