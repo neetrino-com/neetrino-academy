@@ -49,7 +49,7 @@ const updateCourseSchema = z.object({
 // GET /api/admin/courses/[id] - получение курса
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -159,7 +159,7 @@ export async function GET(
 // PUT /api/admin/courses/[id] - обновление курса
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -470,7 +470,7 @@ export async function PUT(
 // DELETE /api/admin/courses/[id] - удаление курса
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()

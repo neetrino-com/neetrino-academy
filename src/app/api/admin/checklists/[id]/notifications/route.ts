@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 // Получение уведомлений по чеклисту
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const checklistId = params.id;
+    const resolvedParams = await params;
+    const checklistId = resolvedParams.id;
 
     // Получаем уведомления по чеклисту
     const notifications = await prisma.notification.findMany({
@@ -50,7 +51,7 @@ export async function GET(
 // Создание уведомления о завершении чеклиста
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -59,7 +60,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const checklistId = params.id;
+    const resolvedParams = await params;
+    const checklistId = resolvedParams.id;
     const { userId, message, type = 'CHECKLIST_COMPLETION' } = await request.json();
 
     // Проверяем существование чеклиста и пользователя

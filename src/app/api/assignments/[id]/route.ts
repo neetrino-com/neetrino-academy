@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 // GET /api/assignments/[id] - получение конкретного задания
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,8 +14,9 @@ export async function GET(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const assignment = await prisma.assignment.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       include: {
         lesson: {
           include: {
@@ -86,7 +87,7 @@ export async function GET(
 // PUT /api/assignments/[id] - редактирование задания
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -107,12 +108,13 @@ export async function PUT(
       );
     }
 
+    const resolvedParams = await params;
     const body = await request.json();
     const { title, description, dueDate, lessonId, type, maxScore } = body;
 
     // Проверяем существование задания
     const existingAssignment = await prisma.assignment.findUnique({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     if (!existingAssignment) {
@@ -132,7 +134,7 @@ export async function PUT(
 
     // Обновляем задание
     const updatedAssignment = await prisma.assignment.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         title: title || existingAssignment.title,
         description: description !== undefined ? description : existingAssignment.description,
@@ -174,7 +176,7 @@ export async function PUT(
 // DELETE /api/assignments/[id] - удаление задания
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -195,9 +197,10 @@ export async function DELETE(
       );
     }
 
+    const resolvedParams = await params;
     // Проверяем существование задания
     const existingAssignment = await prisma.assignment.findUnique({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     if (!existingAssignment) {
@@ -217,7 +220,7 @@ export async function DELETE(
 
     // Удаляем задание (каскадно удалятся и все сдачи)
     await prisma.assignment.delete({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     return NextResponse.json({ message: 'Задание успешно удалено' });

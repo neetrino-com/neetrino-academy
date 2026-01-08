@@ -24,7 +24,7 @@ export interface WithRoleProtectionProps {
  * @param options - Дополнительные опции защиты
  */
 export function withRoleProtection<T extends object>(
-  WrappedComponent: ComponentType<T & WithRoleProtectionProps>,
+  WrappedComponent: ComponentType<any>,
   requiredRoles: UserRole[],
   options: ProtectionOptions = {}
 ) {
@@ -69,7 +69,7 @@ export function withRoleProtection<T extends object>(
     // Если все проверки пройдены, рендерим защищенный компонент
     return (
       <WrappedComponent
-        {...props}
+        {...(props as T & WithRoleProtectionProps)}
         userRole={session?.user?.role as UserRole}
         isLoading={status === 'loading'}
       />

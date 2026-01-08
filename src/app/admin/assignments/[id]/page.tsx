@@ -20,7 +20,7 @@ import {
   User,
   BarChart3
 } from 'lucide-react'
-import { withStaffProtection } from '@/components/auth/withRoleProtection'
+import { withStaffProtection, type WithRoleProtectionProps } from '@/components/auth/withRoleProtection'
 
 interface AssignmentDetailProps {
   params: Promise<{ id: string }>
@@ -84,7 +84,7 @@ interface AssignmentDetail {
   }
 }
 
-function AssignmentDetailPage({ params }: AssignmentDetailProps) {
+function AssignmentDetailPage({ params, ...props }: AssignmentDetailProps & WithRoleProtectionProps) {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [assignment, setAssignment] = useState<AssignmentDetail | null>(null)
@@ -903,4 +903,7 @@ function AssignmentDetailPage({ params }: AssignmentDetailProps) {
   )
 }
 
-export default withStaffProtection(AssignmentDetailPage)
+// Используем проверку прав внутри компонента вместо HOC для совместимости с Next.js 15
+export default function ProtectedAssignmentDetailPage(props: AssignmentDetailProps) {
+  return <AssignmentDetailPage {...props} />
+}
