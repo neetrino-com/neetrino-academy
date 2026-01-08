@@ -170,9 +170,11 @@ async function main() {
   console.log(`Обновлен урок: ${updatedLesson.id}`)
 
   // 4. Добавляем больше вопросов к тесту
-  const existingQuiz = await prisma.quiz.findFirst({
-    where: { lessonId: firstLesson.id }
+  const quizLesson = await prisma.quizLesson.findFirst({
+    where: { lessonId: firstLesson.id },
+    include: { quiz: true }
   })
+  const existingQuiz = quizLesson?.quiz
 
   if (existingQuiz) {
     // Добавляем дополнительные вопросы
