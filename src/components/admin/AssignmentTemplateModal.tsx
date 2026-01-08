@@ -94,7 +94,7 @@ export default function AssignmentTemplateModal({
       } else {
         const errorData = await response.json()
         if (errorData.details) {
-          setErrors(errorData.details.reduce((acc: any, error: any) => {
+          setErrors(errorData.details.reduce((acc: Record<string, string>, error: { field: string; message: string }) => {
             acc[error.path[0]] = error.message
             return acc
           }, {}))

@@ -125,7 +125,7 @@ export default function AttendanceJournal({ groupId }: AttendanceJournalProps) {
         reason: 'Изменение группы или даты'
       })
       setLoading(true)
-      let url = `/api/admin/groups/${groupId}/attendance?view=calendar&year=${year}&month=${month}`
+        const url = `/api/admin/groups/${groupId}/attendance?view=calendar&year=${year}&month=${month}`
       
       console.log(`📅 Запрос данных за ${year}-${month.toString().padStart(2, '0')} для режима: ${viewMode}`)
       

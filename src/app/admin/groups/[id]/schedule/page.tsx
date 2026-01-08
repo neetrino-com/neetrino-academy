@@ -780,13 +780,13 @@ export default function GroupSchedulePage() {
                           {daySchedule.map((entry) => (
                             <div key={entry.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
                               <div className="flex items-center gap-3">
-                                <div className={`w-3 h-3 rounded-full ${getEventTypeGradientClass(entry.type as any)}`}></div>
+                                <div className={`w-3 h-3 rounded-full ${getEventTypeGradientClass(entry.type as 'LESSON' | 'EXAM' | 'DEADLINE' | 'MEETING' | 'WORKSHOP' | 'SEMINAR' | 'CONSULTATION' | 'ANNOUNCEMENT' | 'OTHER')}`}></div>
                                 <Clock className="w-4 h-4 text-gray-500" />
                                 <span className="text-sm font-medium">
                                   {entry.startTime} - {entry.endTime}
                                 </span>
                                 <span className="text-xs text-gray-600 bg-gray-200 px-2 py-1 rounded">
-                                  {getEventTypeLabel(entry.type as any)}
+                                  {getEventTypeLabel(entry.type as 'LESSON' | 'EXAM' | 'DEADLINE' | 'MEETING' | 'WORKSHOP' | 'SEMINAR' | 'CONSULTATION' | 'ANNOUNCEMENT' | 'OTHER')}
                                 </span>
                               </div>
                               <button

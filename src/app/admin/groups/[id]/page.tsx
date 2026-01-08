@@ -134,7 +134,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [showQuizSelectionModal, setShowQuizSelectionModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | undefined>()
-  const [groupQuizzes, setGroupQuizzes] = useState<any[]>([])
+  const [groupQuizzes, setGroupQuizzes] = useState<Array<{ id: string; title: string; description?: string; timeLimit?: number; passingScore: number }>>([])
   const [assignedQuizIds, setAssignedQuizIds] = useState<string[]>([])
   
   // Развертываем промис params
@@ -177,7 +177,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
       if (response.ok) {
         const quizzes = await response.json()
         setGroupQuizzes(quizzes)
-        setAssignedQuizIds(quizzes.map((q: any) => q.id))
+        setAssignedQuizIds(quizzes.map((q: { id: string }) => q.id))
       } else {
         console.error('Error fetching group quizzes:', response.status, response.statusText)
         const errorData = await response.json()
@@ -475,7 +475,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
       : 'bg-amber-100 text-amber-800'
   }
 
-  const tabs: { id: TabId; label: string; icon: any }[] = [
+  const tabs: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'overview', label: 'Обзор', icon: Activity },
     { id: 'students', label: `Студенты (${group.students.length})`, icon: Users },
     { id: 'teachers', label: `Преподаватели (${group.teachers.length})`, icon: GraduationCap },

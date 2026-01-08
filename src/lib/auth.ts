@@ -142,8 +142,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       // При входе устанавливаем базовые поля
       if (user) {
-        token.role = (user as any).role
-        token.id = (user as any).id
+        token.role = (user as { role: string }).role
+        token.id = (user as { id: string }).id
         return token
       }
 
@@ -177,7 +177,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       // Если токен пустой/недействительный — сессии нет
       if (!token?.id) {
-        return null as any
+        return null as unknown as typeof session
       }
       session.user.id = token.id as string
       session.user.role = token.role as string

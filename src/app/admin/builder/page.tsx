@@ -255,7 +255,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
               description?: string;
               dueDate?: string;
             }>;
-            quiz?: any;
+            quiz?: Quiz | null;
           }) => {
             // Тест уже пришел с уроком из API
             const quiz = lesson.quiz || null

@@ -9,7 +9,7 @@ export default function CreateQuizPage() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
 
-  const handleSave = async (quizData: any) => {
+  const handleSave = async (quizData: { title: string; description?: string; timeLimit?: number; passingScore: number; attemptType: 'SINGLE' | 'MULTIPLE'; isActive: boolean; questions: Array<{ question: string; type: string; points: number; order: number; options: Array<{ text: string; isCorrect: boolean; order: number }> }> }) => {
     setSaving(true)
     try {
       const response = await fetch('/api/admin/quizzes', {

@@ -147,7 +147,7 @@ export default function OptimizedScheduleDashboard() {
   const [loadingMore, setLoadingMore] = useState(false)
 
   // Кэш для данных
-  const [cache, setCache] = useState<Map<string, any>>(new Map())
+  const [cache, setCache] = useState<Map<string, { data: unknown; timestamp: number }>>(new Map())
   const CACHE_DURATION = 5 * 60 * 1000 // 5 минут
   
   // Отслеживание загруженных месяцев для ленивой загрузки
@@ -161,16 +161,16 @@ export default function OptimizedScheduleDashboard() {
   }, [])
 
   // Функция для получения данных из кэша или API
-  const getCachedData = useCallback(async (key: string, fetcher: () => Promise<any>) => {
+  const getCachedData = useCallback(async <T,>(key: string, fetcher: () => Promise<T>): Promise<T> => {
     const cached = cache.get(key)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       console.log(`📦 [Cache] Используем кэшированные данные для ${key}`)
-      return cached.data
+      return cached.data as T.data
     }
 
     console.log(`🌐 [API] Загружаем данные для ${key}`)
     const data = await fetcher()
-    setCache(prev => new Map(prev.set(key, { data, timestamp: Date.now() })))
+    setCache(prev => new Map(prev.set(key, { data: data as unknown, timestamp: Date.now() })))
     return data
   }, [cache])
 
@@ -212,7 +212,7 @@ export default function OptimizedScheduleDashboard() {
 
       if (data.success) {
         console.log(`✅ [Schedule] Получены данные: ${data.events?.length || 0} событий`)
-        console.log(`✅ [Schedule] События:`, data.events?.map((e: any) => ({ id: e.id, title: e.title, startDate: e.startDate })))
+        console.log(`✅ [Schedule] События:`, data.events?.map((e: CalendarEvent) => ({ id: e.id, title: e.title, startDate: e.startDate })))
         setGroups(data.groups || [])
         setTeachers(data.teachers || [])
         // Заменяем события при основной загрузке
@@ -583,7 +583,7 @@ export default function OptimizedScheduleDashboard() {
     }
   }, [deletingEvent])
 
-  const handleSaveEvent = useCallback(async (eventData: any) => {
+  const handleSaveEvent = useCallback(async (eventData: Partial<CalendarEvent> & { title: string; startDate: string; endDate: string; groupId: string }) => {
     try {
       console.log('Сохранение события:', eventData)
       

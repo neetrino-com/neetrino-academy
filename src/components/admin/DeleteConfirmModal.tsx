@@ -49,7 +49,7 @@ export default function DeleteConfirmModal({
             </p>
             <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
               <p className="font-medium text-gray-900 text-center">
-                "{eventTitle}"
+                &ldquo;{eventTitle}&rdquo;
               </p>
             </div>
           </div>

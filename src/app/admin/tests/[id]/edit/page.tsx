@@ -13,7 +13,19 @@ interface QuizData {
   passingScore: number
   attemptType: 'SINGLE' | 'MULTIPLE'
   isActive: boolean
-  questions: any[]
+  questions: Array<{
+    id: string
+    question: string
+    type: string
+    points: number
+    order: number
+    options?: Array<{
+      id: string
+      text: string
+      isCorrect: boolean
+      order: number
+    }>
+  }>
   quizLessons?: Array<{
     lesson: {
       id: string
@@ -62,7 +74,7 @@ export default function EditQuizPage() {
     }
   }
 
-  const handleSave = async (quizData: any) => {
+  const handleSave = async (quizData: Partial<QuizData> & { title: string; questions: QuizData['questions'] }) => {
     setSaving(true)
     try {
       const response = await fetch(`/api/admin/quizzes/${quizId}`, {

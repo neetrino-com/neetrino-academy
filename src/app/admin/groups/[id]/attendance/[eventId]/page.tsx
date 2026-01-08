@@ -66,7 +66,7 @@ export default function EventAttendancePage() {
       const response = await fetch(`/api/admin/groups/${groupId}/attendance`)
       if (response.ok) {
         const data = await response.json()
-        const eventData = data.events.find((e: any) => e.id === eventId)
+        const eventData = data.events.find((e: { id: string }) => e.id === eventId)
         
         if (eventData) {
           setEvent({
@@ -80,7 +80,7 @@ export default function EventAttendancePage() {
           // Добавить всех студентов группы
           if (data.group?.students && Array.isArray(data.group.students)) {
             data.group.students.forEach((student: Student) => {
-              const attendee = eventData.attendees?.find((a: any) => a.userId === student.id)
+              const attendee = eventData.attendees?.find((a: { userId: string; status?: string }) => a.userId === student.id)
               initialAttendance[student.id] = attendee?.status || 'ABSENT'
             })
           }

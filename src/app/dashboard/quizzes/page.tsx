@@ -220,7 +220,7 @@ export default async function StudentQuizzesPage() {
       score: number;
       completedAt: string;
     } | null;
-    attempts: any[];
+    attempts: Array<{ id: string; score: number; maxScore: number; passed: boolean; startedAt: string; completedAt?: string }>;
   }) => {
     if (!quiz.latestAttempt) {
       return 'Начать тест'

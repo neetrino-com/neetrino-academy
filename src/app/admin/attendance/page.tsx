@@ -102,6 +102,17 @@ interface AttendanceStats {
   worstPerformingGroup: string
 }
 
+interface CalendarEvent {
+  id: string
+  title: string
+  date: Date
+  groupName: string
+  attended: number
+  total: number
+  attendanceRate: number
+  type: string
+}
+
 export default function AttendancePage() {
   const { data: session } = useSession()
   const router = useRouter()
@@ -120,9 +131,9 @@ export default function AttendancePage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [calendarEvents, setCalendarEvents] = useState<any[]>([])
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
   const [showEventModal, setShowEventModal] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<any>(null)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
 
   useEffect(() => {
     fetchAllAttendanceData()
@@ -331,8 +342,8 @@ export default function AttendancePage() {
   }
 
   // Функции для календарного режима
-  const generateCalendarEvents = () => {
-    const events: any[] = []
+  const generateCalendarEvents = (): CalendarEvent[] => {
+    const events: CalendarEvent[] = []
     
     groupAttendanceData.forEach(groupData => {
       groupData.events.forEach(event => {
@@ -443,7 +454,7 @@ export default function AttendancePage() {
     }
   }
 
-  const handleEventClick = (event: any) => {
+  const handleEventClick = (event: CalendarEvent) => {
     setSelectedEvent(event)
     setShowEventModal(true)
   }
@@ -470,7 +481,7 @@ export default function AttendancePage() {
       }
     })
     .sort((a, b) => {
-      let aValue: any, bValue: any
+      let aValue: string | number, bValue: string | number
       
       switch (sortBy) {
         case 'name':
@@ -758,7 +769,7 @@ export default function AttendancePage() {
                 <div className="flex items-center gap-2">
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
+                    onChange={(e) => setSortBy(e.target.value as 'name' | 'attendance' | 'students' | 'events')}
                     className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="name">По названию</option>

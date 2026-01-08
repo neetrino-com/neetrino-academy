@@ -6,7 +6,7 @@ interface CacheEntry<T> {
 }
 
 class MemoryCache {
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private defaultTTL = 5 * 60 * 1000 // 5 минут по умолчанию
 
   set<T>(key: string, data: T, ttl: number = this.defaultTTL): void {

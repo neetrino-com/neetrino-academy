@@ -494,7 +494,7 @@ export default function UsersManagement() {
                 <h3 className="text-lg font-semibold text-gray-900">Подтверждение действия</h3>
               </div>
               <p className="text-gray-600 mb-6">
-                Вы уверены, что хотите выполнить действие "{bulkAction}" для {selectedUsers.length} пользователей?
+                Вы уверены, что хотите выполнить действие &ldquo;{bulkAction}&rdquo; для {selectedUsers.length} пользователей?
               </p>
               <div className="flex gap-3 justify-end">
                 <button

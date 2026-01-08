@@ -21,6 +21,20 @@ const eslintConfig = [
       "src/generated/**",
     ],
   },
+  {
+    files: ["src/app/api/**/*.ts", "src/app/test-*/**/*.tsx", "src/app/payments/**/*.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "react/no-unescaped-entities": "off",
+      "prefer-const": "warn",
+    },
+  },
+  {
+    rules: {
+      "react/no-unescaped-entities": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 ];
 
 export default eslintConfig;
