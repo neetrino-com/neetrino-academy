@@ -17,10 +17,22 @@ interface Module {
     title: string;
     description?: string | null;
     order: number;
+    duration: number;
+    lectureId?: string | null;
+    lecture?: {
+      id: string;
+      title: string;
+    } | null;
+    quiz?: {
+      id: string;
+      title: string;
+      description?: string | null;
+      timeLimit?: number | null;
+      passingScore: number;
+    } | null;
   }>
   _count: {
     lessons: number
-    assignments: number
   }
 }
 
