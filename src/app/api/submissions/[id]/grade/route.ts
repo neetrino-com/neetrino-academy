@@ -40,9 +40,13 @@ export async function POST(
       include: {
         assignment: {
           include: {
-            module: {
+            lesson: {
               include: {
-                course: true
+                module: {
+                  include: {
+                    course: true
+                  }
+                }
               }
             }
           }
@@ -101,9 +105,13 @@ export async function POST(
         },
         assignment: {
           include: {
-            module: {
+            lesson: {
               include: {
-                course: true
+                module: {
+                  include: {
+                    course: true
+                  }
+                }
               }
             }
           }

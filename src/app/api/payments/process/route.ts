@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { courseId, amount, currency, paymentMethod = 'CARD' } = body;
+    const { courseId, amount, currency, paymentMethod = 'CARD', paymentType = 'ONE_TIME' } = body;
 
     if (!courseId || !amount) {
       return NextResponse.json(
@@ -55,6 +55,18 @@ export async function POST(request: NextRequest) {
     // Определяем статус платежа в зависимости от способа оплаты
     const paymentStatus: 'PAID' | 'PENDING' | 'OVERDUE' | 'CANCELLED' = paymentMethod === 'CASH' ? 'PAID' : 'PAID';
     
+    // Валидация paymentMethod
+    const validPaymentMethods = ['CARD', 'CASH', 'BANK_TRANSFER', 'ONLINE']
+    const validPaymentMethod = validPaymentMethods.includes(paymentMethod) 
+      ? paymentMethod as 'CARD' | 'CASH' | 'BANK_TRANSFER' | 'ONLINE'
+      : 'CARD'
+    
+    // Валидация paymentType
+    const validPaymentTypes = ['ONE_TIME', 'MONTHLY']
+    const validPaymentType = validPaymentTypes.includes(paymentType)
+      ? paymentType as 'ONE_TIME' | 'MONTHLY'
+      : 'ONE_TIME'
+    
     // Создаем запись о платеже
     const payment = await prisma.payment.create({
       data: {
@@ -63,7 +75,8 @@ export async function POST(request: NextRequest) {
         amount: parseFloat(amount.toString()),
         currency: currency || 'RUB',
         status: paymentStatus,
-        paymentMethod: paymentMethod,
+        paymentType: validPaymentType,
+        paymentMethod: validPaymentMethod,
         transactionId: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         paidAt: new Date()
       }

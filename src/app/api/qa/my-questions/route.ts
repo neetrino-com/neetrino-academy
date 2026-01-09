@@ -19,30 +19,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const questions = await prisma.question.findMany({
-      where: {
-        studentId: user.id
-      },
-      include: {
-        student: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        teacher: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    // Временно отключено: модель Question не определена в схеме Prisma
+    const questions: any[] = []
 
     const formattedQuestions = questions.map(question => ({
       id: question.id,

@@ -199,13 +199,17 @@ export async function GET(
         },
         assignment: {
           include: {
-            module: {
+            lesson: {
               include: {
-                course: {
-                  select: {
-                    id: true,
-                    title: true,
-                    direction: true
+                module: {
+                  include: {
+                    course: {
+                      select: {
+                        id: true,
+                        title: true,
+                        direction: true
+                      }
+                    }
                   }
                 }
               }
@@ -216,6 +220,13 @@ export async function GET(
                   select: {
                     id: true,
                     name: true
+                  },
+                  include: {
+                    teachers: {
+                      select: {
+                        userId: true
+                      }
+                    }
                   }
                 }
               }

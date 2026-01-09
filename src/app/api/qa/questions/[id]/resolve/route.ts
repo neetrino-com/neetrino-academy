@@ -23,7 +23,9 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Проверяем, что вопрос существует
+    // Временно отключено: модель Question не определена в схеме Prisma
+    return NextResponse.json({ error: 'Question functionality is temporarily disabled' }, { status: 501 })
+    /* // Проверяем, что вопрос существует
     const question = await prisma.question.findUnique({
       where: { id },
       include: {
@@ -84,6 +86,7 @@ export async function POST(
       teacherName: updatedQuestion.teacher?.name || updatedQuestion.teacher?.email,
       tags: updatedQuestion.tags ? JSON.parse(updatedQuestion.tags) : []
     })
+    */
   } catch (error) {
     console.error('Error resolving question:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

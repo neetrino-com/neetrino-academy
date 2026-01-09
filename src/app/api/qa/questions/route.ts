@@ -16,35 +16,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const questions = await prisma.question.findMany({
-      include: {
-        student: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        },
-        teacher: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-
-    const formattedQuestions = questions.map(question => ({
+    // Временно отключено: модель Question не определена в схеме Prisma
+    const questions: any[] = []
+    const formattedQuestions = questions.map((question: any) => ({
       id: question.id,
       title: question.title,
       content: question.content,
       studentId: question.studentId,
-      studentName: question.student.name || question.student.email,
-      status: question.status.toLowerCase(),
+      studentName: question.student?.name || question.student?.email,
+      status: question.status?.toLowerCase() || 'pending',
       createdAt: question.createdAt,
       answeredAt: question.answeredAt,
       answer: question.answer,
@@ -82,56 +62,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const question = await prisma.question.create({
-      data: {
-        title,
-        content,
-        studentId: user.id,
-        tags: JSON.stringify(tags)
-      },
-      include: {
-        student: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    })
-
-    // Создаем уведомления для всех преподавателей
-    const teachers = await prisma.user.findMany({
-      where: {
-        role: { in: ['TEACHER', 'ADMIN'] }
-      }
-    })
-
-    const notifications = teachers.map(teacher => ({
-      userId: teacher.id,
-      type: 'NEW_QUESTION',
-      title: 'Новый вопрос от студента',
-      message: `${user.name || user.email}: ${title}`,
-      data: {
-        questionId: question.id,
-        studentId: user.id
-      }
-    }))
-
-    await prisma.notification.createMany({
-      data: notifications
-    })
-
-    return NextResponse.json({
-      id: question.id,
-      title: question.title,
-      content: question.content,
-      studentId: question.studentId,
-      studentName: question.student.name || question.student.email,
-      status: question.status.toLowerCase(),
-      createdAt: question.createdAt,
-      tags: JSON.parse(question.tags || '[]')
-    })
+    // Временно отключено: модель Question не определена в схеме Prisma
+    return NextResponse.json({ error: 'Question functionality is temporarily disabled' }, { status: 501 })
   } catch (error) {
     console.error('Error creating question:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

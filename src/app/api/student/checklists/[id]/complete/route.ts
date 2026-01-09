@@ -41,7 +41,6 @@ export async function POST(
         }
       },
       include: {
-        itemProgress: true
       }
     });
 
@@ -50,25 +49,37 @@ export async function POST(
       checklistProgress = await prisma.checklistProgress.create({
         data: {
           userId,
-          checklistId,
-          itemProgress: {
-            create: checklist.groups.flatMap(group =>
-              group.items.map(item => ({
-                itemId: item.id,
-                status: 'NOT_COMPLETED'
-              }))
-            )
-          }
-        },
-        include: {
-          itemProgress: true
+          checklistId
         }
       });
+      
+      // Создаем прогресс по пунктам отдельно
+      const itemProgressData = checklist.groups.flatMap(group =>
+        group.items.map(item => ({
+          userId,
+          itemId: item.id,
+          status: 'NOT_COMPLETED' as const
+        }))
+      );
+      
+      if (itemProgressData.length > 0) {
+        await prisma.checklistItemProgress.createMany({
+          data: itemProgressData
+        });
+      }
     }
 
+    // Получаем прогресс по пунктам
+    const itemProgressList = await prisma.checklistItemProgress.findMany({
+      where: {
+        userId,
+        itemId: { in: checklist.groups.flatMap(group => group.items.map(item => item.id)) }
+      }
+    });
+    
     // Подсчитываем общее количество пунктов и выполненных
     const totalItems = checklist.groups.reduce((sum, group) => sum + group.items.length, 0);
-    const completedItems = checklistProgress.itemProgress.filter(ip => ip.status === 'COMPLETED').length;
+    const completedItems = itemProgressList.filter(ip => ip.status === 'COMPLETED').length;
     const completionPercentage = Math.round((completedItems / totalItems) * 100);
 
     // Проверяем, завершен ли чеклист (все пункты выполнены)
@@ -79,16 +90,16 @@ export async function POST(
       await prisma.notification.create({
         data: {
           userId,
-          type: 'CHECKLIST_COMPLETION',
+          type: 'NEW_MESSAGE',
           title: `Чеклист завершен: ${checklist.title}`,
           message: `Поздравляем! Вы успешно завершили чеклист "${checklist.title}" по направлению "${checklist.direction}"`,
-          metadata: {
+          data: JSON.stringify({
             checklistId,
             checklistTitle: checklist.title,
             direction: checklist.direction,
             completionPercentage,
             completedAt: new Date().toISOString()
-          },
+          }),
           isRead: false
         }
       });
@@ -103,7 +114,7 @@ export async function POST(
         },
         data: {
           completedAt: new Date(),
-          completionPercentage
+          progress: completionPercentage
         }
       });
     }

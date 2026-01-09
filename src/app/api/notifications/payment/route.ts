@@ -31,37 +31,32 @@ export async function POST(request: NextRequest) {
     }
 
     // Определяем тип уведомления и заголовок
-    let notificationType: 'NEW_MESSAGE' = 'NEW_MESSAGE'
+    const notificationType = 'NEW_MESSAGE' as const
     let title = 'Напоминание о платеже'
     let description = message
 
     switch (type) {
       case 'payment_due':
-        notificationType = 'NEW_MESSAGE'
         title = 'Напоминание о платеже'
         description = `Напоминаем о необходимости оплаты курса "${course.title}"`
         break
       
       case 'payment_overdue':
-        notificationType = 'NEW_MESSAGE'
         title = 'Платеж просрочен'
         description = `Платеж за курс "${course.title}" просрочен. Доступ к курсу приостановлен.`
         break
       
       case 'payment_successful':
-        notificationType = 'NEW_MESSAGE'
         title = 'Платеж успешно обработан'
         description = `Платеж за курс "${course.title}" успешно обработан. Доступ к курсу восстановлен.`
         break
       
       case 'next_payment_created':
-        notificationType = 'NEW_MESSAGE'
         title = 'Создан следующий платеж'
         description = `Для курса "${course.title}" создан следующий ежемесячный платеж.`
         break
       
       default:
-        notificationType = 'NEW_MESSAGE'
         title = 'Уведомление о платеже'
         description = message || 'Уведомление о платеже'
     }
@@ -106,16 +101,13 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const where: {
-      userId: string;
-      type: string | { in: string[] };
-    } = {
+    const where: any = {
       userId,
       type: 'NEW_MESSAGE'
     }
 
-    if (type) {
-      where.type = type
+    if (type && ['NEW_MESSAGE'].includes(type)) {
+      where.type = type as 'NEW_MESSAGE'
     }
 
     const notifications = await prisma.notification.findMany({
