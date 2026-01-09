@@ -31,7 +31,6 @@ interface Assignment {
   description: string | null
   dueDate: string | null
   type: string
-  status: string
   maxScore: number | null
   source: 'course' | 'group'
   course: {
