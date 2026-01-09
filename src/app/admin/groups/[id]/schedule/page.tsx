@@ -49,6 +49,7 @@ interface Group {
 }
 
 interface GroupScheduleEvent {
+  description?: string | null
   id: string
   title: string
   start: string
@@ -385,7 +386,7 @@ export default function GroupSchedulePage() {
     setEditFormData({
       title: event.title,
       description: event.description || '',
-      type: event.type,
+      type: event.type as typeof EVENT_TYPES.LESSON,
       location: event.location || '',
       eventDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD (дата начала)
       startTime: startDate.toTimeString().slice(0, 5), // HH:MM
@@ -716,7 +717,7 @@ export default function GroupSchedulePage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Тип занятия</label>
                   <select
                     value={newSchedule.type}
-                    onChange={(e) => setNewSchedule({...newSchedule, type: e.target.value})}
+                    onChange={(e) => setNewSchedule({...newSchedule, type: e.target.value as typeof EVENT_TYPES.LESSON})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     {getEventTypeOptions().map((option) => (
@@ -887,7 +888,7 @@ export default function GroupSchedulePage() {
                   </label>
                   <select
                     value={editFormData.type}
-                    onChange={(e) => setEditFormData({...editFormData, type: e.target.value})}
+                    onChange={(e) => setEditFormData({...editFormData, type: e.target.value as typeof EVENT_TYPES.LESSON})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {getEventTypeOptions().map((option) => (

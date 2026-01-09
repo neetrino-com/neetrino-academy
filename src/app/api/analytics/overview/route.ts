@@ -115,12 +115,18 @@ export async function GET(request: NextRequest) {
           assignment: {
             select: {
               title: true,
-              module: {
+              lesson: {
                 select: {
+                  id: true,
                   title: true,
-                  course: {
+                  module: {
                     select: {
-                      title: true
+                      title: true,
+                      course: {
+                        select: {
+                          title: true
+                        }
+                      }
                     }
                   }
                 }
@@ -236,7 +242,7 @@ export async function GET(request: NextRequest) {
         id: submission.id,
         studentName: submission.user.name,
         assignmentTitle: submission.assignment.title,
-        courseTitle: submission.assignment.lesson.module.course.title,
+        courseTitle: submission.assignment.lesson?.module?.course?.title || 'Неизвестный курс',
         submittedAt: submission.submittedAt,
         score: submission.score,
         isGraded: !!submission.gradedAt

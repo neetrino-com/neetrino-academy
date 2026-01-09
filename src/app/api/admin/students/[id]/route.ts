@@ -146,16 +146,20 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            lesson: {
-              select: {
-                id: true,
-                title: true,
-                module: {
+            quizLessons: {
+              include: {
+                lesson: {
                   select: {
-                    course: {
+                    id: true,
+                    title: true,
+                    module: {
                       select: {
-                        id: true,
-                        title: true
+                        course: {
+                          select: {
+                            id: true,
+                            title: true
+                          }
+                        }
                       }
                     }
                   }
@@ -178,14 +182,20 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            module: {
+            lesson: {
               select: {
                 id: true,
                 title: true,
-                course: {
+                module: {
                   select: {
                     id: true,
-                    title: true
+                    title: true,
+                    course: {
+                      select: {
+                        id: true,
+                        title: true
+                      }
+                    }
                   }
                 }
               }

@@ -62,8 +62,8 @@ export async function POST(
           userId: admin.id,
           title: 'Запрос временного доступа к курсу',
           message: `Студент ${user.name} (${user.email}) запрашивает временный доступ к курсу "${enrollment.course.title}". Причина: ${reason || 'Не указана'}`,
-          type: 'access_request',
-          metadata: JSON.stringify({
+          type: 'NEW_MESSAGE',
+          data: JSON.stringify({
             studentId: user.id,
             studentName: user.name,
             studentEmail: user.email,

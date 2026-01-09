@@ -28,8 +28,9 @@ export async function GET(request: NextRequest) {
     const whereCondition: {
       role?: 'STUDENT' | 'TEACHER' | 'ADMIN';
     } = {}
-    if (role && ['STUDENT', 'TEACHER', 'ADMIN'].includes(role)) {
-      whereCondition.role = role
+    const validRoles = ['STUDENT', 'TEACHER', 'ADMIN'] as const;
+    if (role && validRoles.includes(role as typeof validRoles[number])) {
+      whereCondition.role = role as typeof validRoles[number];
     }
 
     const users = await prisma.user.findMany({

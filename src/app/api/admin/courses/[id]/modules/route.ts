@@ -56,13 +56,17 @@ export async function GET(
             assignments: {
               orderBy: { createdAt: 'asc' }
             },
-            quiz: {
+            quizLessons: {
               include: {
-                questions: {
+                quiz: {
                   include: {
-                    options: true
-                  },
-                  orderBy: { order: 'asc' }
+                    questions: {
+                      include: {
+                        options: true
+                      },
+                      orderBy: { order: 'asc' }
+                    }
+                  }
                 }
               }
             },
@@ -156,7 +160,7 @@ export async function POST(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Неверные данные', details: error.errors },
+        { error: 'Неверные данные', details: error.issues },
         { status: 400 }
       )
     }

@@ -97,14 +97,14 @@ export async function GET(request: NextRequest) {
         description: submission.assignment.description,
         dueDate: submission.assignment.dueDate,
         maxScore: submission.assignment.maxScore,
-        lesson: {
+        lesson: submission.assignment.lesson ? {
           id: submission.assignment.lesson.id,
           title: submission.assignment.lesson.title,
           module: {
             title: submission.assignment.lesson.module.title,
             course: submission.assignment.lesson.module.course
           }
-        },
+        } : null,
         creator: submission.assignment.creator
       },
       groups: submission.assignment.groupAssignments.map(ga => ga.group)

@@ -134,7 +134,7 @@ export default function GroupDetail({ params }: GroupDetailProps) {
   const [showQuizSelectionModal, setShowQuizSelectionModal] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | undefined>()
-  const [groupQuizzes, setGroupQuizzes] = useState<Array<{ id: string; title: string; description?: string; timeLimit?: number; passingScore: number }>>([])
+  const [groupQuizzes, setGroupQuizzes] = useState<Array<{ id: string; title: string; description?: string; timeLimit?: number; passingScore: number; questions?: Array<unknown>; attempts?: Array<unknown>; isActive?: boolean }>>([])
   const [assignedQuizIds, setAssignedQuizIds] = useState<string[]>([])
   
   // Развертываем промис params

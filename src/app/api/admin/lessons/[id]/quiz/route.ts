@@ -25,12 +25,13 @@ export async function HEAD(
 
     const { id } = await params
 
-    const quiz = await prisma.quiz.findUnique({
+    // Находим связь QuizLesson для этого урока
+    const quizLesson = await prisma.quizLesson.findFirst({
       where: { lessonId: id },
-      select: { id: true } // Выбираем только ID для проверки существования
+      select: { quizId: true }
     })
 
-    if (!quiz) {
+    if (!quizLesson) {
       return new NextResponse(null, { status: 404 })
     }
 
@@ -67,26 +68,33 @@ export async function GET(
 
     const { id } = await params
 
-    const quiz = await prisma.quiz.findUnique({
+    // Находим связь QuizLesson для этого урока
+    const quizLesson = await prisma.quizLesson.findFirst({
       where: { lessonId: id },
       include: {
-        questions: {
+        quiz: {
           include: {
-            options: true
-          },
-          orderBy: {
-            order: 'asc'
+            questions: {
+              include: {
+                options: true
+              },
+              orderBy: {
+                order: 'asc'
+              }
+            }
           }
         }
       }
     })
 
-    if (!quiz) {
+    if (!quizLesson) {
       return NextResponse.json(
         { error: 'Тест не найден' },
         { status: 404 }
       )
     }
+
+    const quiz = quizLesson.quiz
 
     return NextResponse.json(quiz)
   } catch (error) {

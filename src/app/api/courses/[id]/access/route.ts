@@ -96,7 +96,7 @@ export async function GET(
       // Для ежемесячных курсов проверяем текущий период
       const currentDate = new Date();
       const validPayment = payments.find(payment => 
-        (payment.status === 'PAID' || payment.status === 'COMPLETED') && 
+        payment.status === 'PAID' && 
         payment.dueDate && 
         new Date(payment.dueDate) >= currentDate
       );
@@ -107,7 +107,7 @@ export async function GET(
     } else {
       // Для разовых курсов проверяем наличие успешного платежа
       const validPayment = payments.find(payment => 
-        payment.status === 'PAID' || payment.status === 'COMPLETED'
+        payment.status === 'PAID'
       );
       
       if (validPayment) {

@@ -12,26 +12,17 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Строим фильтр
-    const where: {
-      isActive: boolean;
-      isDraft: boolean;
-      direction?: string;
-      level?: string;
-      title?: {
-        contains: string;
-        mode: 'insensitive';
-      };
-    } = {
+    const where: any = {
       isActive: true,
       isDraft: false // Показываем только опубликованные курсы (не черновики)
     }
 
-    if (direction) {
-      where.direction = direction
+    if (direction && ['WORDPRESS', 'VIBE_CODING', 'SHOPIFY'].includes(direction)) {
+      where.direction = direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY'
     }
 
-    if (level) {
-      where.level = level
+    if (level && ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].includes(level)) {
+      where.level = level as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
     }
 
     if (search) {

@@ -151,7 +151,7 @@ export async function PUT(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Неверные данные', details: error.errors },
+        { error: 'Неверные данные', details: error.issues },
         { status: 400 }
       )
     }

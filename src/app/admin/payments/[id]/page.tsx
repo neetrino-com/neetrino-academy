@@ -325,7 +325,7 @@ export default function PaymentDetailPage() {
                   {editing ? (
                     <select
                       value={editedPayment.status || payment.status}
-                      onChange={(e) => setEditedPayment(prev => ({ ...prev, status: e.target.value }))}
+                      onChange={(e) => setEditedPayment(prev => ({ ...prev, status: e.target.value as 'PENDING' | 'CANCELLED' | 'PAID' | 'OVERDUE' }))}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="PENDING">Ожидает оплаты</option>

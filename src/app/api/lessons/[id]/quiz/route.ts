@@ -16,30 +16,37 @@ export async function GET(
 
     const { id } = await params;
 
-    const quiz = await prisma.quiz.findUnique({
+    // Находим связь QuizLesson для этого урока
+    const quizLesson = await prisma.quizLesson.findFirst({
       where: { lessonId: id },
       include: {
-        questions: {
+        quiz: {
           include: {
-            options: {
+            questions: {
+              include: {
+                options: {
+                  orderBy: {
+                    order: 'asc'
+                  }
+                }
+              },
               orderBy: {
                 order: 'asc'
               }
             }
-          },
-          orderBy: {
-            order: 'asc'
           }
         }
       }
     });
 
-    if (!quiz) {
+    if (!quizLesson) {
       return NextResponse.json(
         { quiz: null, userAttempt: null },
         { status: 200 }
       );
     }
+
+    const quiz = quizLesson.quiz;
 
     // Получаем все попытки пользователя по этому тесту
     const userAttempts = await prisma.quizAttempt.findMany({
@@ -83,24 +90,30 @@ export async function POST(
     const body = await request.json();
     const { answers, assignmentId } = body; // answers: { questionId: string, selectedOptions: string[] }[], assignmentId: string (опционально)
 
-    // Получаем тест с вопросами и правильными ответами
-    const quiz = await prisma.quiz.findUnique({
+    // Находим связь QuizLesson для этого урока
+    const quizLesson = await prisma.quizLesson.findFirst({
       where: { lessonId: id },
       include: {
-        questions: {
+        quiz: {
           include: {
-            options: true
+            questions: {
+              include: {
+                options: true
+              }
+            }
           }
         }
       }
     });
 
-    if (!quiz) {
+    if (!quizLesson) {
       return NextResponse.json(
         { error: 'Тест не найден' },
         { status: 404 }
       );
     }
+
+    const quiz = quizLesson.quiz;
 
     // Убираем проверку на существующую попытку - теперь разрешаем множественные попытки
 

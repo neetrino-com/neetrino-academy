@@ -62,5 +62,13 @@ export default function EditLecturePage() {
     );
   }
 
-  return <LectureForm lecture={lecture} mode="edit" />;
+  return <LectureForm lecture={{
+    ...lecture,
+    content: lecture.content.map((block, index) => ({
+      id: `block-${index}`,
+      type: block.type as 'text' | 'video' | 'link' | 'code' | 'checklist' | 'file' | 'gallery',
+      content: typeof block.data === 'string' ? block.data : JSON.stringify(block.data),
+      metadata: typeof block.data === 'object' && block.data !== null ? block.data as Record<string, unknown> : undefined
+    }))
+  }} mode="edit" />;
 }

@@ -95,7 +95,6 @@ export async function PUT(
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error updating quiz:', error)
-    console.error('Quiz data received:', JSON.stringify(body, null, 2))
     
     // Более детальная обработка ошибок
     if (error instanceof Error) {

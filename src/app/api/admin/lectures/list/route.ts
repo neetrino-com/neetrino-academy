@@ -15,12 +15,18 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const isActive = searchParams.get('isActive') !== 'false'; // По умолчанию только активные
 
-    const where = {
+    const where: {
+      isActive: boolean;
+      OR?: Array<{
+        title?: { contains: string; mode: 'insensitive' };
+        description?: { contains: string; mode: 'insensitive' };
+      }>;
+    } = {
       isActive,
       ...(search && {
         OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
+          { title: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
         ],
       }),
     };

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           data: {
             groupId: group.id,
             userId: teacher.id,
-            role: 'TEACHER'
+            role: 'MAIN'
           }
         })
       }

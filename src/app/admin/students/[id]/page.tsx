@@ -31,6 +31,7 @@ import {
 import { AccessManagement } from '@/components/admin/AccessManagement'
 
 interface StudentDetails {
+  id: string
   student: {
     id: string
     name: string
@@ -692,8 +693,8 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
       {/* Модалка управления доступом */}
       {showAccessManager && student && (
         <AccessManagement
-          studentId={student.id}
-          studentName={student.name}
+          studentId={student.student.id}
+          studentName={student.student.name}
           onClose={() => setShowAccessManager(false)}
         />
       )}

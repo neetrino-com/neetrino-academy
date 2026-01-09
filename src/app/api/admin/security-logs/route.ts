@@ -4,9 +4,10 @@ import { securityLogger } from '@/lib/security-logger'
 import { UserRole } from '@/lib/permissions'
 
 export async function GET(request: NextRequest) {
+  let session
   try {
     // Проверяем аутентификацию
-    const session = await auth()
+    session = await auth()
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

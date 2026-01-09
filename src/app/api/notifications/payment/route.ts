@@ -31,37 +31,37 @@ export async function POST(request: NextRequest) {
     }
 
     // Определяем тип уведомления и заголовок
-    let notificationType = 'PAYMENT_REMINDER'
+    let notificationType: 'NEW_MESSAGE' = 'NEW_MESSAGE'
     let title = 'Напоминание о платеже'
     let description = message
 
     switch (type) {
       case 'payment_due':
-        notificationType = 'PAYMENT_REMINDER'
+        notificationType = 'NEW_MESSAGE'
         title = 'Напоминание о платеже'
         description = `Напоминаем о необходимости оплаты курса "${course.title}"`
         break
       
       case 'payment_overdue':
-        notificationType = 'PAYMENT_OVERDUE'
+        notificationType = 'NEW_MESSAGE'
         title = 'Платеж просрочен'
         description = `Платеж за курс "${course.title}" просрочен. Доступ к курсу приостановлен.`
         break
       
       case 'payment_successful':
-        notificationType = 'PAYMENT_SUCCESSFUL'
+        notificationType = 'NEW_MESSAGE'
         title = 'Платеж успешно обработан'
         description = `Платеж за курс "${course.title}" успешно обработан. Доступ к курсу восстановлен.`
         break
       
       case 'next_payment_created':
-        notificationType = 'PAYMENT_REMINDER'
+        notificationType = 'NEW_MESSAGE'
         title = 'Создан следующий платеж'
         description = `Для курса "${course.title}" создан следующий ежемесячный платеж.`
         break
       
       default:
-        notificationType = 'PAYMENT_REMINDER'
+        notificationType = 'NEW_MESSAGE'
         title = 'Уведомление о платеже'
         description = message || 'Уведомление о платеже'
     }
@@ -72,9 +72,8 @@ export async function POST(request: NextRequest) {
         userId,
         type: notificationType,
         title,
-        description,
-        relatedEntity: 'Payment',
-        relatedEntityId: paymentId || null,
+        message: description,
+        data: paymentId ? JSON.stringify({ paymentId }) : null,
         isRead: false
       }
     })
@@ -112,9 +111,7 @@ export async function GET(request: NextRequest) {
       type: string | { in: string[] };
     } = {
       userId,
-      type: {
-        in: ['PAYMENT_REMINDER', 'PAYMENT_OVERDUE', 'PAYMENT_SUCCESSFUL']
-      }
+      type: 'NEW_MESSAGE'
     }
 
     if (type) {

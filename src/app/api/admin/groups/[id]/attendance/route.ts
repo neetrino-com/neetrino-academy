@@ -191,7 +191,7 @@ export async function GET(
         }))
       })),
       // Дополнительные данные для календарного режима
-      ...(viewMode === 'calendar' && {
+      ...(viewMode === 'calendar' && attendanceRecords && {
         attendanceRecords: attendanceRecords.map(record => ({
           id: record.id,
           userId: record.userId,

@@ -74,7 +74,9 @@ export async function PUT(request: NextRequest) {
 
     // Добавляем расширенную информацию профиля
     if (validatedData.age !== undefined) updateData.age = validatedData.age;
-    if (validatedData.gender !== undefined) updateData.gender = validatedData.gender;
+    if (validatedData.gender !== undefined) {
+      updateData.gender = validatedData.gender.toUpperCase() as 'MALE' | 'FEMALE' | 'OTHER';
+    }
     if (validatedData.phone !== undefined) updateData.phone = validatedData.phone?.trim() || null;
     if (validatedData.address !== undefined) updateData.address = validatedData.address?.trim() || null;
     if (validatedData.city !== undefined) updateData.city = validatedData.city?.trim() || null;
@@ -168,7 +170,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.issues[0].message },
         { status: 400 }
       )
     }

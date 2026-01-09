@@ -31,7 +31,7 @@ export default async function ChecklistNotificationsPage({ params }: ChecklistNo
     select: { 
       id: true, 
       title: true, 
-      direction: string,
+      direction: true,
       description: true 
     }
   });

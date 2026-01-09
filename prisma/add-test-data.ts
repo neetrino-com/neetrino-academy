@@ -178,85 +178,81 @@ async function main() {
 
   if (existingQuiz) {
     // Добавляем дополнительные вопросы
-    await prisma.quizQuestion.createMany({
-      data: [
-        {
-          question: 'Какая разница между let и const?',
-          type: 'MULTIPLE_CHOICE',
-          order: 1,
-          points: 2,
+    const questions = [
+      {
+        question: 'Какая разница между let и const?',
+        type: 'MULTIPLE_CHOICE' as const,
+        order: 1,
+        points: 2,
+        options: [
+          { text: 'let можно переназначить, const нельзя', isCorrect: true, order: 1 },
+          { text: 'const можно переназначить, let нельзя', isCorrect: false, order: 2 },
+          { text: 'Нет разницы', isCorrect: false, order: 3 },
+          { text: 'let имеет функциональную область видимости', isCorrect: false, order: 4 }
+        ]
+      },
+      {
+        question: 'Что вернет стрелочная функция: () => 42?',
+        type: 'MULTIPLE_CHOICE' as const,
+        order: 2,
+        points: 1,
+        options: [
+          { text: 'undefined', isCorrect: false, order: 1 },
+          { text: '42', isCorrect: true, order: 2 },
+          { text: 'null', isCorrect: false, order: 3 },
+          { text: 'Ошибку', isCorrect: false, order: 4 }
+        ]
+      },
+      {
+        question: 'Как правильно деструктурировать массив [1, 2, 3] чтобы получить первый и третий элементы?',
+        type: 'MULTIPLE_CHOICE' as const,
+        order: 3,
+        points: 2,
+        options: [
+          { text: 'const [first, , third] = [1, 2, 3]', isCorrect: true, order: 1 },
+          { text: 'const [first, third] = [1, 2, 3]', isCorrect: false, order: 2 },
+          { text: 'const { first, third } = [1, 2, 3]', isCorrect: false, order: 3 },
+          { text: 'const first = [1, 2, 3][0], third = [1, 2, 3][2]', isCorrect: false, order: 4 }
+        ]
+      },
+      {
+        question: 'Что такое промис в JavaScript?',
+        type: 'MULTIPLE_CHOICE' as const,
+        order: 4,
+        points: 2,
+        options: [
+          { text: 'Объект, представляющий результат асинхронной операции', isCorrect: true, order: 1 },
+          { text: 'Синхронная функция', isCorrect: false, order: 2 },
+          { text: 'Тип данных', isCorrect: false, order: 3 },
+          { text: 'Метод массива', isCorrect: false, order: 4 }
+        ]
+      },
+      {
+        question: 'Какой синтаксис используется для импорта по умолчанию?',
+        type: 'MULTIPLE_CHOICE' as const,
+        order: 5,
+        points: 1,
+        options: [
+          { text: 'import Component from "./Component"', isCorrect: true, order: 1 },
+          { text: 'import { Component } from "./Component"', isCorrect: false, order: 2 },
+          { text: 'import * as Component from "./Component"', isCorrect: false, order: 3 },
+          { text: 'import Component, { Component } from "./Component"', isCorrect: false, order: 4 }
+        ]
+      }
+    ]
+
+    for (const questionData of questions) {
+      const { options, ...questionFields } = questionData
+      await prisma.quizQuestion.create({
+        data: {
+          ...questionFields,
           quizId: existingQuiz.id,
           options: {
-            create: [
-              { text: 'let можно переназначить, const нельзя', isCorrect: true, order: 1 },
-              { text: 'const можно переназначить, let нельзя', isCorrect: false, order: 2 },
-              { text: 'Нет разницы', isCorrect: false, order: 3 },
-              { text: 'let имеет функциональную область видимости', isCorrect: false, order: 4 }
-            ]
-          }
-        },
-        {
-          question: 'Что вернет стрелочная функция: () => 42?',
-          type: 'MULTIPLE_CHOICE',
-          order: 2,
-          points: 1,
-          quizId: existingQuiz.id,
-          options: {
-            create: [
-              { text: 'undefined', isCorrect: false, order: 1 },
-              { text: '42', isCorrect: true, order: 2 },
-              { text: 'null', isCorrect: false, order: 3 },
-              { text: 'Ошибку', isCorrect: false, order: 4 }
-            ]
-          }
-        },
-        {
-          question: 'Как правильно деструктурировать массив [1, 2, 3] чтобы получить первый и третий элементы?',
-          type: 'MULTIPLE_CHOICE',
-          order: 3,
-          points: 2,
-          quizId: existingQuiz.id,
-          options: {
-            create: [
-              { text: 'const [first, , third] = [1, 2, 3]', isCorrect: true, order: 1 },
-              { text: 'const [first, third] = [1, 2, 3]', isCorrect: false, order: 2 },
-              { text: 'const { first, third } = [1, 2, 3]', isCorrect: false, order: 3 },
-              { text: 'const first = [1, 2, 3][0], third = [1, 2, 3][2]', isCorrect: false, order: 4 }
-            ]
-          }
-        },
-        {
-          question: 'Что такое промис в JavaScript?',
-          type: 'MULTIPLE_CHOICE',
-          order: 4,
-          points: 2,
-          quizId: existingQuiz.id,
-          options: {
-            create: [
-              { text: 'Объект, представляющий результат асинхронной операции', isCorrect: true, order: 1 },
-              { text: 'Синхронная функция', isCorrect: false, order: 2 },
-              { text: 'Тип данных', isCorrect: false, order: 3 },
-              { text: 'Метод массива', isCorrect: false, order: 4 }
-            ]
-          }
-        },
-        {
-          question: 'Какой синтаксис используется для импорта по умолчанию?',
-          type: 'MULTIPLE_CHOICE',
-          order: 5,
-          points: 1,
-          quizId: existingQuiz.id,
-          options: {
-            create: [
-              { text: 'import Component from "./Component"', isCorrect: true, order: 1 },
-              { text: 'import { Component } from "./Component"', isCorrect: false, order: 2 },
-              { text: 'import * as Component from "./Component"', isCorrect: false, order: 3 },
-              { text: 'import Component, { Component } from "./Component"', isCorrect: false, order: 4 }
-            ]
+            create: options
           }
         }
-      ]
-    })
+      })
+    }
 
     console.log('Добавлены дополнительные вопросы к тесту')
   }

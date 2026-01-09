@@ -163,7 +163,8 @@ export async function POST(
           }
         ]
       },
-      include: {
+      select: {
+        id: true,
         name: true
       }
     })

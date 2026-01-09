@@ -147,8 +147,7 @@ export async function POST(request: NextRequest) {
           include: {
             _count: {
               select: {
-                lessons: true,
-                assignments: true
+                lessons: true
               }
             }
           }
@@ -167,7 +166,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Ошибка валидации данных', details: error.errors },
+        { error: 'Ошибка валидации данных', details: error.issues },
         { status: 400 }
       );
     }

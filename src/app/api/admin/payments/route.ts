@@ -29,14 +29,22 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get('courseId')
 
     const where: {
-      status?: string;
-      paymentType?: string;
+      status?: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+      paymentType?: 'ONE_TIME' | 'MONTHLY';
       userId?: string;
       courseId?: string;
     } = {}
     
-    if (status) where.status = status
-    if (paymentType) where.paymentType = paymentType
+    // Проверяем валидность значений enum перед использованием
+    const validStatuses = ['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'] as const;
+    const validPaymentTypes = ['ONE_TIME', 'MONTHLY'] as const;
+    
+    if (status && validStatuses.includes(status as typeof validStatuses[number])) {
+      where.status = status as typeof validStatuses[number];
+    }
+    if (paymentType && validPaymentTypes.includes(paymentType as typeof validPaymentTypes[number])) {
+      where.paymentType = paymentType as typeof validPaymentTypes[number];
+    }
     if (userId) where.userId = userId
     if (courseId) where.courseId = courseId
 

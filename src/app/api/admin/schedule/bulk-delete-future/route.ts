@@ -69,8 +69,11 @@ export async function DELETE(request: NextRequest) {
         // Удаляем события в указанном периоде
         const eventsResult = await prisma.event.deleteMany({
           where: {
-            startDate: { gte: start, lte: end },
-            startDate: { gt: now }, // Только будущие
+            startDate: { 
+              gte: start, 
+              lte: end,
+              gt: now // Только будущие
+            },
             isActive: true
           }
         })
@@ -143,8 +146,22 @@ export async function POST(request: NextRequest) {
     const { eventIds, groupIds, startDate, endDate } = body
 
     const now = new Date()
-    let eventsToDelete = []
-    let schedulesToDelete = []
+    let eventsToDelete: Array<{
+      id: string;
+      title: string;
+      startDate: Date;
+      endDate: Date;
+      location: string | null;
+      group?: { id: string; name: string } | null;
+      createdBy?: { id: string; name: string } | null;
+    }> = []
+    let schedulesToDelete: Array<{
+      id: string;
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      group?: { id: string; name: string } | null;
+    }> = []
 
     // Находим события для удаления
     if (eventIds && eventIds.length > 0) {
@@ -197,8 +214,11 @@ export async function POST(request: NextRequest) {
       if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
         const eventsByDate = await prisma.event.findMany({
           where: {
-            startDate: { gte: start, lte: end },
-            startDate: { gt: now },
+            startDate: { 
+              gte: start, 
+              lte: end,
+              gt: now 
+            },
             isActive: true
           },
           include: {

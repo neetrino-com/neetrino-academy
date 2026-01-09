@@ -105,11 +105,8 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
                               </p>
                             )}
                             <div className="mt-2 flex space-x-4 text-sm text-gray-500">
-                              {lesson.duration > 0 && (
+                              {lesson.duration && lesson.duration > 0 && (
                                 <span>Длительность: {lesson.duration} мин</span>
-                              )}
-                              {lesson.videoUrl && (
-                                <span className="text-blue-600">Есть видео</span>
                               )}
                             </div>
                           </div>
@@ -163,12 +160,12 @@ export default async function ModuleLessonsPage({ params }: PageProps) {
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex justify-between">
                         <span>Всего уроков:</span>
-                        <span className="font-semibold">{module.lessons.length}</span>
+                        <span className="font-semibold">{existingModule.lessons.length}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Активных уроков:</span>
                         <span className="font-semibold text-green-600">
-                          {module.lessons.filter(l => l.isActive !== false).length}
+                          {existingModule.lessons.filter(l => l.isActive !== false).length}
                         </span>
                       </div>
                     </div>

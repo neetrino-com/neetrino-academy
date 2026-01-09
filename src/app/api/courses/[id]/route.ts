@@ -30,13 +30,17 @@ export async function GET(
                     description: true
                   }
                 },
-                quiz: {
-                  select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    timeLimit: true,
-                    passingScore: true
+                quizLessons: {
+                  include: {
+                    quiz: {
+                      select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        timeLimit: true,
+                        passingScore: true
+                      }
+                    }
                   }
                 },
                 assignments: {

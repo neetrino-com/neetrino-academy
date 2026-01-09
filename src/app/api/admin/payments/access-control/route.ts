@@ -231,11 +231,14 @@ async function sendPaymentReminders() {
 
   for (const payment of upcomingPayments) {
     // Проверяем, не отправляли ли мы уже напоминание
+    // Проверяем через поле data, так как relatedEntityId не существует
     const existingNotification = await prisma.notification.findFirst({
       where: {
         userId: payment.userId,
         type: 'PAYMENT_REMINDER',
-        relatedEntityId: payment.id,
+        data: {
+          contains: payment.id
+        },
         createdAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // За последние 24 часа
         }

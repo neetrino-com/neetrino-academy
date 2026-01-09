@@ -17,14 +17,17 @@ export async function GET(
     const resolvedParams = await params;
     const checklistId = resolvedParams.id;
 
-    // Получаем уведомления по чеклисту
-    const notifications = await prisma.notification.findMany({
+    // Получаем ID пользователей, которые имеют прогресс по этому чеклисту
+    const progress = await prisma.checklistProgress.findMany({
+      where: { checklistId },
+      select: { userId: true }
+    });
+    const userIds = progress.map(p => p.userId);
+
+    // Получаем уведомления для этих пользователей и фильтруем по checklistId в data
+    const allNotifications = await prisma.notification.findMany({
       where: {
-        type: 'CHECKLIST_COMPLETION',
-        metadata: {
-          path: ['checklistId'],
-          equals: checklistId
-        }
+        userId: { in: userIds }
       },
       include: {
         user: {
@@ -36,6 +39,17 @@ export async function GET(
         }
       },
       orderBy: { createdAt: 'desc' }
+    });
+
+    // Фильтруем уведомления, которые относятся к этому чеклисту
+    const notifications = allNotifications.filter(notif => {
+      if (!notif.data) return false;
+      try {
+        const data = typeof notif.data === 'string' ? JSON.parse(notif.data) : notif.data;
+        return data.checklistId === checklistId;
+      } catch {
+        return false;
+      }
     });
 
     return NextResponse.json(notifications);
@@ -62,7 +76,7 @@ export async function POST(
 
     const resolvedParams = await params;
     const checklistId = resolvedParams.id;
-    const { userId, message, type = 'CHECKLIST_COMPLETION' } = await request.json();
+    const { userId, message } = await request.json();
 
     // Проверяем существование чеклиста и пользователя
     const [checklist, user] = await Promise.all([
@@ -78,14 +92,14 @@ export async function POST(
     const notification = await prisma.notification.create({
       data: {
         userId,
-        type,
+        type: 'NEW_MESSAGE', // Используем существующий тип
         title: `Чеклист: ${checklist.title}`,
         message: message || `Вы успешно завершили чеклист "${checklist.title}"`,
-        metadata: {
+        data: JSON.stringify({
           checklistId,
           checklistTitle: checklist.title,
           direction: checklist.direction
-        },
+        }),
         isRead: false
       }
     });

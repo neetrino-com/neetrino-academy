@@ -133,12 +133,11 @@ export async function GET(request: NextRequest) {
       end: event.endDate.toISOString(),
       startDate: event.startDate.toISOString(),
       endDate: event.endDate.toISOString(),
-      allDay: false,
-      groupId: event.groupId,
+      groupId: event.groupId || '',
       groupName: event.group?.name || 'Неизвестная группа',
       teacherId: event.createdById,
       teacherName: event.createdBy?.name || 'Неизвестный учитель',
-      location: event.location,
+      location: event.location || undefined,
       type: event.type,
       isActive: event.isActive,
       isAttendanceRequired: event.isAttendanceRequired,
@@ -198,7 +197,7 @@ function groupEventsByMonth(events: Array<{
   end: string
   startDate: string
   endDate: string
-  groupId: string
+  groupId: string | null
   groupName: string
   teacherId: string
   teacherName: string

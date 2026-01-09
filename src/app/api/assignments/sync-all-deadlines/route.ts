@@ -31,9 +31,13 @@ export async function POST(request: NextRequest) {
         }
       },
       include: {
-        module: {
+        lesson: {
           include: {
-            course: true
+            module: {
+              include: {
+                course: true
+              }
+            }
           }
         },
         groupAssignments: {
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
               where: { id: existingEvent.id },
               data: {
                 title: `Дедлайн: ${assignment.title}`,
-                description: `Срок сдачи задания "${assignment.title}"\n\nКурс: ${assignment.lesson.module.course.title}\nМодуль: ${assignment.lesson.module.title}\n\n${assignment.description || ''}`,
+                description: `Срок сдачи задания "${assignment.title}"\n\nКурс: ${assignment.lesson?.module?.course?.title || 'Неизвестный курс'}\nМодуль: ${assignment.lesson?.module?.title || 'Неизвестный модуль'}\n\n${assignment.description || ''}`,
                 startDate: new Date(assignment.dueDate.getTime() - 60 * 60 * 1000), // За час до дедлайна
                 endDate: assignment.dueDate,
                 updatedAt: new Date()
@@ -88,12 +92,12 @@ export async function POST(request: NextRequest) {
           const newEvent = await prisma.event.create({
             data: {
               title: `Дедлайн: ${assignment.title}`,
-              description: `Срок сдачи задания "${assignment.title}"\n\nКурс: ${assignment.lesson.module.course.title}\nМодуль: ${assignment.lesson.module.title}\n\n${assignment.description || ''}`,
+              description: `Срок сдачи задания "${assignment.title}"\n\nКурс: ${assignment.lesson?.module?.course?.title || 'Неизвестный курс'}\nМодуль: ${assignment.lesson?.module?.title || 'Неизвестный модуль'}\n\n${assignment.description || ''}`,
               type: 'DEADLINE',
               startDate: new Date(assignment.dueDate.getTime() - 60 * 60 * 1000), // За час до дедлайна
               endDate: assignment.dueDate,
               groupId: groupAssignment.group.id,
-              courseId: assignment.lesson.module.course.id,
+              courseId: assignment.lesson?.module?.course?.id || null,
               assignmentId: assignment.id,
               createdById: user.id
             }

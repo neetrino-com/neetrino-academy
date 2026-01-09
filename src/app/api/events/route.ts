@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { notifyEventParticipants } from '@/lib/notifications'
+import { Prisma } from '@prisma/client'
 
 // Получить события пользователя
 export async function GET(request: NextRequest) {
@@ -26,13 +27,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')
 
     // Базовые условия фильтрации
-    let whereCondition: {
-      isActive?: boolean;
-      groupId?: string;
-      type?: string;
-      OR?: Array<unknown>;
-      AND?: Array<unknown>;
-    } = {
+    let whereCondition: Prisma.EventWhereInput = {
       isActive: true,
       OR: [
         // События, которые создал пользователь
@@ -108,12 +103,15 @@ export async function GET(request: NextRequest) {
 
     // Фильтр по типу события
     if (type && type !== 'ALL') {
-      whereCondition.type = type
+      const validEventTypes = ['LESSON', 'EXAM', 'DEADLINE', 'MEETING', 'WORKSHOP', 'SEMINAR', 'CONSULTATION', 'ANNOUNCEMENT', 'OTHER']
+      if (validEventTypes.includes(type)) {
+        whereCondition.type = type as 'LESSON' | 'EXAM' | 'DEADLINE' | 'MEETING' | 'WORKSHOP' | 'SEMINAR' | 'CONSULTATION' | 'ANNOUNCEMENT' | 'OTHER'
+      }
     }
 
     // Для студентов ограничиваем доступ только к событиям их групп
     if (user.role === 'STUDENT') {
-      whereCondition = {
+      const studentWhere: Prisma.EventWhereInput = {
         ...whereCondition,
         OR: [
           // События групп студента
@@ -137,6 +135,7 @@ export async function GET(request: NextRequest) {
           }
         ]
       }
+      Object.assign(whereCondition, studentWhere)
     }
 
     const events = await prisma.event.findMany({

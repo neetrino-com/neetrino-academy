@@ -71,7 +71,7 @@ export async function PUT(
         data: {
           userId: studentId,
           courseId: courseId,
-          status: 'INACTIVE',
+          status: 'SUSPENDED',
           paymentStatus: 'PENDING'
         }
       });
@@ -79,7 +79,7 @@ export async function PUT(
 
     // Выполнить действие
     let updateData: {
-      status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+      status?: 'ACTIVE' | 'SUSPENDED' | 'CANCELLED' | 'COMPLETED';
       paymentStatus?: 'PENDING' | 'PAID' | 'OVERDUE';
     } = {};
     let logMessage = '';
@@ -94,7 +94,7 @@ export async function PUT(
 
       case 'revoke_access':
         updateData = {
-          status: 'INACTIVE'
+          status: 'SUSPENDED'
         };
         logMessage = `Администратор ${admin.name} отозвал доступ к курсу "${course.title}"${reason ? `. Причина: ${reason}` : ''}`;
         break;
@@ -138,7 +138,7 @@ export async function PUT(
         userId: studentId,
         title: 'Изменение статуса курса',
         message: logMessage,
-        type: 'admin_action'
+        type: 'NEW_MESSAGE'
       }
     });
 
@@ -159,7 +159,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Неверные данные', details: error.errors },
+        { error: 'Неверные данные', details: error.issues },
         { status: 400 }
       );
     }

@@ -78,12 +78,12 @@ export async function POST(
     }
 
     // Создаем задание
-    const assignmentData = {
+    const baseAssignmentData = {
       title: title.trim(),
       description: description?.trim() || null,
       dueDate: new Date(dueDate),
-      type: (type || 'HOMEWORK') as const,
-      status: 'PUBLISHED' as const,
+      type: (type || 'HOMEWORK') as 'HOMEWORK' | 'PROJECT' | 'ESSAY' | 'QUIZ',
+      status: 'PUBLISHED' as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
       maxScore: 100,
       creator: {
         connect: {
@@ -93,9 +93,9 @@ export async function POST(
     }
 
     // Добавляем lessonId только если он предоставлен
-    if (lessonId) {
-      assignmentData.lessonId = lessonId
-    }
+    const assignmentData = lessonId
+      ? { ...baseAssignmentData, lessonId }
+      : baseAssignmentData
 
     console.log('Creating assignment with data:', assignmentData)
 

@@ -44,20 +44,39 @@ export async function GET(
             email: true,
             role: true
           }
-        },
-        itemProgress: {
-          include: {
-            item: {
-              select: {
-                id: true,
-                title: true,
-                groupId: true
-              }
-            }
+        }
+      }
+    });
+
+    // Получаем ID всех элементов чеклиста
+    const itemIds = checklist.groups.flatMap(group => group.items.map(item => item.id));
+
+    // Получаем прогресс по элементам для всех студентов
+    const userIds = progress.map(p => p.userId);
+    const itemProgress = await prisma.checklistItemProgress.findMany({
+      where: {
+        userId: { in: userIds },
+        itemId: { in: itemIds }
+      },
+      include: {
+        item: {
+          select: {
+            id: true,
+            title: true,
+            groupId: true
           }
         }
       }
     });
+
+    // Группируем itemProgress по userId
+    const itemProgressByUser = itemProgress.reduce((acc, ip) => {
+      if (!acc[ip.userId]) {
+        acc[ip.userId] = [];
+      }
+      acc[ip.userId].push(ip);
+      return acc;
+    }, {} as Record<string, typeof itemProgress>);
 
     // Анализируем данные
     const analytics = {
@@ -68,23 +87,24 @@ export async function GET(
         totalGroups: checklist.groups.length,
         totalItems: checklist.groups.reduce((sum, group) => sum + group.items.length, 0)
       },
-      studentProgress: progress.map(p => ({
-        userId: p.user.id,
-        userName: p.user.name,
-        userEmail: p.user.email,
-        userRole: p.user.role,
-        completedItems: p.itemProgress.filter(ip => ip.status === 'COMPLETED').length,
-        totalItems: checklist.groups.reduce((sum, group) => sum + group.items.length, 0),
-        completionPercentage: Math.round(
-          (p.itemProgress.filter(ip => ip.status === 'COMPLETED').length / 
-           checklist.groups.reduce((sum, group) => sum + group.items.length, 0)) * 100
-        ),
-        lastUpdated: p.updatedAt
-      })),
+      studentProgress: progress.map(p => {
+        const userItemProgress = itemProgressByUser[p.userId] || [];
+        const totalItems = checklist.groups.reduce((sum, group) => sum + group.items.length, 0);
+        const completedItems = userItemProgress.filter(ip => ip.status === 'COMPLETED').length;
+        
+        return {
+          userId: p.user.id,
+          userName: p.user.name,
+          userEmail: p.user.email,
+          userRole: p.user.role,
+          completedItems,
+          totalItems,
+          completionPercentage: totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0,
+          lastUpdated: p.completedAt || p.startedAt
+        };
+      }),
       groupAnalytics: checklist.groups.map(group => {
-        const groupProgress = progress.flatMap(p => 
-          p.itemProgress.filter(ip => ip.item.groupId === group.id)
-        );
+        const groupProgress = itemProgress.filter(ip => ip.item.groupId === group.id);
         
         const statusCounts = {
           COMPLETED: groupProgress.filter(ip => ip.status === 'COMPLETED').length,
@@ -108,17 +128,16 @@ export async function GET(
         averageCompletion: progress.length > 0 
           ? Math.round(
               progress.reduce((sum, p) => {
-                const completed = p.itemProgress.filter(ip => ip.status === 'COMPLETED').length;
+                const userItemProgress = itemProgressByUser[p.userId] || [];
+                const completed = userItemProgress.filter(ip => ip.status === 'COMPLETED').length;
                 const total = checklist.groups.reduce((sum, group) => sum + group.items.length, 0);
-                return sum + (completed / total);
+                return sum + (total > 0 ? completed / total : 0);
               }, 0) / progress.length * 100
             )
           : 0,
         mostCompletedGroup: (() => {
           const groupStats = checklist.groups.map(group => {
-            const groupProgress = progress.flatMap(p => 
-              p.itemProgress.filter(ip => ip.item.groupId === group.id)
-            );
+            const groupProgress = itemProgress.filter(ip => ip.item.groupId === group.id);
             const completed = groupProgress.filter(ip => ip.status === 'COMPLETED').length;
             const total = group.items.length;
             return {
@@ -133,9 +152,7 @@ export async function GET(
         })(),
         leastCompletedGroup: (() => {
           const groupStats = checklist.groups.map(group => {
-            const groupProgress = progress.flatMap(p => 
-              p.itemProgress.filter(ip => ip.item.groupId === group.id)
-            );
+            const groupProgress = itemProgress.filter(ip => ip.item.groupId === group.id);
             const completed = groupProgress.filter(ip => ip.status === 'COMPLETED').length;
             const total = group.items.length;
             return {

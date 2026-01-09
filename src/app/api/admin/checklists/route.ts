@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         title?: { contains: string; mode: 'insensitive' };
         description?: { contains: string; mode: 'insensitive' };
       }>;
-      direction?: string;
+      direction?: 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY';
       isActive?: boolean;
     } = {}
     
@@ -62,8 +62,10 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    if (direction) {
-      where.direction = direction
+    // Проверяем, что direction является валидным значением enum
+    const validDirections = ['WORDPRESS', 'VIBE_CODING', 'SHOPIFY'] as const;
+    if (direction && validDirections.includes(direction as typeof validDirections[number])) {
+      where.direction = direction as typeof validDirections[number];
     }
     
     if (isActive !== null && isActive !== '') {
@@ -191,7 +193,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Ошибка валидации', details: error.errors },
+        { error: 'Ошибка валидации', details: error.issues },
         { status: 400 }
       )
     }

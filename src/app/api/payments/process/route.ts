@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Для демонстрации просто создаем запись о платеже и записи на курс
 
     // Определяем статус платежа в зависимости от способа оплаты
-    const paymentStatus = paymentMethod === 'CASH' ? 'PAID' : 'COMPLETED';
+    const paymentStatus: 'PAID' | 'PENDING' | 'OVERDUE' | 'CANCELLED' = paymentMethod === 'CASH' ? 'PAID' : 'PAID';
     
     // Создаем запись о платеже
     const payment = await prisma.payment.create({

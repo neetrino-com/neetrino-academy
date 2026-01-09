@@ -70,12 +70,12 @@ export async function POST(request: NextRequest) {
       const message = await prisma.groupMessage.create({
         data: {
           content,
-          senderId: user.id,
+          userId: user.id,
           groupId,
-          type: 'MESSAGE'
+          type: 'REGULAR'
         },
         include: {
-          sender: {
+          user: {
             select: {
               id: true,
               name: true,
@@ -105,13 +105,13 @@ export async function POST(request: NextRequest) {
       
       const notifications = allMembers.map(member => ({
         userId: member.userId,
-        type: 'GROUP_MESSAGE',
+        type: 'NEW_MESSAGE' as const,
         title: `Новое сообщение в группе ${membership.group.name}`,
         message: `${user.name || user.email}: ${content}`,
-        data: {
+        data: JSON.stringify({
           groupId,
           messageId: message.id
-        }
+        })
       }))
 
       await prisma.notification.createMany({
@@ -121,74 +121,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         id: message.id,
         content: message.content,
-        senderId: message.senderId,
-        senderName: message.sender.name || message.sender.email,
+        senderId: message.userId,
+        senderName: message.user.name || message.user.email,
         timestamp: message.createdAt,
         type: 'group',
         groupId: message.groupId
       })
 
     } else if (chatId.startsWith('direct_')) {
-      // Прямой чат
-      const recipientId = chatId.replace('direct_', '')
-      
-      // Проверяем, что получатель существует
-      const recipient = await prisma.user.findUnique({
-        where: { id: recipientId }
-      })
-
-      if (!recipient) {
-        return NextResponse.json({ error: 'Recipient not found' }, { status: 404 })
-      }
-
-      // Создаем прямое сообщение
-      const message = await prisma.directMessage.create({
-        data: {
-          content,
-          senderId: user.id,
-          recipientId
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          },
-          recipient: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          }
-        }
-      })
-
-      // Создаем уведомление для получателя
-      await prisma.notification.create({
-        data: {
-          userId: recipientId,
-          type: 'DIRECT_MESSAGE',
-          title: `Новое сообщение от ${user.name || user.email}`,
-          message: content,
-          data: {
-            senderId: user.id,
-            messageId: message.id
-          }
-        }
-      })
-
-      return NextResponse.json({
-        id: message.id,
-        content: message.content,
-        senderId: message.senderId,
-        senderName: message.sender.name || message.sender.email,
-        timestamp: message.createdAt,
-        type: 'direct',
-        recipientId: message.recipientId
-      })
+      // Прямой чат - функциональность временно отключена, так как модель DirectMessage не определена в схеме
+      return NextResponse.json({ error: 'Direct messages are not available' }, { status: 501 })
     }
 
     return NextResponse.json({ error: 'Invalid chat ID' }, { status: 400 })

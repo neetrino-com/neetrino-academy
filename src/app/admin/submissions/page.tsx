@@ -473,7 +473,14 @@ export default function SubmissionsManagement() {
         {/* Модальное окно оценки */}
         {showGradingModal && selectedSubmission && (
           <GradingModal
-            submission={selectedSubmission}
+            submission={{
+              ...selectedSubmission,
+              assignment: {
+                ...selectedSubmission.assignment,
+                dueDate: selectedSubmission.assignment.dueDate || '',
+                module: selectedSubmission.assignment.lesson?.module || { title: '', course: { id: '', title: '', direction: '' } }
+              }
+            }}
             onClose={closeGradingModal}
             onSuccess={handleGradingSuccess}
           />

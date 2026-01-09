@@ -161,7 +161,16 @@ export default function EditQuizPage() {
       <div className="max-w-7xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <QuizBuilder
-            initialQuiz={quiz}
+            initialQuiz={quiz ? {
+              ...quiz,
+              questions: quiz.questions.map(q => ({
+                ...q,
+                type: (q.type === 'MULTIPLE_CHOICE' || q.type === 'SINGLE_CHOICE' || q.type === 'TRUE_FALSE') 
+                  ? q.type 
+                  : 'MULTIPLE_CHOICE' as 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TRUE_FALSE',
+                options: q.options || []
+              }))
+            } : undefined}
             onSave={handleSave}
             onCancel={handleCancel}
           />

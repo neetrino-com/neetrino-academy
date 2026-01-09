@@ -16,10 +16,26 @@ export default function EditChecklistPage() {
     title: string;
     description?: string;
     direction?: string;
+    thumbnail?: string;
+    isActive?: boolean;
     items?: Array<{
       id: string;
       text: string;
       order: number;
+    }>;
+    groups?: Array<{
+      id: string;
+      title: string;
+      description?: string;
+      order: number;
+      isCollapsed?: boolean;
+      items: Array<{
+        id: string;
+        title: string;
+        description?: string;
+        order: number;
+        isRequired?: boolean;
+      }>;
     }>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,10 +139,10 @@ export default function EditChecklistPage() {
             </div>
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-500">
-                📊 {checklist.groups.reduce((sum: number, g: { items: Array<{ id: string }> }) => sum + g.items.length, 0)} пунктов
+                📊 {checklist.groups?.reduce((sum: number, g: { items: Array<{ id: string }> }) => sum + g.items.length, 0) || 0} пунктов
               </div>
               <div className="text-sm text-gray-500">
-                📂 {checklist.groups.length} групп
+                📂 {checklist.groups?.length || 0} групп
               </div>
             </div>
           </div>
@@ -140,10 +156,10 @@ export default function EditChecklistPage() {
           initialData={{
             title: checklist.title,
             description: checklist.description || '',
-            direction: checklist.direction,
+            direction: (checklist.direction as 'WORDPRESS' | 'VIBE_CODING' | 'SHOPIFY') || 'WORDPRESS',
             thumbnail: checklist.thumbnail || '',
-            isActive: checklist.isActive,
-            groups: checklist.groups.map((group: {
+            isActive: checklist.isActive ?? true,
+            groups: (checklist.groups || []).map((group: {
               id: string;
               title: string;
               description?: string;
@@ -161,13 +177,13 @@ export default function EditChecklistPage() {
               title: group.title,
               description: group.description || '',
               order: group.order,
-              isCollapsed: group.isCollapsed,
+              isCollapsed: group.isCollapsed ?? false,
               items: group.items.map((item) => ({
                 id: item.id,
                 title: item.title,
                 description: item.description || '',
                 order: item.order,
-                isRequired: item.isRequired
+                isRequired: item.isRequired ?? false
               }))
             }))
           }}

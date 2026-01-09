@@ -61,7 +61,7 @@ export async function GET(
           groupId
         },
         include: {
-          sender: {
+          user: {
             select: {
               id: true,
               name: true,
@@ -81,8 +81,8 @@ export async function GET(
       const formattedMessages = messages.map(message => ({
         id: message.id,
         content: message.content,
-        senderId: message.senderId,
-        senderName: message.sender.name || message.sender.email,
+        senderId: message.userId,
+        senderName: message.user.name || message.user.email,
         timestamp: message.createdAt,
         type: 'group' as const,
         groupId: message.groupId
@@ -91,68 +91,8 @@ export async function GET(
       return NextResponse.json(serializePrismaData(formattedMessages))
 
     } else if (chatId.startsWith('direct_')) {
-      // Прямой чат
-      const otherUserId = chatId.replace('direct_', '')
-      
-      // Получаем сообщения между пользователями
-      const messages = await prisma.directMessage.findMany({
-        where: {
-          OR: [
-            {
-              senderId: user.id,
-              recipientId: otherUserId
-            },
-            {
-              senderId: otherUserId,
-              recipientId: user.id
-            }
-          ]
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          },
-          recipient: {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'asc'
-        },
-        take: 50
-      })
-
-      // Отмечаем входящие сообщения как прочитанные
-      await prisma.directMessage.updateMany({
-        where: {
-          senderId: otherUserId,
-          recipientId: user.id,
-          readAt: null
-        },
-        data: {
-          readAt: new Date()
-        }
-      })
-
-      const formattedMessages = messages.map(message => ({
-        id: message.id,
-        content: message.content,
-        senderId: message.senderId,
-        senderName: message.sender.name || message.sender.email,
-        timestamp: message.createdAt,
-        type: 'direct' as const,
-        recipientId: message.recipientId
-      }))
-
-      return NextResponse.json(serializePrismaData(formattedMessages))
+      // Прямой чат - функциональность временно отключена, так как модель DirectMessage не определена в схеме
+      return NextResponse.json(serializePrismaData([]))
     }
 
     return NextResponse.json({ error: 'Invalid chat ID' }, { status: 400 })

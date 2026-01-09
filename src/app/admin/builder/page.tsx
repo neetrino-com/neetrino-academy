@@ -314,7 +314,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       
       // Инициализируем задания из загруженных данных (задания привязаны к урокам)
       const allAssignments = modulesWithLessons.flatMap(module => 
-        module.lessons.flatMap(lesson => 
+        module.lessons.flatMap((lesson: Lesson & { assignments?: Array<{ id: string; title: string; description?: string; dueDate?: string }> }) => 
           lesson.assignments ? lesson.assignments.map((assignment: {
             id: string;
             title: string;
@@ -340,7 +340,7 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
         id: m.id,
         title: m.title,
         lessonsCount: m.lessons.length,
-        lessons: m.lessons.map(l => ({
+        lessons: m.lessons.map((l: Lesson & { assignments?: Array<{ id: string; title: string; description?: string; dueDate?: string }> }) => ({
           id: l.id,
           title: l.title,
           assignmentsCount: l.assignments?.length || 0
@@ -1989,9 +1989,12 @@ function CourseBuilderComponent({ userRole, isLoading }: WithRoleProtectionProps
       
       // Проверим, есть ли задания в модулях
       requestData.modules.forEach((module, index) => {
-        console.log(`Модуль ${index + 1} (${module.title}): ${module.assignments.length} заданий`)
-        module.assignments.forEach(assignment => {
-          console.log(`  - Задание: ${assignment.title}`)
+        const totalAssignments = module.lessons.reduce((sum, lesson) => sum + (lesson.assignments?.length || 0), 0)
+        console.log(`Модуль ${index + 1} (${module.title}): ${totalAssignments} заданий`)
+        module.lessons.forEach(lesson => {
+          lesson.assignments?.forEach(assignment => {
+            console.log(`  - Задание: ${assignment.title}`)
+          })
         })
         
         // Проверим чеклисты в уроках

@@ -81,6 +81,7 @@ interface Teacher {
 interface CalendarEvent {
   id: string
   title: string
+  description?: string
   start: string
   end: string
   startDate: string
@@ -154,7 +155,7 @@ export default function OptimizedScheduleDashboard() {
   const [loadedMonths, setLoadedMonths] = useState<Set<string>>(new Set())
 
   // Ref для хранения актуальной функции загрузки данных
-  const fetchScheduleDataRef = useRef<() => Promise<void>>()
+  const fetchScheduleDataRef = useRef<() => Promise<void>>(() => Promise.resolve())
 
   useEffect(() => {
     setMounted(true)
@@ -165,7 +166,7 @@ export default function OptimizedScheduleDashboard() {
     const cached = cache.get(key)
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       console.log(`📦 [Cache] Используем кэшированные данные для ${key}`)
-      return cached.data as T.data
+      return cached.data as T
     }
 
     console.log(`🌐 [API] Загружаем данные для ${key}`)
@@ -480,11 +481,13 @@ export default function OptimizedScheduleDashboard() {
       console.log('Данные события для редактирования:', eventData)
       
       // Преобразуем данные события в формат, ожидаемый модальным окном
-      const eventForEdit = {
+      const eventForEdit: CalendarEvent = {
         id: eventData.id,
         title: eventData.title,
         description: eventData.description || '',
         type: eventData.type,
+        start: eventData.startDate,
+        end: eventData.endDate,
         startDate: eventData.startDate,
         endDate: eventData.endDate,
         location: eventData.location || '',
@@ -492,7 +495,9 @@ export default function OptimizedScheduleDashboard() {
         groupId: eventData.groupId,
         groupName: eventData.group?.name || '',
         teacherId: eventData.createdBy?.id || '',
-        teacherName: eventData.createdBy?.name || ''
+        teacherName: eventData.createdBy?.name || '',
+        isActive: eventData.isActive ?? true,
+        color: eventData.color || '#3b82f6'
       }
       
       // Устанавливаем событие для редактирования и открываем модальное окно
@@ -614,16 +619,18 @@ export default function OptimizedScheduleDashboard() {
         e.id === eventData.id 
           ? {
               ...e,
-              title: eventData.title,
-              type: eventData.type,
-              startDate: eventData.startDate,
-              endDate: eventData.endDate,
-              location: eventData.location,
-              isAttendanceRequired: eventData.isAttendanceRequired,
-              groupId: eventData.groupId,
-              groupName: eventData.groupName,
-              teacherId: eventData.teacherId,
-              teacherName: eventData.teacherName
+              title: eventData.title || e.title,
+              type: eventData.type || e.type,
+              startDate: eventData.startDate || e.startDate,
+              endDate: eventData.endDate || e.endDate,
+              start: eventData.startDate || e.start,
+              end: eventData.endDate || e.end,
+              location: eventData.location || e.location,
+              isAttendanceRequired: eventData.isAttendanceRequired ?? e.isAttendanceRequired,
+              groupId: eventData.groupId || e.groupId,
+              groupName: eventData.groupName || e.groupName,
+              teacherId: eventData.teacherId || e.teacherId,
+              teacherName: eventData.teacherName || e.teacherName
             }
           : e
       ))

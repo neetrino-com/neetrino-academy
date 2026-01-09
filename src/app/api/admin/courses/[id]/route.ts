@@ -520,23 +520,53 @@ export async function DELETE(
         }
       })
       
-      // 2. Удаляем квизы
-      await tx.quiz.deleteMany({
+      // 2. Удаляем связи QuizLesson и затем квизы
+      // Сначала находим все уроки курса
+      const lessons = await tx.lesson.findMany({
         where: {
-          lesson: {
-            module: {
-              courseId: courseId
-            }
+          module: {
+            courseId: courseId
           }
+        },
+        select: { id: true }
+      })
+      const lessonIds = lessons.map(l => l.id)
+      
+      // Удаляем связи QuizLesson
+      const quizLessons = await tx.quizLesson.findMany({
+        where: {
+          lessonId: { in: lessonIds }
+        },
+        select: { quizId: true }
+      })
+      const quizIds = [...new Set(quizLessons.map(ql => ql.quizId))]
+      
+      await tx.quizLesson.deleteMany({
+        where: {
+          lessonId: { in: lessonIds }
         }
       })
+      
+      // Удаляем квизы, которые больше не связаны с другими уроками
+      if (quizIds.length > 0) {
+        await tx.quiz.deleteMany({
+          where: {
+            id: { in: quizIds },
+            quizLessons: {
+              none: {}
+            }
+          }
+        })
+      }
       
       // 3. Удаляем сабмишены заданий
       await tx.submission.deleteMany({
         where: {
           assignment: {
-            module: {
-              courseId: courseId
+            lesson: {
+              module: {
+                courseId: courseId
+              }
             }
           }
         }
@@ -545,8 +575,10 @@ export async function DELETE(
       // 4. Удаляем задания
       await tx.assignment.deleteMany({
         where: {
-          module: {
-            courseId: courseId
+          lesson: {
+            module: {
+              courseId: courseId
+            }
           }
         }
       })

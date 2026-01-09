@@ -107,10 +107,16 @@ interface CalendarEvent {
   title: string
   date: Date
   groupName: string
+  groupId: string
+  startTime: Date
+  endTime: Date
+  location?: string | null
   attended: number
   total: number
   attendanceRate: number
   type: string
+  color?: string
+  description?: string | null
 }
 
 export default function AttendancePage() {
@@ -296,7 +302,8 @@ export default function AttendancePage() {
     return colors[type] || 'bg-gray-100 text-gray-800'
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateInput: string | Date) => {
+    const dateString = dateInput instanceof Date ? dateInput.toISOString() : dateInput
     return new Date(dateString).toLocaleDateString('ru-RU', {
       year: 'numeric',
       month: 'short',
@@ -362,8 +369,8 @@ export default function AttendancePage() {
             groupName: groupData.group.name,
             groupId: groupData.group.id,
             date: eventDate,
-            startTime: event.startDate,
-            endTime: event.endDate,
+            startTime: new Date(event.startDate),
+            endTime: new Date(event.endDate),
             type: event.type,
             location: event.location,
             attended,

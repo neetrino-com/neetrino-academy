@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
 
         const notifications = userIds.map((userId: string) => ({
           userId,
-          type: 'ANNOUNCEMENT' as const,
+          type: 'NEW_MESSAGE' as const,
           title: notificationData.title,
           message: notificationData.message,
           isRead: false

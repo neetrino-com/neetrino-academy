@@ -134,7 +134,7 @@ export async function POST(
       await prisma.enrollment.update({
         where: { id: enrollment.id },
         data: {
-          paymentStatus: 'COMPLETED'
+          paymentStatus: 'PAID'
         }
       })
     }
