@@ -305,7 +305,7 @@ export default function CourseDetailPage() {
                 {course.duration && (
                   <span className="flex items-center">
                     <Clock className="w-4 h-4 mr-2" />
-                    {getDurationLabel(course.duration, course.durationUnit)}
+                    {getDurationLabel(course.duration ?? null, course.durationUnit ?? null)}
                   </span>
                 )}
               </div>

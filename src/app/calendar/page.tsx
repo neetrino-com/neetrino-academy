@@ -50,12 +50,44 @@ export default function CalendarPage() {
 
   const handleEventSubmit = async (eventData: {
     title: string;
-    description?: string;
-    startDate: string;
-    endDate: string;
-    groupId?: string;
+    description: string;
+    type: string;
+    eventDate: string;
+    startTime: string;
+    endTime: string;
+    location: string;
+    groupId: string;
+    courseId: string;
+    assignmentId: string;
+    attendeeIds: string[];
+    isRecurring: boolean;
+    recurringRule: {
+      frequency: string;
+      interval: number;
+      daysOfWeek: number[];
+      endDate: string;
+    };
   }) => {
     try {
+      // Преобразуем формат EventModal в формат API
+      const startDateTime = new Date(`${eventData.eventDate}T${eventData.startTime}`)
+      const endDateTime = new Date(`${eventData.eventDate}T${eventData.endTime}`)
+      
+      const apiEventData = {
+        title: eventData.title,
+        description: eventData.description || '',
+        type: eventData.type,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+        location: eventData.location || null,
+        groupId: eventData.groupId || null,
+        courseId: eventData.courseId || null,
+        assignmentId: eventData.assignmentId || null,
+        attendeeIds: eventData.attendeeIds || [],
+        isRecurring: eventData.isRecurring || false,
+        recurringRule: eventData.isRecurring ? eventData.recurringRule : null
+      }
+
       const url = editingEventId 
         ? `/api/events/${editingEventId}` 
         : '/api/events'
@@ -67,16 +99,17 @@ export default function CalendarPage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(eventData)
+        body: JSON.stringify(apiEventData)
       })
 
       if (response.ok) {
         setShowEventModal(false)
         setEditingEventId(undefined)
         // Календарь автоматически обновится через useEffect
+        window.location.reload() // Перезагружаем страницу для обновления календаря
       } else {
         const error = await response.json()
-        alert(`Ошибка: ${error.error}`)
+        alert(`Ошибка: ${error.error || 'Не удалось сохранить событие'}`)
       }
     } catch (error) {
       console.error('Error saving event:', error)
