@@ -166,11 +166,11 @@ export default async function StudentQuizzesPage() {
     const quizAttempts = attemptsByQuiz.get(key) || []
     const latestAttemptRaw = quizAttempts[0] || null
     
-    // Преобразуем latestAttempt в формат, ожидаемый getQuizStatus
+    // Преобразуем latestAttempt в формат, ожидаемый getQuizStatus и для возврата
     const latestAttempt = latestAttemptRaw ? {
       id: latestAttemptRaw.id,
       passed: latestAttemptRaw.passed,
-      score: latestAttemptRaw.score || 0,
+      score: latestAttemptRaw.score ?? 0,
       completedAt: latestAttemptRaw.completedAt ? (typeof latestAttemptRaw.completedAt === 'string' ? latestAttemptRaw.completedAt : latestAttemptRaw.completedAt.toISOString()) : new Date().toISOString()
     } : null
     
@@ -228,18 +228,13 @@ export default async function StudentQuizzesPage() {
 
   const getButtonText = (quiz: {
     id: string;
-    title: string;
-    description?: string;
-    timeLimit: number;
-    passingScore: number;
-    type: 'course' | 'group';
     latestAttempt: {
       id: string;
       passed: boolean;
       score: number;
       completedAt: string;
     } | null;
-    attempts: Array<{ id: string; score: number; maxScore: number; passed: boolean; startedAt: string; completedAt?: string }>;
+    attempts: Array<{ id: string; score: number | null; maxScore: number; passed: boolean; startedAt: Date | string; completedAt?: Date | string | null }>;
   }) => {
     if (!quiz.latestAttempt) {
       return 'Начать тест'
@@ -463,7 +458,7 @@ export default async function StudentQuizzesPage() {
               ) : (
                 <div className="space-y-6">
                   {quizzesWithAttempts.map((quiz) => (
-                    <div key={`${quiz.id}-${quiz.assignmentId || 'course'}`} className={`border rounded-2xl p-6 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${getStatusBgColor(quiz.status)}`}>
+                    <div key={`${quiz.id}-${'assignmentId' in quiz ? quiz.assignmentId || 'course' : 'course'}`} className={`border rounded-2xl p-6 transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${getStatusBgColor(quiz.status)}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-4 mb-4">
@@ -475,7 +470,7 @@ export default async function StudentQuizzesPage() {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <h3 className="font-bold text-gray-900 text-xl">{quiz.title}</h3>
-                                {quiz.assignmentId && (
+                                {'assignmentId' in quiz && quiz.assignmentId && (
                                   <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
                                     Назначение #{quiz.assignmentId.slice(-6)}
                                   </span>
@@ -498,7 +493,7 @@ export default async function StudentQuizzesPage() {
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                       </svg>
-                                      {quiz.lesson?.module?.title || 'Модуль не найден'}
+                                      {'module' in quiz && quiz.module ? quiz.module.title : 'Модуль не найден'}
                                     </span>
                                     <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                                     <span className="flex items-center gap-1">
@@ -588,7 +583,7 @@ export default async function StudentQuizzesPage() {
                           )}
                           
                           <Link
-                            href={`/quizzes/${quiz.id}${quiz.assignmentId ? `?assignmentId=${quiz.assignmentId}` : ''}`}
+                            href={`/quizzes/${quiz.id}${'assignmentId' in quiz && quiz.assignmentId ? `?assignmentId=${quiz.assignmentId}` : ''}`}
                             className="bg-gradient-to-r from-rose-600 to-red-700 text-white px-6 py-3 rounded-xl hover:from-rose-700 hover:to-red-800 transition-all duration-300 text-sm font-semibold text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
                           >
                             {getButtonText(quiz)}
