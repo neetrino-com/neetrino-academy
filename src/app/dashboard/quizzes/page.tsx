@@ -161,7 +161,8 @@ export default async function StudentQuizzesPage() {
 
   // Добавляем информацию о попытках к тестам
   const quizzesWithAttempts = allQuizzes.map(quiz => {
-    const key = quiz.assignmentId ? `${quiz.id}-${quiz.assignmentId}` : quiz.id
+    const assignmentId = 'assignmentId' in quiz ? quiz.assignmentId : undefined
+    const key = assignmentId ? `${quiz.id}-${assignmentId}` : quiz.id
     const quizAttempts = attemptsByQuiz.get(key) || []
     const latestAttempt = quizAttempts[0] || null
     
