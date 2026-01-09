@@ -227,7 +227,7 @@ export default function CoursesPage() {
             {pagination && pagination.totalPages > 1 && (
               <div className="flex justify-center">
                 <nav className="flex space-x-2">
-                  {pagination.hasPrev && (
+                  {pagination.page > 1 && (
                     <button
                       onClick={() => handlePageChange(pagination.page - 1)}
                       className="px-4 py-2 border border-indigo-300 rounded-lg text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition-all duration-200 hover:scale-105"
@@ -240,7 +240,7 @@ export default function CoursesPage() {
                     Страница {pagination.page} из {pagination.totalPages}
                   </span>
                   
-                  {pagination.hasNext && (
+                  {pagination.page < pagination.totalPages && (
                     <button
                       onClick={() => handlePageChange(pagination.page + 1)}
                       className="px-4 py-2 border border-indigo-300 rounded-lg text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition-all duration-200 hover:scale-105"
