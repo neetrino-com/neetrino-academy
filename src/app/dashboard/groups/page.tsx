@@ -214,8 +214,9 @@ export default async function StudentGroupsPage() {
     })
   }
 
-  const formatEventDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+  const formatEventDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString
+    return date.toLocaleDateString('ru-RU', {
       month: 'short',
       day: 'numeric'
     })
