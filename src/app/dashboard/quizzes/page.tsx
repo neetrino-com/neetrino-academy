@@ -166,11 +166,21 @@ export default async function StudentQuizzesPage() {
     const quizAttempts = attemptsByQuiz.get(key) || []
     const latestAttempt = quizAttempts[0] || null
     
+    // Преобразуем quiz в формат, ожидаемый getQuizStatus
+    const quizForStatus = {
+      id: quiz.id,
+      title: quiz.title,
+      description: quiz.description || undefined,
+      timeLimit: quiz.timeLimit || 0,
+      passingScore: quiz.passingScore,
+      type: quiz.type
+    }
+    
     return {
       ...quiz,
       attempts: quizAttempts,
       latestAttempt,
-      status: getQuizStatus(quiz, latestAttempt, quizAttempts.length)
+      status: getQuizStatus(quizForStatus, latestAttempt, quizAttempts.length)
     }
   })
 
