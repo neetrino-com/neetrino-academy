@@ -112,7 +112,10 @@ export default function StudentAssignmentsPage() {
   // Подсчет статистики
         const stats = data.reduce((acc: Stats, assignment: Assignment) => {
           acc.total++
-          acc[assignment.status]++
+          const statusKey = assignment.status as keyof Stats
+          if (statusKey in acc && statusKey !== 'total') {
+            acc[statusKey]++
+          }
           return acc
         }, { total: 0, pending: 0, submitted: 0, graded: 0, overdue: 0 })
         
