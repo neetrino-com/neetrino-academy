@@ -164,7 +164,15 @@ export default async function StudentQuizzesPage() {
     const assignmentId = 'assignmentId' in quiz ? quiz.assignmentId : undefined
     const key = assignmentId ? `${quiz.id}-${assignmentId}` : quiz.id
     const quizAttempts = attemptsByQuiz.get(key) || []
-    const latestAttempt = quizAttempts[0] || null
+    const latestAttemptRaw = quizAttempts[0] || null
+    
+    // Преобразуем latestAttempt в формат, ожидаемый getQuizStatus
+    const latestAttempt = latestAttemptRaw ? {
+      id: latestAttemptRaw.id,
+      passed: latestAttemptRaw.passed,
+      score: latestAttemptRaw.score || 0,
+      completedAt: latestAttemptRaw.completedAt ? (typeof latestAttemptRaw.completedAt === 'string' ? latestAttemptRaw.completedAt : latestAttemptRaw.completedAt.toISOString()) : new Date().toISOString()
+    } : null
     
     // Преобразуем quiz в формат, ожидаемый getQuizStatus
     const quizForStatus = {
