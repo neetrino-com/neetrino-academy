@@ -318,25 +318,25 @@ export default function CourseDetailPage() {
                   {course.paymentType === 'ONE_TIME' ? (
                     <div>
                       <div className="text-3xl font-bold text-gray-900 mb-2">
-                        {formatCurrency(course.price, course.currency)}
+                        {formatCurrency(course.price ?? 0, course.currency ?? 'RUB')}
                       </div>
                       <p className="text-sm text-gray-600">Разовая оплата за весь курс</p>
                     </div>
                   ) : course.paymentType === 'MONTHLY' ? (
                     <div>
                       <div className="text-3xl font-bold text-gray-900 mb-2">
-                        {formatCurrency(course.monthlyPrice, course.currency)}/мес
+                        {formatCurrency(course.monthlyPrice ?? 0, course.currency ?? 'RUB')}/мес
                       </div>
                       <p className="text-sm text-gray-600">
                         Ежемесячная оплата • {course.duration} месяцев
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        Итого: {formatCurrency((course.monthlyPrice || 0) * (course.duration || 1), course.currency)}
+                        Итого: {formatCurrency((course.monthlyPrice ?? 0) * (course.duration ?? 1), course.currency ?? 'RUB')}
                       </p>
                     </div>
                   ) : (
                     <div className="text-3xl font-bold text-gray-900">
-                      {formatCurrency(course.price, course.currency)}
+                      {formatCurrency(course.price ?? 0, course.currency ?? 'RUB')}
                     </div>
                   )}
                 </div>
